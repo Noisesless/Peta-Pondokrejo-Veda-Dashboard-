@@ -74,19 +74,20 @@
             margin-right: 8px;
         }
     
-        /* MapLibre 2D Container & Controls */
+        /* MapLibre 2D Container & Non-Rounded Controls */
         #map { width: 100%; height: 100%; }
         .maplibregl-popup-content {
-            border-radius: 8px !important;
+            border-radius: 0px !important;
             padding: 10px 14px !important;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.25) !important;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2) !important;
             font-family: inherit !important;
+            border: 1px solid #cbd5e1 !important;
         }
         .btn-basemap.active {
-            background-color: #059669 !important;
+            background-color: #047857 !important;
             color: #ffffff !important;
-            border-color: #059669 !important;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+            border-color: #047857 !important;
+            font-weight: 700 !important;
         }
 
     </style>
@@ -131,32 +132,30 @@
                     <h2 class="text-sm font-bold leading-tight">Data Geografis</h2>
                     <div class="text-[11px] text-emerald-200">Kalurahan Pondokrejo</div>
                 </div>
-                <span class="text-[10px] bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-500 font-semibold tracking-wide">MapLibre 2D</span>
+                <span class="text-[10px] bg-emerald-950 text-emerald-200 px-2 py-0.5 border border-emerald-500 font-semibold tracking-wide">MapLibre 2D</span>
             </div>
 
             <!-- Basemap Selector (OpenFreeMap + Esri Satelit - Bebas 403) -->
             <div class="p-3 border-b bg-slate-50">
                 <div class="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2 flex items-center justify-between">
                     <span>Gaya Peta Dasar</span>
-                    <span class="text-[10px] text-emerald-600 font-semibold flex items-center"><i class="fa fa-shield-alt mr-1"></i> Bebas 403</span>
+                    <span class="text-[10px] text-emerald-700 font-semibold flex items-center"><i class="fa fa-shield-alt mr-1"></i> Bebas 403</span>
                 </div>
                 <div class="grid grid-cols-3 gap-1 mb-1">
-                    <button type="button" class="btn-basemap active text-xs font-semibold py-1.5 px-1 rounded border transition text-center bg-emerald-600 text-white border-emerald-600" data-style="liberty" onclick="setBasemap('liberty')">Liberty</button>
-                    <button type="button" class="btn-basemap text-xs font-semibold py-1.5 px-1 rounded border transition text-center bg-white text-slate-700 border-slate-300 hover:bg-slate-100" data-style="positron" onclick="setBasemap('positron')">Positron</button>
-                    <button type="button" class="btn-basemap text-xs font-semibold py-1.5 px-1 rounded border transition text-center bg-white text-slate-700 border-slate-300 hover:bg-slate-100" data-style="bright" onclick="setBasemap('bright')">Bright</button>
+                    <button type="button" class="btn-basemap active text-xs font-semibold py-1.5 px-1 border transition text-center bg-emerald-700 text-white border-emerald-700" data-style="liberty" onclick="setBasemap('liberty')">Liberty</button>
+                    <button type="button" class="btn-basemap text-xs font-semibold py-1.5 px-1 border transition text-center bg-white text-slate-700 border-slate-300 hover:bg-slate-100" data-style="positron" onclick="setBasemap('positron')">Positron</button>
+                    <button type="button" class="btn-basemap text-xs font-semibold py-1.5 px-1 border transition text-center bg-white text-slate-700 border-slate-300 hover:bg-slate-100" data-style="bright" onclick="setBasemap('bright')">Bright</button>
                 </div>
                 <div class="grid grid-cols-2 gap-1">
-                    <button type="button" class="btn-basemap text-xs font-semibold py-1.5 px-1 rounded border transition text-center bg-white text-slate-700 border-slate-300 hover:bg-slate-100" data-style="dark" onclick="setBasemap('dark')">Dark (OFM)</button>
-                    <button type="button" class="btn-basemap text-xs font-semibold py-1.5 px-1 rounded border transition text-center bg-white text-slate-700 border-slate-300 hover:bg-slate-100" data-style="satelit" onclick="setBasemap('satelit')">Satelit Esri</button>
+                    <button type="button" class="btn-basemap text-xs font-semibold py-1.5 px-1 border transition text-center bg-white text-slate-700 border-slate-300 hover:bg-slate-100" data-style="dark" onclick="setBasemap('dark')">Dark (OFM)</button>
+                    <button type="button" class="btn-basemap text-xs font-semibold py-1.5 px-1 border transition text-center bg-white text-slate-700 border-slate-300 hover:bg-slate-100" data-style="satelit" onclick="setBasemap('satelit')">Satelit Esri</button>
                 </div>
             </div>
 
-            <!-- Switcher: Mode Sederhana vs Mode Detail -->
-            <div class="px-3 pt-2.5 pb-2 border-b bg-white">
-                <div class="flex items-center bg-slate-100 p-0.5 rounded-lg border border-slate-200 text-xs">
-                    <button id="btn-mode-simple" type="button" onclick="setLayerSelectionMode('simple')" class="flex-1 py-1.5 text-center font-bold rounded-md transition shadow-sm bg-white text-emerald-700">Mode Sederhana</button>
-                    <button id="btn-mode-detail" type="button" onclick="setLayerSelectionMode('detail')" class="flex-1 py-1.5 text-center font-semibold rounded-md transition text-slate-600 hover:text-slate-900">Mode Detail</button>
-                </div>
+            <!-- Switcher: Mode Sederhana vs Mode Detail (Harmonis dengan Navigasi Tab Analisa Wilayah) -->
+            <div class="flex border-b bg-gray-50 text-xs">
+                <button id="btn-mode-simple" type="button" onclick="setLayerSelectionMode('simple')" class="flex-1 py-2.5 text-center font-bold text-emerald-700 border-b-2 border-emerald-700 bg-white focus:outline-none transition">Mode Sederhana</button>
+                <button id="btn-mode-detail" type="button" onclick="setLayerSelectionMode('detail')" class="flex-1 py-2.5 text-center font-semibold text-gray-500 hover:text-emerald-700 border-b-2 border-transparent bg-gray-50 focus:outline-none transition">Mode Detail</button>
             </div>
 
             <!-- Scrollable Content -->
@@ -165,15 +164,15 @@
                 <div id="simple-mode-container" class="space-y-2">
                     <div class="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">Preset Tema Layer (1-Klik)</div>
                     
-                    <label class="simple-preset-card flex items-start p-2.5 rounded-lg border border-emerald-400 bg-emerald-50/80 hover:bg-emerald-50 cursor-pointer transition">
+                    <label class="simple-preset-card flex items-start p-2.5 border-l-4 border-l-emerald-600 border-y border-r border-slate-300 bg-emerald-50/70 cursor-pointer transition">
                         <input type="radio" name="layer-preset" value="default" checked onchange="applySimplePreset('default')" class="mt-0.5 text-emerald-600 focus:ring-emerald-500">
                         <div class="ml-2.5">
                             <div class="text-xs font-bold text-slate-800">Peta Standar Wilayah</div>
-                            <div class="text-[11px] text-slate-500 mt-0.5">Batas Desa, Padukuhan, RW/RT, dan Persebaran Warga</div>
+                            <div class="text-[11px] text-slate-600 mt-0.5">Batas Desa, Padukuhan, RW/RT, dan Persebaran Warga</div>
                         </div>
                     </label>
 
-                    <label class="simple-preset-card flex items-start p-2.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 cursor-pointer transition">
+                    <label class="simple-preset-card flex items-start p-2.5 border border-slate-200 bg-white hover:bg-slate-50 cursor-pointer transition">
                         <input type="radio" name="layer-preset" value="mitigasi" onchange="applySimplePreset('mitigasi')" class="mt-0.5 text-emerald-600 focus:ring-emerald-500">
                         <div class="ml-2.5">
                             <div class="text-xs font-bold text-slate-800">Mitigasi Bencana Merapi</div>
@@ -181,7 +180,7 @@
                         </div>
                     </label>
 
-                    <label class="simple-preset-card flex items-start p-2.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 cursor-pointer transition">
+                    <label class="simple-preset-card flex items-start p-2.5 border border-slate-200 bg-white hover:bg-slate-50 cursor-pointer transition">
                         <input type="radio" name="layer-preset" value="lingkungan" onchange="applySimplePreset('lingkungan')" class="mt-0.5 text-emerald-600 focus:ring-emerald-500">
                         <div class="ml-2.5">
                             <div class="text-xs font-bold text-slate-800">Tata Ruang & Lingkungan</div>
@@ -189,7 +188,7 @@
                         </div>
                     </label>
 
-                    <label class="simple-preset-card flex items-start p-2.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 cursor-pointer transition">
+                    <label class="simple-preset-card flex items-start p-2.5 border border-slate-200 bg-white hover:bg-slate-50 cursor-pointer transition">
                         <input type="radio" name="layer-preset" value="infrastruktur" onchange="applySimplePreset('infrastruktur')" class="mt-0.5 text-emerald-600 focus:ring-emerald-500">
                         <div class="ml-2.5">
                             <div class="text-xs font-bold text-slate-800">Infrastruktur & Fasilitas</div>
@@ -197,7 +196,7 @@
                         </div>
                     </label>
 
-                    <label class="simple-preset-card flex items-start p-2.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 cursor-pointer transition">
+                    <label class="simple-preset-card flex items-start p-2.5 border border-slate-200 bg-white hover:bg-slate-50 cursor-pointer transition">
                         <input type="radio" name="layer-preset" value="all" onchange="applySimplePreset('all')" class="mt-0.5 text-emerald-600 focus:ring-emerald-500">
                         <div class="ml-2.5">
                             <div class="text-xs font-bold text-slate-800">Semua Layer Aktif</div>
@@ -208,26 +207,26 @@
                     <!-- Quick Toggles -->
                     <div class="pt-3 border-t border-slate-200 mt-3">
                         <div class="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">Tombol Cepat (On/Off)</div>
-                        <div class="space-y-1.5 text-xs">
-                            <label class="flex items-center justify-between p-1.5 rounded hover:bg-slate-100 cursor-pointer">
+                        <div class="space-y-1 text-xs">
+                            <label class="flex items-center justify-between p-2 hover:bg-slate-100 cursor-pointer border-b border-slate-100">
                                 <span class="text-slate-700 font-medium">Batas Padukuhan</span>
-                                <input id="quick-padukuhan" type="checkbox" checked onchange="toggleQuickLayer('padukuhan', this.checked)" class="rounded text-emerald-600 focus:ring-emerald-500">
+                                <input id="quick-padukuhan" type="checkbox" checked onchange="toggleQuickLayer('padukuhan', this.checked)" class="text-emerald-600 focus:ring-emerald-500">
                             </label>
-                            <label class="flex items-center justify-between p-1.5 rounded hover:bg-slate-100 cursor-pointer">
+                            <label class="flex items-center justify-between p-2 hover:bg-slate-100 cursor-pointer border-b border-slate-100">
                                 <span class="text-slate-700 font-medium">Batas RW & RT</span>
-                                <input id="quick-rw-rt" type="checkbox" onchange="toggleQuickLayer('rw-rt', this.checked)" class="rounded text-emerald-600 focus:ring-emerald-500">
+                                <input id="quick-rw-rt" type="checkbox" onchange="toggleQuickLayer('rw-rt', this.checked)" class="text-emerald-600 focus:ring-emerald-500">
                             </label>
-                            <label class="flex items-center justify-between p-1.5 rounded hover:bg-slate-100 cursor-pointer">
+                            <label class="flex items-center justify-between p-2 hover:bg-slate-100 cursor-pointer border-b border-slate-100">
                                 <span class="text-slate-700 font-medium">Area Pemukiman</span>
-                                <input id="quick-pemukiman" type="checkbox" onchange="toggleQuickLayer('pemukiman', this.checked)" class="rounded text-emerald-600 focus:ring-emerald-500">
+                                <input id="quick-pemukiman" type="checkbox" onchange="toggleQuickLayer('pemukiman', this.checked)" class="text-emerald-600 focus:ring-emerald-500">
                             </label>
-                            <label class="flex items-center justify-between p-1.5 rounded hover:bg-slate-100 cursor-pointer">
+                            <label class="flex items-center justify-between p-2 hover:bg-slate-100 cursor-pointer border-b border-slate-100">
                                 <span class="text-slate-700 font-medium">Titik Persebaran Warga</span>
-                                <input id="quick-warga" type="checkbox" checked onchange="toggleQuickLayer('warga', this.checked)" class="rounded text-emerald-600 focus:ring-emerald-500">
+                                <input id="quick-warga" type="checkbox" checked onchange="toggleQuickLayer('warga', this.checked)" class="text-emerald-600 focus:ring-emerald-500">
                             </label>
-                            <label class="flex items-center justify-between p-1.5 rounded hover:bg-slate-100 cursor-pointer">
+                            <label class="flex items-center justify-between p-2 hover:bg-slate-100 cursor-pointer">
                                 <span class="text-slate-700 font-medium">Mitigasi Bencana Merapi</span>
-                                <input id="quick-mitigasi" type="checkbox" onchange="toggleQuickLayer('mitigasi', this.checked)" class="rounded text-emerald-600 focus:ring-emerald-500">
+                                <input id="quick-mitigasi" type="checkbox" onchange="toggleQuickLayer('mitigasi', this.checked)" class="text-emerald-600 focus:ring-emerald-500">
                             </label>
                         </div>
                     </div>
@@ -245,54 +244,54 @@
                     </div>
 
                     <!-- Kategori 1: Wilayah Administrasi -->
-                    <div class="border rounded-lg overflow-hidden bg-white shadow-sm">
+                    <div class="border border-slate-200 bg-white shadow-sm">
                         <div class="bg-slate-100 px-3 py-2 text-xs font-bold text-slate-700 flex justify-between items-center border-b">
                             <span>1. Wilayah Administrasi</span>
                         </div>
                         <div class="p-2.5 space-y-1.5 text-xs">
-                            <label class="flex items-center space-x-2"><input id="layer-pemukiman" type="checkbox" class="form-checkbox text-amber-700 rounded"><span>Pemukiman (Area)</span></label>
-                            <label class="flex items-center space-x-2"><input id="layer-padukuhan" type="checkbox" checked class="form-checkbox text-blue-600 rounded"><span>Batas Padukuhan (Garis)</span></label>
-                            <label class="flex items-center space-x-2 ml-4"><input id="layer-rw" type="checkbox" class="form-checkbox text-sky-600 rounded"><span>Batas RW (Garis)</span></label>
-                            <label class="flex items-center space-x-2 ml-4"><input id="layer-rt" type="checkbox" class="form-checkbox text-violet-600 rounded"><span>Batas RT (Garis)</span></label>
-                            <label class="flex items-center space-x-2"><input id="layer-fasilitas-editor" type="checkbox" class="form-checkbox text-blue-600 rounded"><span>Fasilitas Desa (Titik)</span></label>
-                            <label class="flex items-center space-x-2"><input id="layer-bangunan" type="checkbox" class="form-checkbox text-purple-600 rounded"><span>Bangunan (Titik)</span></label>
-                            <label class="flex items-center space-x-2"><input id="layer-jalan" type="checkbox" class="form-checkbox text-amber-600 rounded"><span>Jalan (Garis)</span></label>
-                            <label class="flex items-center space-x-2"><input id="layer-kontur" type="checkbox" class="form-checkbox text-stone-500 rounded"><span>Kontur (Garis)</span></label>
-                            <label class="flex items-center space-x-2"><input id="layer-pendidikan" type="checkbox" class="form-checkbox text-pink-600 rounded"><span>Pendidikan (Titik)</span></label>
-                            <label class="flex items-center space-x-2"><input id="layer-toponimi" type="checkbox" class="form-checkbox text-emerald-600 rounded"><span>Toponimi (Titik)</span></label>
-                            <label class="flex items-center space-x-2"><input id="layer-tonggak" type="checkbox" class="form-checkbox text-slate-500 rounded"><span>Tonggak KM (Titik)</span></label>
-                            <label class="flex items-center space-x-2"><input id="layer-tambang" type="checkbox" class="form-checkbox text-gray-800 rounded"><span>Pertambangan (Titik)</span></label>
-                            <label class="flex items-center space-x-2"><input id="layer-batas-kecamatan" type="checkbox" class="form-checkbox text-black rounded"><span>Batas Kecamatan (Garis)</span></label>
+                            <label class="flex items-center space-x-2"><input id="layer-pemukiman" type="checkbox" class="form-checkbox text-amber-700"><span>Pemukiman (Area)</span></label>
+                            <label class="flex items-center space-x-2"><input id="layer-padukuhan" type="checkbox" checked class="form-checkbox text-blue-600"><span>Batas Padukuhan (Garis)</span></label>
+                            <label class="flex items-center space-x-2 ml-4"><input id="layer-rw" type="checkbox" class="form-checkbox text-sky-600"><span>Batas RW (Garis)</span></label>
+                            <label class="flex items-center space-x-2 ml-4"><input id="layer-rt" type="checkbox" class="form-checkbox text-violet-600"><span>Batas RT (Garis)</span></label>
+                            <label class="flex items-center space-x-2"><input id="layer-fasilitas-editor" type="checkbox" class="form-checkbox text-blue-600"><span>Fasilitas Desa (Titik)</span></label>
+                            <label class="flex items-center space-x-2"><input id="layer-bangunan" type="checkbox" class="form-checkbox text-purple-600"><span>Bangunan (Titik)</span></label>
+                            <label class="flex items-center space-x-2"><input id="layer-jalan" type="checkbox" class="form-checkbox text-amber-600"><span>Jalan (Garis)</span></label>
+                            <label class="flex items-center space-x-2"><input id="layer-kontur" type="checkbox" class="form-checkbox text-stone-500"><span>Kontur (Garis)</span></label>
+                            <label class="flex items-center space-x-2"><input id="layer-pendidikan" type="checkbox" class="form-checkbox text-pink-600"><span>Pendidikan (Titik)</span></label>
+                            <label class="flex items-center space-x-2"><input id="layer-toponimi" type="checkbox" class="form-checkbox text-emerald-600"><span>Toponimi (Titik)</span></label>
+                            <label class="flex items-center space-x-2"><input id="layer-tonggak" type="checkbox" class="form-checkbox text-slate-500"><span>Tonggak KM (Titik)</span></label>
+                            <label class="flex items-center space-x-2"><input id="layer-tambang" type="checkbox" class="form-checkbox text-gray-800"><span>Pertambangan (Titik)</span></label>
+                            <label class="flex items-center space-x-2"><input id="layer-batas-kecamatan" type="checkbox" class="form-checkbox text-black"><span>Batas Kecamatan (Garis)</span></label>
                         </div>
                     </div>
 
                     <!-- Kategori 2: Lingkungan & Sanitasi -->
-                    <div class="border rounded-lg overflow-hidden bg-white shadow-sm">
+                    <div class="border border-slate-200 bg-white shadow-sm">
                         <div class="bg-slate-100 px-3 py-2 text-xs font-bold text-slate-700 flex justify-between items-center border-b">
                             <span>2. Lingkungan & Kebersihan</span>
                         </div>
                         <div class="p-2.5 space-y-1.5 text-xs">
-                            <label class="flex items-center space-x-2"><input id="layer-sungai" type="checkbox" class="form-checkbox text-blue-500 rounded"><span>Sungai (Garis)</span></label>
-                            <label class="flex items-center space-x-2"><input id="layer-sawah" type="checkbox" class="form-checkbox text-lime-600 rounded"><span>Sawah (Area)</span></label>
-                            <label class="flex items-center space-x-2"><input id="layer-irigasi" type="checkbox" class="form-checkbox text-cyan-600 rounded"><span>Irigasi (Garis)</span></label>
-                            <label class="flex items-center space-x-2"><input id="layer-tps" type="checkbox" class="form-checkbox text-orange-600 rounded"><span>Titik TPS (Titik)</span></label>
-                            <label class="flex items-center space-x-2"><input id="layer-bank-sampah" type="checkbox" class="form-checkbox text-green-600 rounded"><span>Bank Sampah (Titik)</span></label>
-                            <label class="flex items-center space-x-2"><input id="layer-rute-sampah" type="checkbox" class="form-checkbox text-red-600 rounded"><span>Rute Sampah (Garis)</span></label>
+                            <label class="flex items-center space-x-2"><input id="layer-sungai" type="checkbox" class="form-checkbox text-blue-500"><span>Sungai (Garis)</span></label>
+                            <label class="flex items-center space-x-2"><input id="layer-sawah" type="checkbox" class="form-checkbox text-lime-600"><span>Sawah (Area)</span></label>
+                            <label class="flex items-center space-x-2"><input id="layer-irigasi" type="checkbox" class="form-checkbox text-cyan-600"><span>Irigasi (Garis)</span></label>
+                            <label class="flex items-center space-x-2"><input id="layer-tps" type="checkbox" class="form-checkbox text-orange-600"><span>Titik TPS (Titik)</span></label>
+                            <label class="flex items-center space-x-2"><input id="layer-bank-sampah" type="checkbox" class="form-checkbox text-green-600"><span>Bank Sampah (Titik)</span></label>
+                            <label class="flex items-center space-x-2"><input id="layer-rute-sampah" type="checkbox" class="form-checkbox text-red-600"><span>Rute Sampah (Garis)</span></label>
                         </div>
                     </div>
 
                     <!-- Kategori 3: Mitigasi Bencana Merapi -->
-                    <div class="border rounded-lg overflow-hidden bg-white shadow-sm">
+                    <div class="border border-slate-200 bg-white shadow-sm">
                         <div class="bg-slate-100 px-3 py-2 text-xs font-bold text-slate-700 flex justify-between items-center border-b">
                             <span>3. Mitigasi Bencana Merapi</span>
                         </div>
                         <div class="p-2.5 space-y-1.5 text-xs">
-                            <label class="flex items-center space-x-2"><input id="layer-krb" type="checkbox" class="form-checkbox text-red-500 rounded"><span>KRB I, II, III (Area)</span></label>
-                            <label class="flex items-center space-x-2"><input id="layer-jalur-evakuasi" type="checkbox" class="form-checkbox text-yellow-600 rounded"><span>Jalur Evakuasi (Garis)</span></label>
-                            <label class="flex items-center space-x-2"><input id="layer-barak" type="checkbox" class="form-checkbox text-blue-800 rounded"><span>Barak Pengungsian (Titik)</span></label>
-                            <label class="flex items-center space-x-2"><input id="layer-titik-kumpul" type="checkbox" class="form-checkbox text-green-700 rounded"><span>Titik Kumpul (Titik)</span></label>
-                            <label class="flex items-center space-x-2"><input id="layer-ews" type="checkbox" class="form-checkbox text-orange-500 rounded"><span>EWS Sirine (Titik)</span></label>
-                            <label class="flex items-center space-x-2"><input id="layer-jarak-merapi" type="checkbox" class="form-checkbox text-gray-500 rounded"><span>Jarak Merapi (Garis)</span></label>
+                            <label class="flex items-center space-x-2"><input id="layer-krb" type="checkbox" class="form-checkbox text-red-500"><span>KRB I, II, III (Area)</span></label>
+                            <label class="flex items-center space-x-2"><input id="layer-jalur-evakuasi" type="checkbox" class="form-checkbox text-yellow-600"><span>Jalur Evakuasi (Garis)</span></label>
+                            <label class="flex items-center space-x-2"><input id="layer-barak" type="checkbox" class="form-checkbox text-blue-800"><span>Barak Pengungsian (Titik)</span></label>
+                            <label class="flex items-center space-x-2"><input id="layer-titik-kumpul" type="checkbox" class="form-checkbox text-green-700"><span>Titik Kumpul (Titik)</span></label>
+                            <label class="flex items-center space-x-2"><input id="layer-ews" type="checkbox" class="form-checkbox text-orange-500"><span>EWS Sirine (Titik)</span></label>
+                            <label class="flex items-center space-x-2"><input id="layer-jarak-merapi" type="checkbox" class="form-checkbox text-gray-500"><span>Jarak Merapi (Garis)</span></label>
                         </div>
                     </div>
                 </div>
@@ -300,8 +299,8 @@
         </div><!-- Map Container -->
         <div class="flex-1 relative z-10 h-full">
             <div id="map" class="h-full w-full"></div>
-            <!-- Floating Map Legend (Bottom Right) -->
-            <div id="map-legend" class="legend" style="position: absolute; bottom: 24px; right: 24px; z-index: 15; max-height: 48vh; overflow-y: auto; background: rgba(255,255,255,0.95); backdrop-filter: blur(8px); border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.2); width: 220px; display: none;"></div>
+            <!-- Floating Map Legend (Bottom Right - Non-Rounded Admin Style) -->
+            <div id="map-legend" class="legend" style="position: absolute; bottom: 24px; right: 24px; z-index: 15; max-height: 48vh; overflow-y: auto; background: rgba(255,255,255,0.96); backdrop-filter: blur(8px); border: 1px solid #cbd5e1; border-radius: 0px; padding: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.15); width: 220px; display: none;"></div>
         </div>
 
         <!-- Sidebar -->
@@ -767,6 +766,7 @@
         let uniqueDusuns = new Set();
         let uniqueAids = new Set();
         let boundaryBounds = null;
+        let boundaryGeoJSON = null; // Explicit declaration to prevent ReferenceError
         const layerCache = {};
 
         // Active State of all 23 Layers
@@ -827,23 +827,21 @@
             { id: 'jarak-merapi', file: '/layers/merapi_distance.geojson', type: 'line', color: '#64748b', width: 1.5, dash: [3, 2] }
         ];
 
-        // Ganti Basemap
+        // Ganti Basemap (Non-Rounded Flat Style)
         function setBasemap(styleKey) {
             if (activeBasemap === styleKey) return;
             activeBasemap = styleKey;
             document.querySelectorAll('.btn-basemap').forEach(b => {
                 if (b.dataset.style === styleKey) {
-                    b.classList.add('bg-emerald-600', 'text-white', 'border-emerald-600');
-                    b.classList.remove('bg-white', 'text-slate-700', 'border-slate-300');
+                    b.className = 'btn-basemap active text-xs font-bold py-1.5 px-1 border transition text-center bg-emerald-700 text-white border-emerald-700 shadow-none';
                 } else {
-                    b.classList.remove('bg-emerald-600', 'text-white', 'border-emerald-600');
-                    b.classList.add('bg-white', 'text-slate-700', 'border-slate-300');
+                    b.className = 'btn-basemap text-xs font-semibold py-1.5 px-1 border transition text-center bg-white text-slate-700 border-slate-300 hover:bg-slate-100 shadow-none';
                 }
             });
             map.setStyle(STYLES[styleKey]);
         }
 
-        // Switcher Tampilan Pemilihan Layer: Sederhana vs Detail
+        // Switcher Tampilan Pemilihan Layer: Sederhana vs Detail (Non-Rounded Flat Tabs)
         function setLayerSelectionMode(mode) {
             const btnSimple = document.getElementById('btn-mode-simple');
             const btnDetail = document.getElementById('btn-mode-detail');
@@ -851,20 +849,28 @@
             const cDetail = document.getElementById('detail-mode-container');
 
             if (mode === 'simple') {
-                btnSimple.classList.add('bg-white', 'text-emerald-700', 'shadow-sm', 'font-bold');
-                btnSimple.classList.remove('text-slate-600', 'font-semibold');
-                btnDetail.classList.remove('bg-white', 'text-emerald-700', 'shadow-sm', 'font-bold');
-                btnDetail.classList.add('text-slate-600', 'font-semibold');
+                btnSimple.className = 'flex-1 py-2.5 text-center font-bold text-emerald-700 border-b-2 border-emerald-700 bg-white focus:outline-none transition';
+                btnDetail.className = 'flex-1 py-2.5 text-center font-semibold text-gray-500 hover:text-emerald-700 border-b-2 border-transparent bg-gray-50 focus:outline-none transition';
                 cSimple.classList.remove('hidden');
                 cDetail.classList.add('hidden');
             } else {
-                btnDetail.classList.add('bg-white', 'text-emerald-700', 'shadow-sm', 'font-bold');
-                btnDetail.classList.remove('text-slate-600', 'font-semibold');
-                btnSimple.classList.remove('bg-white', 'text-emerald-700', 'shadow-sm', 'font-bold');
-                btnSimple.classList.add('text-slate-600', 'font-semibold');
+                btnDetail.className = 'flex-1 py-2.5 text-center font-bold text-emerald-700 border-b-2 border-emerald-700 bg-white focus:outline-none transition';
+                btnSimple.className = 'flex-1 py-2.5 text-center font-semibold text-gray-500 hover:text-emerald-700 border-b-2 border-transparent bg-gray-50 focus:outline-none transition';
                 cDetail.classList.remove('hidden');
                 cSimple.classList.add('hidden');
             }
+        }
+
+        // Helper untuk menandai preset card yang aktif
+        function highlightActivePresetCard(presetName) {
+            document.querySelectorAll('.simple-preset-card').forEach(card => {
+                const radio = card.querySelector('input[name="layer-preset"]');
+                if (radio && radio.value === presetName) {
+                    card.className = 'simple-preset-card flex items-start p-2.5 border-l-4 border-l-emerald-600 border-y border-r border-slate-300 bg-emerald-50/70 cursor-pointer transition';
+                } else {
+                    card.className = 'simple-preset-card flex items-start p-2.5 border border-slate-200 bg-white hover:bg-slate-50 cursor-pointer transition';
+                }
+            });
         }
 
         // Apply Simple Preset (1-Klik)
@@ -904,6 +910,7 @@
                 Object.keys(layerState).forEach(k => { layerState[k] = true; });
             }
 
+            highlightActivePresetCard(presetName);
             syncUIWithLayerState();
             reapplyAllThematicLayers();
             updateLegend();
@@ -978,50 +985,76 @@
             }
         }
 
-        // MapLibre Layer Helpers
+        // Helper rekursif perhitungan Bounding Box GeoJSON
+        function extendBoundsWithGeoJSON(bounds, geojson) {
+            function processCoords(c) {
+                if (!Array.isArray(c)) return;
+                if (c.length >= 2 && typeof c[0] === 'number' && typeof c[1] === 'number') {
+                    bounds.extend(c);
+                } else {
+                    c.forEach(processCoords);
+                }
+            }
+            if (geojson.features && Array.isArray(geojson.features)) {
+                geojson.features.forEach(f => {
+                    if (f.geometry && f.geometry.coordinates) processCoords(f.geometry.coordinates);
+                });
+            } else if (geojson.geometry && geojson.geometry.coordinates) {
+                processCoords(geojson.geometry.coordinates);
+            }
+        }
+
+        // MapLibre Layer Helpers: Batas Wilayah Kalurahan Pondokrejo
         async function loadBoundary() {
-            if (!map.isStyleLoaded()) return;
             try {
-                let data = boundaryGeoJSON;
-                if (!data) {
-                    data = await fetchGeoJSON('/layers/boundary.geojson');
+                if (!boundaryGeoJSON) {
+                    let data = await fetchGeoJSON('/layers/boundary.geojson');
                     if (!data) data = await fetchGeoJSON('/boundary.geojson');
                     if (!data) data = await fetchGeoJSON('/layers/PONDOKREJO.geojson');
                     boundaryGeoJSON = data;
                 }
-                if (!data) return;
+                if (!boundaryGeoJSON) {
+                    console.warn("Data Batas GeoJSON Pondokrejo tidak ditemukan.");
+                    return;
+                }
 
                 if (!map.getSource('source-boundary')) {
-                    map.addSource('source-boundary', { type: 'geojson', data });
+                    map.addSource('source-boundary', {
+                        type: 'geojson',
+                        data: boundaryGeoJSON
+                    });
 
+                    // Layer Area Fill Pondokrejo
                     map.addLayer({
                         id: 'layer-boundary-fill',
                         type: 'fill',
                         source: 'source-boundary',
                         paint: {
-                            'fill-color': '#3b82f6',
-                            'fill-opacity': 0.08
+                            'fill-color': '#2563eb',
+                            'fill-opacity': 0.06
                         }
                     });
 
+                    // Layer Garis Batas Luar Pondokrejo (Tegas, Biru Pekat, Solid 2.8px)
                     map.addLayer({
                         id: 'layer-boundary-line',
                         type: 'line',
                         source: 'source-boundary',
                         paint: {
-                            'line-color': '#2563eb',
-                            'line-width': 2.2
+                            'line-color': '#1d4ed8',
+                            'line-width': 2.8,
+                            'line-opacity': 0.95
                         }
                     });
+                }
 
-                    // Compute Bounding Box
-                    if (!boundaryBounds && data.features && data.features.length > 0) {
-                        const bounds = new maplibregl.LngLatBounds();
-                        const geom = data.features[0].geometry;
-                        const coords = geom.type === 'Polygon' ? geom.coordinates[0] : (geom.type === 'MultiPolygon' ? geom.coordinates[0][0] : []);
-                        coords.forEach(pt => bounds.extend(pt));
+                // Zoom fitBounds ke batas Kalurahan Pondokrejo
+                if (!boundaryBounds && boundaryGeoJSON) {
+                    const bounds = new maplibregl.LngLatBounds();
+                    extendBoundsWithGeoJSON(bounds, boundaryGeoJSON);
+                    if (!bounds.isEmpty()) {
                         boundaryBounds = bounds;
-                        map.fitBounds(bounds, { padding: 40, maxZoom: 15 });
+                        map.fitBounds(bounds, { padding: 45, maxZoom: 15, duration: 800 });
                     }
                 }
             } catch (err) {
@@ -1030,8 +1063,6 @@
         }
 
         async function reapplyAllThematicLayers() {
-            if (!map.isStyleLoaded()) return;
-
             for (const def of LAYER_DEFS) {
                 const isVisible = !!layerState[def.id];
 
@@ -1050,7 +1081,7 @@
                         if (!map.getSource(sourceId)) {
                             if (!isVisible) continue;
                             const data = await fetchGeoJSON(k.file);
-                            if (!data || !map.isStyleLoaded()) continue;
+                            if (!data) continue;
                             if (!map.getSource(sourceId)) {
                                 map.addSource(sourceId, { type: 'geojson', data });
                                 map.addLayer({ id: fillId, type: 'fill', source: sourceId, paint: { 'fill-color': k.color, 'fill-opacity': k.opacity } });
@@ -1071,7 +1102,8 @@
                 if (!map.getSource(sourceId)) {
                     if (!isVisible) continue;
                     const data = await fetchGeoJSON(def.file);
-                    if (!data || !map.isStyleLoaded()) continue;
+                    if (!data) continue;
+
                     if (!map.getSource(sourceId)) {
                         map.addSource(sourceId, { type: 'geojson', data });
 
@@ -1080,18 +1112,24 @@
                                 id: layerId,
                                 type: 'fill',
                                 source: sourceId,
-                                paint: { 'fill-color': def.color, 'fill-opacity': def.opacity || 0.3 }
-                            });
-                            map.addLayer({
-                                id: layerId + '-outline',
-                                type: 'line',
-                                source: sourceId,
-                                paint: { 'line-color': def.outline || def.color, 'line-width': 1.5 }
+                                paint: {
+                                    'fill-color': def.color,
+                                    'fill-opacity': def.opacity || 0.4,
+                                    'fill-outline-color': def.outline || def.color
+                                }
                             });
                         } else if (def.type === 'line') {
-                            const paint = { 'line-color': def.color, 'line-width': def.width || 2 };
+                            const paint = {
+                                'line-color': def.color,
+                                'line-width': def.width || 2
+                            };
                             if (def.dash) paint['line-dasharray'] = def.dash;
-                            map.addLayer({ id: layerId, type: 'line', source: sourceId, paint });
+                            map.addLayer({
+                                id: layerId,
+                                type: 'line',
+                                source: sourceId,
+                                paint: paint
+                            });
                         } else if (def.type === 'circle') {
                             map.addLayer({
                                 id: layerId,
@@ -1104,26 +1142,29 @@
                                     'circle-stroke-color': '#ffffff'
                                 }
                             });
-
-                            // Add tooltip listener
-                            map.on('mouseenter', layerId, (e) => {
-                                map.getCanvas().style.cursor = 'pointer';
-                                if (e.features && e.features[0]) {
-                                    const p = e.features[0].properties || {};
-                                    const title = p.nama || p.Name || p.name || p.NAMOBJ || p.keterangan || def.id;
-                                    hoverPopup.setLngLat(e.lngLat).setHTML(`<div class="text-xs font-semibold">${title}</div>`).addTo(map);
-                                }
-                            });
-                            map.on('mouseleave', layerId, () => {
-                                map.getCanvas().style.cursor = '';
-                                hoverPopup.remove();
-                            });
                         }
+
+                        // Hover popup for features with properties
+                        map.on('mouseenter', layerId, (e) => {
+                            if (!e.features || !e.features[0]) return;
+                            const p = e.features[0].properties;
+                            const title = p.nama || p.Name || p.REMARK || p.NAMOBJ || p.kategori || p.nama_dusun || p.name || def.id;
+                            map.getCanvas().style.cursor = 'pointer';
+                            hoverPopup.setLngLat(e.lngLat)
+                                .setHTML(`<div class="text-xs p-1"><b>${title}</b></div>`)
+                                .addTo(map);
+                        });
+
+                        map.on('mouseleave', layerId, () => {
+                            map.getCanvas().style.cursor = '';
+                            hoverPopup.remove();
+                        });
                     }
                 } else {
                     const vis = isVisible ? 'visible' : 'none';
-                    if (map.getLayer(layerId)) map.setLayoutProperty(layerId, 'visibility', vis);
-                    if (map.getLayer(layerId + '-outline')) map.setLayoutProperty(layerId + '-outline', 'visibility', vis);
+                    if (map.getLayer(layerId)) {
+                        map.setLayoutProperty(layerId, 'visibility', vis);
+                    }
                 }
             }
         }
@@ -1138,63 +1179,52 @@
         map.on('style.load', reapplyAllLayers);
 
         // Fetch Residents Data
-        fetch('residents.json')
+        fetch('/residents.json')
             .then(res => res.json())
             .then(data => {
-                allHouseholds = data;
-                allHouseholds.forEach(hh => {
-                    if (hh.dusun) uniqueDusuns.add(hh.dusun);
-                    if (hh.members) {
-                        hh.members.forEach(m => {
-                            if (m.aid_list) m.aid_list.forEach(aid => uniqueAids.add(aid));
-                        });
-                    }
-                });
+                allHouseholds = data || [];
+                extractMetadata();
                 populateFilters();
-                attachStaticFilterListeners();
                 renderMarkers();
             })
-            .catch(err => console.error("Error loading residents:", err));
+            .catch(err => console.error("Error fetching residents:", err));
+
+        function extractMetadata() {
+            uniqueDusuns.clear();
+            uniqueAids.clear();
+            allHouseholds.forEach(hh => {
+                if (hh.dusun) uniqueDusuns.add(hh.dusun.trim());
+                if (Array.isArray(hh.members)) {
+                    hh.members.forEach(m => {
+                        if (Array.isArray(m.aid_list)) {
+                            m.aid_list.forEach(a => {
+                                if (a && typeof a === 'string') uniqueAids.add(a.trim());
+                            });
+                        }
+                    });
+                }
+            });
+        }
 
         function populateFilters() {
-            const dusunContainer = document.getElementById('filter-dusun');
-            dusunContainer.innerHTML = '';
-
-            const toggleDiv = document.createElement('div');
-            toggleDiv.className = "mb-2 pb-2 border-b";
-            toggleDiv.innerHTML = `
-                <label class="flex items-center space-x-2 font-semibold text-blue-700">
-                    <input type="checkbox" id="toggle-heatmap" class="form-checkbox text-blue-600 rounded">
-                    <span>Mode Heatmap Wilayah</span>
-                </label>
-            `;
-            dusunContainer.appendChild(toggleDiv);
-
-            const sortedDusuns = Array.from(uniqueDusuns).sort();
-            if (sortedDusuns.length === 0) {
-                dusunContainer.innerHTML += '<div class="text-gray-400 text-xs italic">Tidak ada data padukuhan</div>';
-            } else {
-                sortedDusuns.forEach(dusun => {
-                    const div = document.createElement('div');
-                    div.innerHTML = `
-                        <label class="flex items-center space-x-2">
-                            <input type="checkbox" class="filter-dusun form-checkbox text-blue-500 rounded" value="${dusun}">
+            const dusunContainer = document.getElementById('filter-dusun-container');
+            if (dusunContainer && uniqueDusuns.size > 0) {
+                let html = '';
+                Array.from(uniqueDusuns).sort().forEach(dusun => {
+                    html += `
+                        <label class="flex items-center space-x-2 text-xs text-gray-700">
+                            <input type="checkbox" value="${dusun}" class="filter-dusun text-blue-600">
                             <span>${dusun}</span>
                         </label>
                     `;
-                    dusunContainer.appendChild(div);
                 });
+                dusunContainer.innerHTML = html;
+                document.querySelectorAll('.filter-dusun').forEach(el => el.addEventListener('change', renderMarkers));
             }
-
-            const heatToggle = document.getElementById('toggle-heatmap');
-            if (heatToggle) heatToggle.addEventListener('change', renderMarkers);
-            document.querySelectorAll('.filter-dusun').forEach(el => el.addEventListener('change', renderMarkers));
+            attachStaticFilterListeners();
         }
 
-        // Render Household Markers (MapLibre WebGL Clusters & Points)
         function renderMarkers() {
-            if (!map.isStyleLoaded()) return;
-
             const filterDesil = Array.from(document.querySelectorAll('.filter-desil:checked')).map(cb => parseInt(cb.value));
             const filterAid = Array.from(document.querySelectorAll('.filter-aid:checked')).map(cb => cb.value);
             const filterJob = Array.from(document.querySelectorAll('.filter-job:checked')).map(cb => cb.value);
@@ -1505,76 +1535,43 @@
             });
         }
 
-        function resetFilters() {
-            document.querySelectorAll('.filter-desil, .filter-aid, .filter-job, .filter-business, .filter-dusun, .filter-vulnerable').forEach(cb => {
-                cb.checked = false;
-            });
-            const nameInput = document.getElementById('filter-name');
-            if (nameInput) nameInput.value = '';
-            renderMarkers();
-        }
-
         function showDetail(hh, color) {
             const detailPanel = document.getElementById('sidebar-detail');
             const filtersPanel = document.getElementById('sidebar-filters');
-            const contentDiv = document.getElementById('detail-content');
-
             detailPanel.classList.remove('hidden');
             filtersPanel.classList.add('hidden');
 
-            const colorClass = color === 'red' ? 'bg-red-500' : color === 'orange' ? 'bg-orange-500' : color === 'yellow' ? 'bg-yellow-500' : 'bg-green-500';
+            document.getElementById('detail-head-name').innerText = hh.head_name || '-';
+            document.getElementById('detail-no-kk').innerText = hh.no_kk || '-';
+            document.getElementById('detail-address').innerText = hh.address || '-';
+            document.getElementById('detail-dusun').innerText = hh.dusun || '-';
 
-            let html = `
-                <div class="bg-white p-4 rounded shadow-sm border border-gray-200">
-                    <div class="flex items-center justify-between mb-3">
-                        <span class="px-2 py-1 rounded text-xs text-white ${colorClass}">
-                            Desil ${hh.welfare_level || 'N/A'}
-                        </span>
-                        <span class="text-xs text-gray-500 font-mono">KK: ${hh.no_kk}</span>
-                    </div>
-                    <h3 class="font-bold text-lg text-gray-800">${hh.head_name}</h3>
-                    <p class="text-gray-600 mt-1">${hh.address || '-'}</p>
-                    <p class="text-gray-500 text-xs mt-1">Padukuhan: ${hh.dusun || '-'}</p>
-                </div>
+            const desilBadge = document.getElementById('detail-desil-badge');
+            const desil = parseInt(hh.welfare_level) || 4;
+            let dText = `Desil ${desil}`;
+            let dClass = 'bg-green-100 text-green-800 border-green-200';
+            if (desil === 1) { dText = 'Desil 1 (Sangat Miskin)'; dClass = 'bg-red-100 text-red-800 border-red-200'; }
+            else if (desil === 2) { dText = 'Desil 2 (Miskin)'; dClass = 'bg-orange-100 text-orange-800 border-orange-200'; }
+            else if (desil === 3) { dText = 'Desil 3 (Hampir Miskin)'; dClass = 'bg-yellow-100 text-yellow-800 border-yellow-200'; }
+            desilBadge.className = `px-2.5 py-1 text-xs font-bold border ${dClass}`;
+            desilBadge.innerText = dText;
 
-                <div class="bg-white p-4 rounded shadow-sm border border-gray-200 space-y-2">
-                    <h4 class="font-semibold text-gray-700 border-b pb-1">Informasi Rumah Tangga</h4>
-                    <div class="grid grid-cols-2 gap-2 text-xs">
-                        <div class="text-gray-500">Luas Lantai:</div>
-                        <div class="font-medium">${hh.lantai_luas || '-'} m²</div>
-                        <div class="text-gray-500">Penerima PKH:</div>
-                        <div class="font-medium">${hh.pkh_thn ? 'Sejak ' + hh.pkh_thn : '-'}</div>
-                        <div class="text-gray-500">Penerima BPNT:</div>
-                        <div class="font-medium">${hh.bpnt_thn ? 'Sejak ' + hh.bpnt_thn : '-'}</div>
-                    </div>
-                </div>
-
-                <div class="bg-white p-4 rounded shadow-sm border border-gray-200">
-                    <h4 class="font-semibold text-gray-700 border-b pb-2 mb-3">Anggota Keluarga (${hh.members ? hh.members.length : 0})</h4>
-                    <div class="space-y-3">
-            `;
-
-            if (hh.members) {
+            // Members Table
+            const tbody = document.getElementById('detail-members-body');
+            tbody.innerHTML = '';
+            if (Array.isArray(hh.members)) {
                 hh.members.forEach(m => {
-                    html += `
-                        <div class="border-b border-gray-100 pb-2.5 last:border-0 last:pb-0 text-xs">
-                            <div class="flex justify-between items-start">
-                                <div class="font-medium text-gray-800">${m.name}</div>
-                                <div class="text-gray-400 font-mono text-[11px]">${m.nik}</div>
-                            </div>
-                            ${m.kerja_detail ? `<div class="text-gray-600 mt-0.5">Pekerjaan: ${m.kerja_detail}</div>` : ''}
-                            ${m.ush_detail ? `<div class="text-gray-600 mt-0.5">Usaha: ${m.ush_detail}</div>` : ''}
-                            ${m.aid_list && m.aid_list.length > 0 ? `
-                            <div class="flex flex-wrap gap-1 mt-1.5">
-                                ${m.aid_list.map(aid => `<span class="px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded text-[10px] border border-blue-200">${aid}</span>`).join('')}
-                            </div>` : ''}
-                        </div>
+                    const tr = document.createElement('tr');
+                    tr.className = 'border-b hover:bg-gray-50';
+                    tr.innerHTML = `
+                        <td class="px-3 py-2 text-xs font-medium text-gray-900">${m.name || '-'}</td>
+                        <td class="px-3 py-2 text-xs text-gray-500">${m.gender === '1' ? 'L' : (m.gender === '2' ? 'P' : '-')}</td>
+                        <td class="px-3 py-2 text-xs text-gray-500">${m.age || '-'}</td>
+                        <td class="px-3 py-2 text-xs text-gray-500">${m.kerja_detail || '-'}</td>
                     `;
+                    tbody.appendChild(tr);
                 });
             }
-
-            html += `</div></div>`;
-            contentDiv.innerHTML = html;
         }
 
         function closeDetail() {
@@ -1587,85 +1584,66 @@
             if (!container) return;
 
             let html = '<div class="text-xs font-bold text-slate-800 border-b pb-1 mb-2">Legenda Peta Aktif</div>';
-            let activeCount = 0;
+            
+            // Batas Kalurahan Pondokrejo (Selalu Aktif)
+            html += `<div class="flex items-center text-[11px] mb-1 font-semibold text-blue-700"><span class="w-3.5 h-0.5 bg-blue-600 mr-1.5 inline-block"></span> Batas Kalurahan</div>`;
 
             if (layerState['warga']) {
-                activeCount++;
                 html += `
                     <div class="mb-2">
                         <div class="text-[11px] font-semibold text-slate-600 mb-1">Persebaran Warga</div>
-                        <div class="flex items-center text-[11px] mb-0.5"><span class="w-2.5 h-2.5 rounded-full bg-red-500 mr-1.5"></span> Desil 1 (Sangat Miskin)</div>
-                        <div class="flex items-center text-[11px] mb-0.5"><span class="w-2.5 h-2.5 rounded-full bg-orange-500 mr-1.5"></span> Desil 2 (Miskin)</div>
-                        <div class="flex items-center text-[11px] mb-0.5"><span class="w-2.5 h-2.5 rounded-full bg-yellow-500 mr-1.5"></span> Desil 3 (Hampir Miskin)</div>
-                        <div class="flex items-center text-[11px]"><span class="w-2.5 h-2.5 rounded-full bg-green-500 mr-1.5"></span> Desil 4+ (Mampu)</div>
+                        <div class="flex items-center text-[11px] mb-0.5"><span class="w-2.5 h-2.5 rounded-full bg-red-500 mr-1.5 inline-block"></span> Desil 1 (Sangat Miskin)</div>
+                        <div class="flex items-center text-[11px] mb-0.5"><span class="w-2.5 h-2.5 rounded-full bg-orange-500 mr-1.5 inline-block"></span> Desil 2 (Miskin)</div>
+                        <div class="flex items-center text-[11px] mb-0.5"><span class="w-2.5 h-2.5 rounded-full bg-yellow-500 mr-1.5 inline-block"></span> Desil 3 (Hampir Miskin)</div>
+                        <div class="flex items-center text-[11px]"><span class="w-2.5 h-2.5 rounded-full bg-green-500 mr-1.5 inline-block"></span> Desil 4+ (Mampu)</div>
                     </div>
                 `;
             }
 
             if (layerState['padukuhan']) {
-                activeCount++;
-                html += `<div class="flex items-center text-[11px] mb-1"><span class="w-3.5 h-0.5 bg-blue-600 mr-1.5"></span> Batas Padukuhan</div>`;
+                html += `<div class="flex items-center text-[11px] mb-1"><span class="w-3.5 h-0.5 bg-blue-600 mr-1.5 inline-block"></span> Batas Padukuhan</div>`;
             }
             if (layerState['pemukiman']) {
-                activeCount++;
-                html += `<div class="flex items-center text-[11px] mb-1"><span class="w-3 h-3 bg-amber-700/40 border border-amber-700 mr-1.5"></span> Pemukiman</div>`;
+                html += `<div class="flex items-center text-[11px] mb-1"><span class="w-3 h-3 bg-amber-700/40 border border-amber-700 mr-1.5 inline-block"></span> Pemukiman</div>`;
             }
             if (layerState['sawah']) {
-                activeCount++;
-                html += `<div class="flex items-center text-[11px] mb-1"><span class="w-3 h-3 bg-lime-600/40 border border-lime-600 mr-1.5"></span> Sawah</div>`;
+                html += `<div class="flex items-center text-[11px] mb-1"><span class="w-3 h-3 bg-lime-600/40 border border-lime-600 mr-1.5 inline-block"></span> Sawah</div>`;
             }
             if (layerState['sungai']) {
-                activeCount++;
-                html += `<div class="flex items-center text-[11px] mb-1"><span class="w-3.5 h-0.5 bg-blue-500 mr-1.5"></span> Sungai</div>`;
+                html += `<div class="flex items-center text-[11px] mb-1"><span class="w-3.5 h-0.5 bg-blue-500 mr-1.5 inline-block"></span> Sungai</div>`;
             }
             if (layerState['jalan']) {
-                activeCount++;
-                html += `<div class="flex items-center text-[11px] mb-1"><span class="w-3.5 h-0.5 bg-amber-600 mr-1.5"></span> Jaringan Jalan</div>`;
+                html += `<div class="flex items-center text-[11px] mb-1"><span class="w-3.5 h-0.5 bg-amber-600 mr-1.5 inline-block"></span> Jaringan Jalan</div>`;
             }
             if (layerState['krb']) {
-                activeCount++;
                 html += `
                     <div class="my-1 pt-1 border-t">
                         <div class="text-[11px] font-semibold text-red-700 mb-1">Kawasan Bencana Merapi</div>
-                        <div class="flex items-center text-[11px] mb-0.5"><span class="w-3 h-3 bg-red-500/40 border border-red-500 mr-1.5"></span> KRB III (Tinggi)</div>
-                        <div class="flex items-center text-[11px] mb-0.5"><span class="w-3 h-3 bg-orange-500/40 border border-orange-500 mr-1.5"></span> KRB II (Sedang)</div>
-                        <div class="flex items-center text-[11px]"><span class="w-3 h-3 bg-yellow-400/40 border border-yellow-400 mr-1.5"></span> KRB I (Rendah)</div>
+                        <div class="flex items-center text-[11px] mb-0.5"><span class="w-3 h-3 bg-red-500/40 border border-red-500 mr-1.5 inline-block"></span> KRB III (Tinggi)</div>
+                        <div class="flex items-center text-[11px] mb-0.5"><span class="w-3 h-3 bg-orange-500/40 border border-orange-500 mr-1.5 inline-block"></span> KRB II (Sedang)</div>
+                        <div class="flex items-center text-[11px]"><span class="w-3 h-3 bg-yellow-400/40 border border-yellow-400 mr-1.5 inline-block"></span> KRB I (Rendah)</div>
                     </div>
                 `;
             }
             if (layerState['jalur-evakuasi']) {
-                activeCount++;
-                html += `<div class="flex items-center text-[11px] mb-1"><span class="w-3.5 h-0.5 bg-yellow-600 mr-1.5"></span> Jalur Evakuasi</div>`;
+                html += `<div class="flex items-center text-[11px] mb-1"><span class="w-3.5 h-0.5 bg-yellow-600 mr-1.5 inline-block"></span> Jalur Evakuasi</div>`;
             }
             if (layerState['barak']) {
-                activeCount++;
-                html += `<div class="flex items-center text-[11px] mb-1"><span class="w-2.5 h-2.5 rounded-full bg-blue-800 mr-1.5"></span> Barak Pengungsian</div>`;
+                html += `<div class="flex items-center text-[11px] mb-1"><span class="w-2.5 h-2.5 rounded-full bg-blue-800 mr-1.5 inline-block"></span> Barak Pengungsian</div>`;
             }
             if (layerState['titik-kumpul']) {
-                activeCount++;
-                html += `<div class="flex items-center text-[11px] mb-1"><span class="w-2.5 h-2.5 rounded-full bg-green-700 mr-1.5"></span> Titik Kumpul</div>`;
+                html += `<div class="flex items-center text-[11px] mb-1"><span class="w-2.5 h-2.5 rounded-full bg-green-700 mr-1.5 inline-block"></span> Titik Kumpul</div>`;
             }
             if (layerState['ews']) {
-                activeCount++;
-                html += `<div class="flex items-center text-[11px] mb-1"><span class="w-2.5 h-2.5 rounded-full bg-orange-500 mr-1.5"></span> EWS Sirine</div>`;
+                html += `<div class="flex items-center text-[11px] mb-1"><span class="w-2.5 h-2.5 rounded-full bg-orange-500 mr-1.5 inline-block"></span> EWS Sirine</div>`;
+            }
+            if (layerState['jarak-merapi']) {
+                html += `<div class="flex items-center text-[11px] mb-1"><span class="w-3.5 h-0.5 bg-slate-500 mr-1.5 inline-block"></span> Radius Merapi</div>`;
             }
 
             container.innerHTML = html;
-            container.style.display = activeCount > 0 ? 'block' : 'none';
+            container.style.display = 'block';
         }
-
-        function openRecommendations(e) {
-            e.preventDefault();
-            const loading = document.getElementById('rec-loading');
-            loading.classList.remove('hidden');
-            loading.classList.add('flex');
-            setTimeout(() => {
-                loading.classList.add('hidden');
-                loading.classList.remove('flex');
-                window.open('/recommendations', '_blank');
-            }, 2000);
-        }
-
 function switchTab(tab) {
             const tabMap = document.getElementById('tab-map');
             const tabAnalysis = document.getElementById('tab-analysis');
@@ -1985,14 +1963,14 @@ function switchTab(tab) {
                 if (heatToggle) heatToggle.checked = !heatToggle.checked;
                 layerState['warga'] = true;
                 syncUIWithLayerState();
-                applyLayerVisibility();
+                reapplyAllThematicLayers();
                 renderMarkers();
             } else if (type === 'welfare') {
                 const heatToggle = document.getElementById('toggle-heatmap');
                 if (heatToggle) heatToggle.checked = false;
                 layerState['warga'] = true;
                 syncUIWithLayerState();
-                applyLayerVisibility();
+                reapplyAllThematicLayers();
                 renderMarkers();
             }
         }
