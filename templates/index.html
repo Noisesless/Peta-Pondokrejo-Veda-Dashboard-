@@ -6,17 +6,19 @@
     <title>Peta Sebaran Penduduk Pondokrejo</title>
     <link rel="icon" type="image/png" href="logo.png">
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css" />
-    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css" />
-    <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
-    <script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
+    <!-- MapLibre GL CSS & JS (2D Engine Bebas 403) -->
+    <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" />
+    <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+    
+    
+    
+    
+    
     
     <!-- Font Awesome & Awesome Markers -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.min.js"></script>
+    
+    
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -71,6 +73,22 @@
             display: inline-block;
             margin-right: 8px;
         }
+    
+        /* MapLibre 2D Container & Controls */
+        #map { width: 100%; height: 100%; }
+        .maplibregl-popup-content {
+            border-radius: 8px !important;
+            padding: 10px 14px !important;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.25) !important;
+            font-family: inherit !important;
+        }
+        .btn-basemap.active {
+            background-color: #059669 !important;
+            color: #ffffff !important;
+            border-color: #059669 !important;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+        }
+
     </style>
     <script>
         // Simple Client-side Auth Check
@@ -106,118 +124,184 @@
     </div>
 
     <div class="flex flex-1 overflow-hidden">
-        <div class="w-72 bg-white shadow-lg z-20 flex flex-col h-full overflow-hidden border-r">
-            <div class="p-4 bg-emerald-700 text-white shadow">
-                <h2 class="text-lg font-bold">Data Geografis</h2>
-                <div class="text-xs mt-1">Wilayah Pondokrejo</div>
+        <div class="w-80 bg-white shadow-lg z-20 flex flex-col h-full overflow-hidden border-r">
+            <!-- Header Left Sidebar -->
+            <div class="p-3 bg-emerald-800 text-white shadow flex justify-between items-center">
+                <div>
+                    <h2 class="text-sm font-bold leading-tight">Data Geografis</h2>
+                    <div class="text-[11px] text-emerald-200">Kalurahan Pondokrejo</div>
+                </div>
+                <span class="text-[10px] bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-500 font-semibold tracking-wide">MapLibre 2D</span>
             </div>
 
-            <div class="p-4 space-y-4 overflow-y-auto flex-1">
-                <div>
-                    <h3 class="font-semibold text-gray-700 mb-2 border-b pb-1">Data Wilayah</h3>
-                    <div class="space-y-2 text-sm">
-                        <label class="flex items-center space-x-2">
-                            <input id="layer-pemukiman" type="checkbox" class="form-checkbox text-amber-700 rounded">
-                            <span>Pemukiman (Area)</span>
-                        </label>
-                        <label class="flex items-center space-x-2">
-                            <input id="layer-padukuhan" type="checkbox" class="form-checkbox text-blue-600 rounded">
-                            <span>Batas Padukuhan (Area/Garis)</span>
-                        </label>
-                        <label class="flex items-center space-x-2 ml-6">
-                            <input id="layer-rw" type="checkbox" class="form-checkbox text-sky-600 rounded">
-                            <span>Batas RW (Area/Garis)</span>
-                        </label>
-                        <label class="flex items-center space-x-2 ml-6">
-                            <input id="layer-rt" type="checkbox" class="form-checkbox text-violet-600 rounded">
-                            <span>Batas RT (Area/Garis)</span>
-                        </label>
-                        <label class="flex items-center space-x-2">
-                            <input id="layer-fasilitas-editor" type="checkbox" class="form-checkbox text-blue-600 rounded">
-                            <span>Fasilitas Desa (Editor)</span>
-                        </label>
-                        <label class="flex items-center space-x-2">
-                            <input id="layer-sungai" type="checkbox" class="form-checkbox text-blue-500 rounded">
-                            <span>Sungai (Garis)</span>
-                        </label>
-                        <label class="flex items-center space-x-2">
-                            <input id="layer-sawah" type="checkbox" class="form-checkbox text-lime-600 rounded">
-                            <span>Sawah (Area)</span>
-                        </label>
-                        <label class="flex items-center space-x-2">
-                            <input id="layer-bangunan" type="checkbox" class="form-checkbox text-purple-600 rounded">
-                            <span>Bangunan (Titik)</span>
-                        </label>
-                        <label class="flex items-center space-x-2">
-                            <input id="layer-jalan" type="checkbox" class="form-checkbox text-amber-600 rounded">
-                            <span>Jalan (Garis)</span>
-                        </label>
-                        <label class="flex items-center space-x-2">
-                            <input id="layer-kontur" type="checkbox" class="form-checkbox text-stone-500 rounded">
-                            <span>Kontur (Garis)</span>
-                        </label>
-                        <label class="flex items-center space-x-2">
-                            <input id="layer-pendidikan" type="checkbox" class="form-checkbox text-pink-600 rounded">
-                            <span>Pendidikan (Titik)</span>
-                        </label>
-                        <label class="flex items-center space-x-2">
-                            <input id="layer-toponimi" type="checkbox" class="form-checkbox text-emerald-600 rounded">
-                            <span>Toponimi (Titik)</span>
-                        </label>
-                        <label class="flex items-center space-x-2">
-                            <input id="layer-tambang" type="checkbox" class="form-checkbox text-gray-800 rounded">
-                            <span>Pertambangan (Titik)</span>
-                        </label>
-                        <div class="pt-2 mt-2 border-t border-gray-200 font-semibold text-xs text-gray-500">Kebersihan & Lingkungan</div>
-                        <label class="flex items-center space-x-2">
-                            <input id="layer-tps" type="checkbox" class="form-checkbox text-orange-600 rounded">
-                            <span>Titik TPS (Titik)</span>
-                        </label>
-                        <label class="flex items-center space-x-2">
-                            <input id="layer-bank-sampah" type="checkbox" class="form-checkbox text-green-600 rounded">
-                            <span>Bank Sampah (Titik)</span>
-                        </label>
-                        <label class="flex items-center space-x-2">
-                            <input id="layer-rute-sampah" type="checkbox" class="form-checkbox text-red-600 rounded">
-                            <span>Rute Sampah (Garis)</span>
-                        </label>
-                        <label class="flex items-center space-x-2">
-                            <input id="layer-batas-kecamatan" type="checkbox" class="form-checkbox text-black rounded">
-                            <span>Batas Kecamatan (Area)</span>
-                        </label>
-                        <div class="pt-2 mt-2 border-t border-gray-200 font-semibold text-xs text-gray-500">Mitigasi Bencana</div>
-                        <label class="flex items-center space-x-2">
-                            <input id="layer-krb" type="checkbox" class="form-checkbox text-red-500 rounded">
-                            <span>KRB (Kawasan Rawan Bencana)</span>
-                        </label>
-                        <label class="flex items-center space-x-2">
-                            <input id="layer-jalur-evakuasi" type="checkbox" class="form-checkbox text-yellow-600 rounded">
-                            <span>Jalur Evakuasi (Garis)</span>
-                        </label>
-                        <label class="flex items-center space-x-2">
-                            <input id="layer-barak" type="checkbox" class="form-checkbox text-blue-800 rounded">
-                            <span>Barak Pengungsian (Titik)</span>
-                        </label>
-                        <label class="flex items-center space-x-2">
-                            <input id="layer-titik-kumpul" type="checkbox" class="form-checkbox text-green-700 rounded">
-                            <span>Titik Kumpul (Titik)</span>
-                        </label>
-                        <label class="flex items-center space-x-2">
-                            <input id="layer-ews" type="checkbox" class="form-checkbox text-orange-500 rounded">
-                            <span>EWS (Sirine)</span>
-                        </label>
-                        <label class="flex items-center space-x-2">
-                            <input id="layer-jarak-merapi" type="checkbox" class="form-checkbox text-gray-500 rounded">
-                            <span>Jarak Merapi (Garis)</span>
-                        </label>
+            <!-- Basemap Selector (OpenFreeMap + Esri Satelit - Bebas 403) -->
+            <div class="p-3 border-b bg-slate-50">
+                <div class="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2 flex items-center justify-between">
+                    <span>Gaya Peta Dasar</span>
+                    <span class="text-[10px] text-emerald-600 font-semibold flex items-center"><i class="fa fa-shield-alt mr-1"></i> Bebas 403</span>
+                </div>
+                <div class="grid grid-cols-3 gap-1 mb-1">
+                    <button type="button" class="btn-basemap active text-xs font-semibold py-1.5 px-1 rounded border transition text-center bg-emerald-600 text-white border-emerald-600" data-style="liberty" onclick="setBasemap('liberty')">Liberty</button>
+                    <button type="button" class="btn-basemap text-xs font-semibold py-1.5 px-1 rounded border transition text-center bg-white text-slate-700 border-slate-300 hover:bg-slate-100" data-style="positron" onclick="setBasemap('positron')">Positron</button>
+                    <button type="button" class="btn-basemap text-xs font-semibold py-1.5 px-1 rounded border transition text-center bg-white text-slate-700 border-slate-300 hover:bg-slate-100" data-style="bright" onclick="setBasemap('bright')">Bright</button>
+                </div>
+                <div class="grid grid-cols-2 gap-1">
+                    <button type="button" class="btn-basemap text-xs font-semibold py-1.5 px-1 rounded border transition text-center bg-white text-slate-700 border-slate-300 hover:bg-slate-100" data-style="dark" onclick="setBasemap('dark')">Dark (OFM)</button>
+                    <button type="button" class="btn-basemap text-xs font-semibold py-1.5 px-1 rounded border transition text-center bg-white text-slate-700 border-slate-300 hover:bg-slate-100" data-style="satelit" onclick="setBasemap('satelit')">Satelit Esri</button>
+                </div>
+            </div>
+
+            <!-- Switcher: Mode Sederhana vs Mode Detail -->
+            <div class="px-3 pt-2.5 pb-2 border-b bg-white">
+                <div class="flex items-center bg-slate-100 p-0.5 rounded-lg border border-slate-200 text-xs">
+                    <button id="btn-mode-simple" type="button" onclick="setLayerSelectionMode('simple')" class="flex-1 py-1.5 text-center font-bold rounded-md transition shadow-sm bg-white text-emerald-700">Mode Sederhana</button>
+                    <button id="btn-mode-detail" type="button" onclick="setLayerSelectionMode('detail')" class="flex-1 py-1.5 text-center font-semibold rounded-md transition text-slate-600 hover:text-slate-900">Mode Detail</button>
+                </div>
+            </div>
+
+            <!-- Scrollable Content -->
+            <div class="p-3 overflow-y-auto flex-1 space-y-3">
+                <!-- SIMPLE MODE CONTAINER -->
+                <div id="simple-mode-container" class="space-y-2">
+                    <div class="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">Preset Tema Layer (1-Klik)</div>
+                    
+                    <label class="simple-preset-card flex items-start p-2.5 rounded-lg border border-emerald-400 bg-emerald-50/80 hover:bg-emerald-50 cursor-pointer transition">
+                        <input type="radio" name="layer-preset" value="default" checked onchange="applySimplePreset('default')" class="mt-0.5 text-emerald-600 focus:ring-emerald-500">
+                        <div class="ml-2.5">
+                            <div class="text-xs font-bold text-slate-800">Peta Standar Wilayah</div>
+                            <div class="text-[11px] text-slate-500 mt-0.5">Batas Desa, Padukuhan, RW/RT, dan Persebaran Warga</div>
+                        </div>
+                    </label>
+
+                    <label class="simple-preset-card flex items-start p-2.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 cursor-pointer transition">
+                        <input type="radio" name="layer-preset" value="mitigasi" onchange="applySimplePreset('mitigasi')" class="mt-0.5 text-emerald-600 focus:ring-emerald-500">
+                        <div class="ml-2.5">
+                            <div class="text-xs font-bold text-slate-800">Mitigasi Bencana Merapi</div>
+                            <div class="text-[11px] text-slate-500 mt-0.5">KRB (I, II, III), Jalur Evakuasi, Barak Pengungsi, EWS, Titik Kumpul</div>
+                        </div>
+                    </label>
+
+                    <label class="simple-preset-card flex items-start p-2.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 cursor-pointer transition">
+                        <input type="radio" name="layer-preset" value="lingkungan" onchange="applySimplePreset('lingkungan')" class="mt-0.5 text-emerald-600 focus:ring-emerald-500">
+                        <div class="ml-2.5">
+                            <div class="text-xs font-bold text-slate-800">Tata Ruang & Lingkungan</div>
+                            <div class="text-[11px] text-slate-500 mt-0.5">Pemukiman, Sawah, Sungai, Irigasi, TPS & Bank Sampah</div>
+                        </div>
+                    </label>
+
+                    <label class="simple-preset-card flex items-start p-2.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 cursor-pointer transition">
+                        <input type="radio" name="layer-preset" value="infrastruktur" onchange="applySimplePreset('infrastruktur')" class="mt-0.5 text-emerald-600 focus:ring-emerald-500">
+                        <div class="ml-2.5">
+                            <div class="text-xs font-bold text-slate-800">Infrastruktur & Fasilitas</div>
+                            <div class="text-[11px] text-slate-500 mt-0.5">Jaringan Jalan, Kontur, Pendidikan, Toponimi, Bangunan</div>
+                        </div>
+                    </label>
+
+                    <label class="simple-preset-card flex items-start p-2.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 cursor-pointer transition">
+                        <input type="radio" name="layer-preset" value="all" onchange="applySimplePreset('all')" class="mt-0.5 text-emerald-600 focus:ring-emerald-500">
+                        <div class="ml-2.5">
+                            <div class="text-xs font-bold text-slate-800">Semua Layer Aktif</div>
+                            <div class="text-[11px] text-slate-500 mt-0.5">Menampilkan seluruh data tematik secara bersamaan</div>
+                        </div>
+                    </label>
+
+                    <!-- Quick Toggles -->
+                    <div class="pt-3 border-t border-slate-200 mt-3">
+                        <div class="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">Tombol Cepat (On/Off)</div>
+                        <div class="space-y-1.5 text-xs">
+                            <label class="flex items-center justify-between p-1.5 rounded hover:bg-slate-100 cursor-pointer">
+                                <span class="text-slate-700 font-medium">Batas Padukuhan</span>
+                                <input id="quick-padukuhan" type="checkbox" checked onchange="toggleQuickLayer('padukuhan', this.checked)" class="rounded text-emerald-600 focus:ring-emerald-500">
+                            </label>
+                            <label class="flex items-center justify-between p-1.5 rounded hover:bg-slate-100 cursor-pointer">
+                                <span class="text-slate-700 font-medium">Batas RW & RT</span>
+                                <input id="quick-rw-rt" type="checkbox" onchange="toggleQuickLayer('rw-rt', this.checked)" class="rounded text-emerald-600 focus:ring-emerald-500">
+                            </label>
+                            <label class="flex items-center justify-between p-1.5 rounded hover:bg-slate-100 cursor-pointer">
+                                <span class="text-slate-700 font-medium">Area Pemukiman</span>
+                                <input id="quick-pemukiman" type="checkbox" onchange="toggleQuickLayer('pemukiman', this.checked)" class="rounded text-emerald-600 focus:ring-emerald-500">
+                            </label>
+                            <label class="flex items-center justify-between p-1.5 rounded hover:bg-slate-100 cursor-pointer">
+                                <span class="text-slate-700 font-medium">Titik Persebaran Warga</span>
+                                <input id="quick-warga" type="checkbox" checked onchange="toggleQuickLayer('warga', this.checked)" class="rounded text-emerald-600 focus:ring-emerald-500">
+                            </label>
+                            <label class="flex items-center justify-between p-1.5 rounded hover:bg-slate-100 cursor-pointer">
+                                <span class="text-slate-700 font-medium">Mitigasi Bencana Merapi</span>
+                                <input id="quick-mitigasi" type="checkbox" onchange="toggleQuickLayer('mitigasi', this.checked)" class="rounded text-emerald-600 focus:ring-emerald-500">
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- DETAIL MODE CONTAINER (Hidden by default) -->
+                <div id="detail-mode-container" class="space-y-3 hidden">
+                    <div class="flex justify-between items-center mb-1">
+                        <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Pilih Layer Mandiri</span>
+                        <div class="space-x-1">
+                            <button type="button" onclick="setAllDetailLayers(true)" class="text-[10px] text-emerald-700 hover:underline font-semibold">Semua</button>
+                            <span class="text-slate-300">|</span>
+                            <button type="button" onclick="setAllDetailLayers(false)" class="text-[10px] text-slate-500 hover:underline">Reset</button>
+                        </div>
+                    </div>
+
+                    <!-- Kategori 1: Wilayah Administrasi -->
+                    <div class="border rounded-lg overflow-hidden bg-white shadow-sm">
+                        <div class="bg-slate-100 px-3 py-2 text-xs font-bold text-slate-700 flex justify-between items-center border-b">
+                            <span>1. Wilayah Administrasi</span>
+                        </div>
+                        <div class="p-2.5 space-y-1.5 text-xs">
+                            <label class="flex items-center space-x-2"><input id="layer-pemukiman" type="checkbox" class="form-checkbox text-amber-700 rounded"><span>Pemukiman (Area)</span></label>
+                            <label class="flex items-center space-x-2"><input id="layer-padukuhan" type="checkbox" checked class="form-checkbox text-blue-600 rounded"><span>Batas Padukuhan (Garis)</span></label>
+                            <label class="flex items-center space-x-2 ml-4"><input id="layer-rw" type="checkbox" class="form-checkbox text-sky-600 rounded"><span>Batas RW (Garis)</span></label>
+                            <label class="flex items-center space-x-2 ml-4"><input id="layer-rt" type="checkbox" class="form-checkbox text-violet-600 rounded"><span>Batas RT (Garis)</span></label>
+                            <label class="flex items-center space-x-2"><input id="layer-fasilitas-editor" type="checkbox" class="form-checkbox text-blue-600 rounded"><span>Fasilitas Desa (Titik)</span></label>
+                            <label class="flex items-center space-x-2"><input id="layer-bangunan" type="checkbox" class="form-checkbox text-purple-600 rounded"><span>Bangunan (Titik)</span></label>
+                            <label class="flex items-center space-x-2"><input id="layer-jalan" type="checkbox" class="form-checkbox text-amber-600 rounded"><span>Jalan (Garis)</span></label>
+                            <label class="flex items-center space-x-2"><input id="layer-kontur" type="checkbox" class="form-checkbox text-stone-500 rounded"><span>Kontur (Garis)</span></label>
+                            <label class="flex items-center space-x-2"><input id="layer-pendidikan" type="checkbox" class="form-checkbox text-pink-600 rounded"><span>Pendidikan (Titik)</span></label>
+                            <label class="flex items-center space-x-2"><input id="layer-toponimi" type="checkbox" class="form-checkbox text-emerald-600 rounded"><span>Toponimi (Titik)</span></label>
+                            <label class="flex items-center space-x-2"><input id="layer-tonggak" type="checkbox" class="form-checkbox text-slate-500 rounded"><span>Tonggak KM (Titik)</span></label>
+                            <label class="flex items-center space-x-2"><input id="layer-tambang" type="checkbox" class="form-checkbox text-gray-800 rounded"><span>Pertambangan (Titik)</span></label>
+                            <label class="flex items-center space-x-2"><input id="layer-batas-kecamatan" type="checkbox" class="form-checkbox text-black rounded"><span>Batas Kecamatan (Garis)</span></label>
+                        </div>
+                    </div>
+
+                    <!-- Kategori 2: Lingkungan & Sanitasi -->
+                    <div class="border rounded-lg overflow-hidden bg-white shadow-sm">
+                        <div class="bg-slate-100 px-3 py-2 text-xs font-bold text-slate-700 flex justify-between items-center border-b">
+                            <span>2. Lingkungan & Kebersihan</span>
+                        </div>
+                        <div class="p-2.5 space-y-1.5 text-xs">
+                            <label class="flex items-center space-x-2"><input id="layer-sungai" type="checkbox" class="form-checkbox text-blue-500 rounded"><span>Sungai (Garis)</span></label>
+                            <label class="flex items-center space-x-2"><input id="layer-sawah" type="checkbox" class="form-checkbox text-lime-600 rounded"><span>Sawah (Area)</span></label>
+                            <label class="flex items-center space-x-2"><input id="layer-irigasi" type="checkbox" class="form-checkbox text-cyan-600 rounded"><span>Irigasi (Garis)</span></label>
+                            <label class="flex items-center space-x-2"><input id="layer-tps" type="checkbox" class="form-checkbox text-orange-600 rounded"><span>Titik TPS (Titik)</span></label>
+                            <label class="flex items-center space-x-2"><input id="layer-bank-sampah" type="checkbox" class="form-checkbox text-green-600 rounded"><span>Bank Sampah (Titik)</span></label>
+                            <label class="flex items-center space-x-2"><input id="layer-rute-sampah" type="checkbox" class="form-checkbox text-red-600 rounded"><span>Rute Sampah (Garis)</span></label>
+                        </div>
+                    </div>
+
+                    <!-- Kategori 3: Mitigasi Bencana Merapi -->
+                    <div class="border rounded-lg overflow-hidden bg-white shadow-sm">
+                        <div class="bg-slate-100 px-3 py-2 text-xs font-bold text-slate-700 flex justify-between items-center border-b">
+                            <span>3. Mitigasi Bencana Merapi</span>
+                        </div>
+                        <div class="p-2.5 space-y-1.5 text-xs">
+                            <label class="flex items-center space-x-2"><input id="layer-krb" type="checkbox" class="form-checkbox text-red-500 rounded"><span>KRB I, II, III (Area)</span></label>
+                            <label class="flex items-center space-x-2"><input id="layer-jalur-evakuasi" type="checkbox" class="form-checkbox text-yellow-600 rounded"><span>Jalur Evakuasi (Garis)</span></label>
+                            <label class="flex items-center space-x-2"><input id="layer-barak" type="checkbox" class="form-checkbox text-blue-800 rounded"><span>Barak Pengungsian (Titik)</span></label>
+                            <label class="flex items-center space-x-2"><input id="layer-titik-kumpul" type="checkbox" class="form-checkbox text-green-700 rounded"><span>Titik Kumpul (Titik)</span></label>
+                            <label class="flex items-center space-x-2"><input id="layer-ews" type="checkbox" class="form-checkbox text-orange-500 rounded"><span>EWS Sirine (Titik)</span></label>
+                            <label class="flex items-center space-x-2"><input id="layer-jarak-merapi" type="checkbox" class="form-checkbox text-gray-500 rounded"><span>Jarak Merapi (Garis)</span></label>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-
-        <!-- Map Container -->
+        </div><!-- Map Container -->
         <div class="flex-1 relative z-10 h-full">
             <div id="map" class="h-full w-full"></div>
+            <!-- Floating Map Legend (Bottom Right) -->
+            <div id="map-legend" class="legend" style="position: absolute; bottom: 24px; right: 24px; z-index: 15; max-height: 48vh; overflow-y: auto; background: rgba(255,255,255,0.95); backdrop-filter: blur(8px); border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.2); width: 220px; display: none;"></div>
         </div>
 
         <!-- Sidebar -->
@@ -627,212 +711,450 @@
             window.location.href = '/login';
         }
 
-        // Initialize map centered on Pondokrejo
-        const map = L.map('map', { zoomControl: false }).setView([-7.636, 110.316], 14);
-        L.control.zoom({ position: 'topright' }).addTo(map);
-
-        // Load Boundary Immediately
-        async function loadBoundary() {
-            try {
-                // Try layers directory first
-                let res = await fetch('/layers/boundary.geojson');
-                if (!res.ok) res = await fetch('/boundary.geojson');
-                if (!res.ok) res = await fetch('/layers/PONDOKREJO.geojson');
-                
-                if (!res.ok) throw new Error('Boundary file not found');
-                
-                const data = await res.json();
-                const boundary = L.geoJSON(data, {
-                    style: {
-                        color: '#3b82f6', // Blue Border
-                        weight: 2,
-                        fillColor: '#3b82f6', // Blue Fill
-                        fillOpacity: 0.1      // Thin/Light Transparency
+        // Basemap Styles: OpenFreeMap + Esri Satellite (100% Bebas API Key & Bebas 403)
+        const STYLES = {
+            liberty: "https://tiles.openfreemap.org/styles/liberty",
+            positron: "https://tiles.openfreemap.org/styles/positron",
+            bright: "https://tiles.openfreemap.org/styles/bright",
+            dark: "https://tiles.openfreemap.org/styles/dark",
+            satelit: {
+                version: 8,
+                sources: {
+                    "esri-satellite": {
+                        type: "raster",
+                        tiles: [
+                            "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+                        ],
+                        tileSize: 256,
+                        maxzoom: 19,
+                        attribution: "Tiles &copy; Esri &mdash; World Imagery"
                     }
-                }).addTo(map);
-                
-                // Fit map to boundary
-                map.fitBounds(boundary.getBounds(), { padding: [20, 20] });
-                window.boundaryLayer = boundary;
-            } catch (err) {
-                console.log("Boundary layer loading failed:", err);
+                },
+                layers: [
+                    {
+                        id: "esri-satellite-layer",
+                        type: "raster",
+                        source: "esri-satellite",
+                        minzoom: 0,
+                        maxzoom: 19
+                    }
+                ]
             }
-        }
-        loadBoundary();
-
-        function openRecommendations(e) {
-            e.preventDefault();
-            const loading = document.getElementById('rec-loading');
-            loading.classList.remove('hidden');
-            loading.classList.add('flex');
-            
-            setTimeout(() => {
-                loading.classList.add('hidden');
-                loading.classList.remove('flex');
-                window.open('/recommendations', '_blank');
-            }, 3500); // 3.5 seconds delay
-        }
-
-        // Base Layers
-        const osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        }).addTo(map);
-
-        const satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-            attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
-        });
-
-        // New Layers: Cycle Map & Humanitarian
-        const cycleMapLayer = L.tileLayer('https://{s}.tile-cyclosm.openstreetmap.fr/cyclosm/{z}/{x}/{y}.png', {
-            maxZoom: 20,
-            attribution: '<a href="https://github.com/cyclosm/cyclosm-cartocss-style/releases" title="CyclOSM - Open Bicycle render">CyclOSM</a> | Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        });
-
-        const humanitarianLayer = L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
-            maxZoom: 19,
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Tiles style by <a href="https://www.hotosm.org/" target="_blank">Humanitarian OpenStreetMap Team</a> hosted by <a href="https://openstreetmap.fr/" target="_blank">OpenStreetMap France</a>'
-        });
-
-        const baseMaps = {
-            "Peta Jalan": osmLayer,
-            "Satelit": satelliteLayer,
-            "Cycle Map": cycleMapLayer,
-            "Humanitarian (HOT)": humanitarianLayer
         };
 
-        L.control.layers(baseMaps, null, {position: 'topright'}).addTo(map);
+        let activeBasemap = "liberty";
 
-        // Marker Cluster Group
-        const markers = L.markerClusterGroup();
+        // MapLibre 2D Instance (Center: Pondokrejo [110.316, -7.636])
+        const map = new maplibregl.Map({
+            container: 'map',
+            style: STYLES.liberty,
+            center: [110.316, -7.636],
+            zoom: 13.8,
+            pitch: 0,
+            bearing: 0,
+            maxPitch: 0, // Strict 2D Mode
+            dragRotate: false,
+            touchPitch: false
+        });
 
-        // Custom Icons
-        const createIcon = (color) => {
-            return new L.Icon({
-                iconUrl: `https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-${color}.png`,
-                shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-                iconSize: [25, 41],
-                iconAnchor: [12, 41],
-                popupAnchor: [1, -34],
-                shadowSize: [41, 41]
-            });
-        };
+        map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
+        map.addControl(new maplibregl.ScaleControl({ unit: 'metric' }), 'bottom-left');
 
-        const icons = {
-            red: createIcon('red'),
-            orange: createIcon('orange'),
-            yellow: createIcon('yellow'),
-            green: createIcon('green'),
-            blue: createIcon('blue'),
-            grey: createIcon('grey')
-        };
+        const hoverPopup = new maplibregl.Popup({ closeButton: false, closeOnClick: false, offset: 12 });
 
-        // Global data storage
+        // Global State & Data
         let allHouseholds = [];
         let uniqueDusuns = new Set();
         let uniqueAids = new Set();
-        let heatLayer = null;
-        let pemukimanLayer = null;
-        let pemukimanLayerData = null;
-        let padukuhanLayer = null;
-        let padukuhanLayerData = null;
-        let rwLayer = null;
-        let rwLayerData = null;
-        let rtLayer = null;
-        let rtLayerData = null;
-        let fasilitasEditorLayer = null;
-        let fasilitasEditorLayerData = null;
-        let sungaiLayer = null;
-        let sungaiLayerData = null;
-        let sawahLayer = null;
-        let sawahLayerData = null;
-        let bangunanLayer = null;
-        let bangunanLayerData = null;
-        let jalanLayer = null;
-        let jalanLayerData = null;
-        let konturLayer = null;
-        let konturLayerData = null;
-        let irigasiLayer = null;
-        let irigasiLayerData = null;
-        let pendidikanLayer = null;
-        let pendidikanLayerData = null;
-        let toponimiLayer = null;
-        let toponimiLayerData = null;
-        let tonggakLayer = null;
-        let tonggakLayerData = null;
-        let tambangLayer = null;
-        let tambangLayerData = null;
-        // New layers
-        let tpsLayer = null;
-        let tpsLayerData = null;
-        let bankSampahLayer = null;
-        let bankSampahLayerData = null;
-        let ruteSampahLayer = null;
-        let ruteSampahLayerData = null;
-        let batasKecamatanLayer = null;
-        let batasKecamatanLayerData = null;
+        let boundaryBounds = null;
+        const layerCache = {};
 
-        // Disaster Mitigation Layers
-        let krb1Layer = null, krb1LayerData = null;
-        let krb2Layer = null, krb2LayerData = null;
-        let krb3Layer = null, krb3LayerData = null;
-        let evacuationLayer = null, evacuationLayerData = null;
-        let barracksLayer = null, barracksLayerData = null;
-        let assemblyLayer = null, assemblyLayerData = null;
-        let ewsLayer = null, ewsLayerData = null;
-        let merapiLayer = null, merapiLayerData = null;
+        // Active State of all 23 Layers
+        const layerState = {
+            'pemukiman': false,
+            'padukuhan': true,
+            'rw': false,
+            'rt': false,
+            'fasilitas-editor': false,
+            'bangunan': false,
+            'jalan': false,
+            'kontur': false,
+            'pendidikan': false,
+            'toponimi': false,
+            'tonggak': false,
+            'tambang': false,
+            'batas-kecamatan': false,
+            'sungai': false,
+            'sawah': false,
+            'irigasi': false,
+            'tps': false,
+            'bank-sampah': false,
+            'rute-sampah': false,
+            'krb': false,
+            'jalur-evakuasi': false,
+            'barak': false,
+            'titik-kumpul': false,
+            'ews': false,
+            'jarak-merapi': false,
+            'warga': true
+        };
 
-        let chartDusun = null;
-        let chartAid = null;
-        let chartFloor = null;
-        let chartFamily = null;
-        let chartTrend = null;
-        
-        // Fetch data
+        const LAYER_DEFS = [
+            { id: 'pemukiman', file: '/layers/pemukiman-area.geojson', type: 'fill', color: '#b45309', opacity: 0.35, outline: '#92400e' },
+            { id: 'padukuhan', file: '/editor/layers/padukuhan', type: 'line', color: '#2563eb', width: 2.5, dash: [3, 2] },
+            { id: 'rw', file: '/editor/layers/rw', type: 'line', color: '#0284c7', width: 2, dash: [2, 2] },
+            { id: 'rt', file: '/editor/layers/rt', type: 'line', color: '#7c3aed', width: 1.5, dash: [1, 2] },
+            { id: 'fasilitas-editor', file: '/editor/layers/fasilitas', type: 'circle', color: '#2563eb', radius: 6 },
+            { id: 'bangunan', file: '/layers/bangunan-point-pondokrejo.json', type: 'circle', color: '#9333ea', radius: 3.5 },
+            { id: 'jalan', file: '/layers/jalan-line.geojson', type: 'line', color: '#d97706', width: 2.5 },
+            { id: 'kontur', file: '/layers/kontur-line.geojson', type: 'line', color: '#78716c', width: 1.2 },
+            { id: 'pendidikan', file: '/layers/pendidikan-point.geojson', type: 'circle', color: '#db2777', radius: 6 },
+            { id: 'toponimi', file: '/layers/toponimi-point.geojson', type: 'circle', color: '#059669', radius: 5 },
+            { id: 'tonggak', file: '/layers/tonggak-km-point.geojson', type: 'circle', color: '#475569', radius: 4 },
+            { id: 'tambang', file: '/layers/pertambangan-point.geojson', type: 'circle', color: '#334155', radius: 6 },
+            { id: 'batas-kecamatan', file: '/layers/district_boundary.geojson', type: 'line', color: '#0f172a', width: 2.5, dash: [4, 2] },
+            { id: 'sungai', file: '/layers/sungai-line.geojson', type: 'line', color: '#0284c7', width: 2.5 },
+            { id: 'sawah', file: '/layers/sawah-area.geojson', type: 'fill', color: '#65a30d', opacity: 0.35, outline: '#4d7c0f' },
+            { id: 'irigasi', file: '/layers/irigasi-line.geojson', type: 'line', color: '#06b6d4', width: 2 },
+            { id: 'tps', file: '/layers/tps_locations.geojson', type: 'circle', color: '#ea580c', radius: 6 },
+            { id: 'bank-sampah', file: '/layers/waste_banks.geojson', type: 'circle', color: '#16a34a', radius: 6 },
+            { id: 'rute-sampah', file: '/layers/waste_routes.geojson', type: 'line', color: '#dc2626', width: 2.5, dash: [3, 2] },
+            { id: 'krb', files: ['/layers/krb_1.geojson', '/layers/krb_2.geojson', '/layers/krb_3.geojson'], type: 'krb' },
+            { id: 'jalur-evakuasi', file: '/layers/evacuation_route.geojson', type: 'line', color: '#ca8a04', width: 3 },
+            { id: 'barak', file: '/layers/barracks.geojson', type: 'circle', color: '#1e40af', radius: 7 },
+            { id: 'titik-kumpul', file: '/layers/assembly_points.geojson', type: 'circle', color: '#15803d', radius: 7 },
+            { id: 'ews', file: '/layers/ews_location.geojson', type: 'circle', color: '#c2410c', radius: 7 },
+            { id: 'jarak-merapi', file: '/layers/merapi_distance.geojson', type: 'line', color: '#64748b', width: 1.5, dash: [3, 2] }
+        ];
+
+        // Ganti Basemap
+        function setBasemap(styleKey) {
+            if (activeBasemap === styleKey) return;
+            activeBasemap = styleKey;
+            document.querySelectorAll('.btn-basemap').forEach(b => {
+                if (b.dataset.style === styleKey) {
+                    b.classList.add('bg-emerald-600', 'text-white', 'border-emerald-600');
+                    b.classList.remove('bg-white', 'text-slate-700', 'border-slate-300');
+                } else {
+                    b.classList.remove('bg-emerald-600', 'text-white', 'border-emerald-600');
+                    b.classList.add('bg-white', 'text-slate-700', 'border-slate-300');
+                }
+            });
+            map.setStyle(STYLES[styleKey]);
+        }
+
+        // Switcher Tampilan Pemilihan Layer: Sederhana vs Detail
+        function setLayerSelectionMode(mode) {
+            const btnSimple = document.getElementById('btn-mode-simple');
+            const btnDetail = document.getElementById('btn-mode-detail');
+            const cSimple = document.getElementById('simple-mode-container');
+            const cDetail = document.getElementById('detail-mode-container');
+
+            if (mode === 'simple') {
+                btnSimple.classList.add('bg-white', 'text-emerald-700', 'shadow-sm', 'font-bold');
+                btnSimple.classList.remove('text-slate-600', 'font-semibold');
+                btnDetail.classList.remove('bg-white', 'text-emerald-700', 'shadow-sm', 'font-bold');
+                btnDetail.classList.add('text-slate-600', 'font-semibold');
+                cSimple.classList.remove('hidden');
+                cDetail.classList.add('hidden');
+            } else {
+                btnDetail.classList.add('bg-white', 'text-emerald-700', 'shadow-sm', 'font-bold');
+                btnDetail.classList.remove('text-slate-600', 'font-semibold');
+                btnSimple.classList.remove('bg-white', 'text-emerald-700', 'shadow-sm', 'font-bold');
+                btnSimple.classList.add('text-slate-600', 'font-semibold');
+                cDetail.classList.remove('hidden');
+                cSimple.classList.add('hidden');
+            }
+        }
+
+        // Apply Simple Preset (1-Klik)
+        function applySimplePreset(presetName) {
+            // Reset all layers to false
+            Object.keys(layerState).forEach(k => { if (k !== 'warga') layerState[k] = false; });
+
+            if (presetName === 'default') {
+                layerState['padukuhan'] = true;
+                layerState['warga'] = true;
+            } else if (presetName === 'mitigasi') {
+                layerState['krb'] = true;
+                layerState['jalur-evakuasi'] = true;
+                layerState['barak'] = true;
+                layerState['titik-kumpul'] = true;
+                layerState['ews'] = true;
+                layerState['jarak-merapi'] = true;
+                layerState['warga'] = true;
+            } else if (presetName === 'lingkungan') {
+                layerState['pemukiman'] = true;
+                layerState['sawah'] = true;
+                layerState['sungai'] = true;
+                layerState['irigasi'] = true;
+                layerState['tps'] = true;
+                layerState['bank-sampah'] = true;
+                layerState['rute-sampah'] = true;
+                layerState['warga'] = true;
+            } else if (presetName === 'infrastruktur') {
+                layerState['jalan'] = true;
+                layerState['kontur'] = true;
+                layerState['bangunan'] = true;
+                layerState['pendidikan'] = true;
+                layerState['toponimi'] = true;
+                layerState['fasilitas-editor'] = true;
+                layerState['warga'] = true;
+            } else if (presetName === 'all') {
+                Object.keys(layerState).forEach(k => { layerState[k] = true; });
+            }
+
+            syncUIWithLayerState();
+            reapplyAllThematicLayers();
+            updateLegend();
+        }
+
+        // Quick Toggles in Simple Mode
+        function toggleQuickLayer(quickType, isChecked) {
+            if (quickType === 'padukuhan') {
+                layerState['padukuhan'] = isChecked;
+            } else if (quickType === 'rw-rt') {
+                layerState['rw'] = isChecked;
+                layerState['rt'] = isChecked;
+            } else if (quickType === 'pemukiman') {
+                layerState['pemukiman'] = isChecked;
+            } else if (quickType === 'warga') {
+                layerState['warga'] = isChecked;
+                renderMarkers();
+            } else if (quickType === 'mitigasi') {
+                layerState['krb'] = isChecked;
+                layerState['jalur-evakuasi'] = isChecked;
+                layerState['barak'] = isChecked;
+                layerState['titik-kumpul'] = isChecked;
+                layerState['ews'] = isChecked;
+                layerState['jarak-merapi'] = isChecked;
+            }
+
+            syncUIWithLayerState();
+            reapplyAllThematicLayers();
+            updateLegend();
+        }
+
+        function setAllDetailLayers(enableAll) {
+            Object.keys(layerState).forEach(k => {
+                if (k !== 'warga') layerState[k] = enableAll;
+            });
+            syncUIWithLayerState();
+            reapplyAllThematicLayers();
+            updateLegend();
+        }
+
+        function syncUIWithLayerState() {
+            // Sync Detail Checkboxes
+            Object.keys(layerState).forEach(k => {
+                const cb = document.getElementById('layer-' + k);
+                if (cb) cb.checked = !!layerState[k];
+            });
+            // Sync Quick Toggles
+            const qPad = document.getElementById('quick-padukuhan');
+            if (qPad) qPad.checked = !!layerState['padukuhan'];
+            const qRwRt = document.getElementById('quick-rw-rt');
+            if (qRwRt) qRwRt.checked = !!(layerState['rw'] && layerState['rt']);
+            const qPem = document.getElementById('quick-pemukiman');
+            if (qPem) qPem.checked = !!layerState['pemukiman'];
+            const qWar = document.getElementById('quick-warga');
+            if (qWar) qWar.checked = !!layerState['warga'];
+            const qMit = document.getElementById('quick-mitigasi');
+            if (qMit) qMit.checked = !!(layerState['krb'] && layerState['jalur-evakuasi']);
+        }
+
+        // Fetch Data from Cache or Network
+        async function fetchGeoJSON(url) {
+            if (layerCache[url]) return layerCache[url];
+            try {
+                const res = await fetch(url);
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                const data = await res.json();
+                layerCache[url] = data;
+                return data;
+            } catch (e) {
+                console.warn('Gagal memuat GeoJSON dari', url, e);
+                return null;
+            }
+        }
+
+        // MapLibre Layer Helpers
+        async function loadBoundary() {
+            if (!map.isStyleLoaded()) return;
+            try {
+                let data = boundaryGeoJSON;
+                if (!data) {
+                    data = await fetchGeoJSON('/layers/boundary.geojson');
+                    if (!data) data = await fetchGeoJSON('/boundary.geojson');
+                    if (!data) data = await fetchGeoJSON('/layers/PONDOKREJO.geojson');
+                    boundaryGeoJSON = data;
+                }
+                if (!data) return;
+
+                if (!map.getSource('source-boundary')) {
+                    map.addSource('source-boundary', { type: 'geojson', data });
+
+                    map.addLayer({
+                        id: 'layer-boundary-fill',
+                        type: 'fill',
+                        source: 'source-boundary',
+                        paint: {
+                            'fill-color': '#3b82f6',
+                            'fill-opacity': 0.08
+                        }
+                    });
+
+                    map.addLayer({
+                        id: 'layer-boundary-line',
+                        type: 'line',
+                        source: 'source-boundary',
+                        paint: {
+                            'line-color': '#2563eb',
+                            'line-width': 2.2
+                        }
+                    });
+
+                    // Compute Bounding Box
+                    if (!boundaryBounds && data.features && data.features.length > 0) {
+                        const bounds = new maplibregl.LngLatBounds();
+                        const geom = data.features[0].geometry;
+                        const coords = geom.type === 'Polygon' ? geom.coordinates[0] : (geom.type === 'MultiPolygon' ? geom.coordinates[0][0] : []);
+                        coords.forEach(pt => bounds.extend(pt));
+                        boundaryBounds = bounds;
+                        map.fitBounds(bounds, { padding: 40, maxZoom: 15 });
+                    }
+                }
+            } catch (err) {
+                console.error("Boundary error:", err);
+            }
+        }
+
+        async function reapplyAllThematicLayers() {
+            if (!map.isStyleLoaded()) return;
+
+            for (const def of LAYER_DEFS) {
+                const isVisible = !!layerState[def.id];
+
+                if (def.type === 'krb') {
+                    // KRB is multi-file (KRB 1, 2, 3)
+                    const krbFiles = [
+                        { id: 'krb1', file: '/layers/krb_1.geojson', color: '#facc15', opacity: 0.25 },
+                        { id: 'krb2', file: '/layers/krb_2.geojson', color: '#f97316', opacity: 0.35 },
+                        { id: 'krb3', file: '/layers/krb_3.geojson', color: '#ef4444', opacity: 0.45 }
+                    ];
+                    for (const k of krbFiles) {
+                        const sourceId = 'source-layer-' + k.id;
+                        const fillId = 'layer-' + k.id + '-fill';
+                        const lineId = 'layer-' + k.id + '-line';
+
+                        if (!map.getSource(sourceId)) {
+                            if (!isVisible) continue;
+                            const data = await fetchGeoJSON(k.file);
+                            if (!data || !map.isStyleLoaded()) continue;
+                            if (!map.getSource(sourceId)) {
+                                map.addSource(sourceId, { type: 'geojson', data });
+                                map.addLayer({ id: fillId, type: 'fill', source: sourceId, paint: { 'fill-color': k.color, 'fill-opacity': k.opacity } });
+                                map.addLayer({ id: lineId, type: 'line', source: sourceId, paint: { 'line-color': k.color, 'line-width': 1.5 } });
+                            }
+                        } else {
+                            const vis = isVisible ? 'visible' : 'none';
+                            if (map.getLayer(fillId)) map.setLayoutProperty(fillId, 'visibility', vis);
+                            if (map.getLayer(lineId)) map.setLayoutProperty(lineId, 'visibility', vis);
+                        }
+                    }
+                    continue;
+                }
+
+                const sourceId = 'source-layer-' + def.id;
+                const layerId = 'layer-' + def.id;
+
+                if (!map.getSource(sourceId)) {
+                    if (!isVisible) continue;
+                    const data = await fetchGeoJSON(def.file);
+                    if (!data || !map.isStyleLoaded()) continue;
+                    if (!map.getSource(sourceId)) {
+                        map.addSource(sourceId, { type: 'geojson', data });
+
+                        if (def.type === 'fill') {
+                            map.addLayer({
+                                id: layerId,
+                                type: 'fill',
+                                source: sourceId,
+                                paint: { 'fill-color': def.color, 'fill-opacity': def.opacity || 0.3 }
+                            });
+                            map.addLayer({
+                                id: layerId + '-outline',
+                                type: 'line',
+                                source: sourceId,
+                                paint: { 'line-color': def.outline || def.color, 'line-width': 1.5 }
+                            });
+                        } else if (def.type === 'line') {
+                            const paint = { 'line-color': def.color, 'line-width': def.width || 2 };
+                            if (def.dash) paint['line-dasharray'] = def.dash;
+                            map.addLayer({ id: layerId, type: 'line', source: sourceId, paint });
+                        } else if (def.type === 'circle') {
+                            map.addLayer({
+                                id: layerId,
+                                type: 'circle',
+                                source: sourceId,
+                                paint: {
+                                    'circle-color': def.color,
+                                    'circle-radius': def.radius || 5,
+                                    'circle-stroke-width': 1.5,
+                                    'circle-stroke-color': '#ffffff'
+                                }
+                            });
+
+                            // Add tooltip listener
+                            map.on('mouseenter', layerId, (e) => {
+                                map.getCanvas().style.cursor = 'pointer';
+                                if (e.features && e.features[0]) {
+                                    const p = e.features[0].properties || {};
+                                    const title = p.nama || p.Name || p.name || p.NAMOBJ || p.keterangan || def.id;
+                                    hoverPopup.setLngLat(e.lngLat).setHTML(`<div class="text-xs font-semibold">${title}</div>`).addTo(map);
+                                }
+                            });
+                            map.on('mouseleave', layerId, () => {
+                                map.getCanvas().style.cursor = '';
+                                hoverPopup.remove();
+                            });
+                        }
+                    }
+                } else {
+                    const vis = isVisible ? 'visible' : 'none';
+                    if (map.getLayer(layerId)) map.setLayoutProperty(layerId, 'visibility', vis);
+                    if (map.getLayer(layerId + '-outline')) map.setLayoutProperty(layerId + '-outline', 'visibility', vis);
+                }
+            }
+        }
+
+        function reapplyAllLayers() {
+            loadBoundary();
+            reapplyAllThematicLayers();
+            renderMarkers();
+        }
+
+        map.on('load', reapplyAllLayers);
+        map.on('style.load', reapplyAllLayers);
+
+        // Fetch Residents Data
         fetch('residents.json')
-            .then(response => response.json())
+            .then(res => res.json())
             .then(data => {
                 allHouseholds = data;
-                console.log("Data loaded:", data.length, "households");
-                
-                // Extract Filters
                 allHouseholds.forEach(hh => {
                     if (hh.dusun) uniqueDusuns.add(hh.dusun);
                     if (hh.members) {
                         hh.members.forEach(m => {
-                            if (m.aid_list) {
-                                m.aid_list.forEach(aid => uniqueAids.add(aid));
-                            }
+                            if (m.aid_list) m.aid_list.forEach(aid => uniqueAids.add(aid));
                         });
                     }
                 });
-                
                 populateFilters();
                 attachStaticFilterListeners();
                 renderMarkers();
-                
-                // Fit bounds to boundary if available immediately, or data
-                if (boundaryLayer) {
-                     map.fitBounds(boundaryLayer.getBounds());
-                }
             })
-            .catch(err => console.error("Error loading data:", err));
-
-        // Load Boundary First and Fit Bounds
-        fetch('boundary.geojson')
-            .then(res => res.json())
-            .then(data => {
-                boundaryLayer = L.geoJSON(data, {
-                    style: {
-                        color: 'blue',
-                        weight: 2,
-                        fillOpacity: 0
-                    }
-                }).addTo(map);
-                
-                // Zoom to boundary
-                map.fitBounds(boundaryLayer.getBounds());
-            })
-            .catch(err => console.error("Error loading boundary:", err));
+            .catch(err => console.error("Error loading residents:", err));
 
         function populateFilters() {
             const dusunContainer = document.getElementById('filter-dusun');
@@ -849,12 +1171,8 @@
             dusunContainer.appendChild(toggleDiv);
 
             const sortedDusuns = Array.from(uniqueDusuns).sort();
-
             if (sortedDusuns.length === 0) {
-                const noData = document.createElement('div');
-                noData.className = "text-gray-400 text-xs italic";
-                noData.innerText = "Tidak ada data padukuhan";
-                dusunContainer.appendChild(noData);
+                dusunContainer.innerHTML += '<div class="text-gray-400 text-xs italic">Tidak ada data padukuhan</div>';
             } else {
                 sortedDusuns.forEach(dusun => {
                     const div = document.createElement('div');
@@ -873,997 +1191,10 @@
             document.querySelectorAll('.filter-dusun').forEach(el => el.addEventListener('change', renderMarkers));
         }
 
-        async function ensurePemukimanLayerData() {
-            if (pemukimanLayerData) return pemukimanLayerData;
-            try {
-                const res = await fetch('/layers/pemukiman-area.geojson'); 
-                if (!res.ok) throw new Error('Gagal memuat layer pemukiman');
-                pemukimanLayerData = await res.json();
-                return pemukimanLayerData;
-            } catch (e) {
-                console.error(e);
-                alert('Gagal memuat data pemukiman. Pastikan file pemukiman-area.geojson tersedia di folder layers.');
-                throw e;
-            }
-        }
-
-        async function ensurePadukuhanLayerData() {
-            try {
-                const res = await fetch('/editor/layers/padukuhan');
-                if (!res.ok) throw new Error('Gagal memuat layer padukuhan');
-                padukuhanLayerData = await res.json();
-                return padukuhanLayerData;
-            } catch (e) {
-                console.error(e);
-                alert('Gagal memuat data batas padukuhan. Pastikan layer sudah dibuat di Editor.');
-                throw e;
-            }
-        }
-
-        function styleFromFeature(feature, fallbackColor) {
-            const t = feature && feature.geometry ? feature.geometry.type : '';
-            const isLine = t === 'LineString' || t === 'MultiLineString';
-            const p = feature && feature.properties ? feature.properties : {};
-            const c = p.color ? p.color : fallbackColor;
-            return {
-                color: c,
-                weight: isLine ? 3 : 2,
-                opacity: 0.9,
-                fillColor: c,
-                fillOpacity: isLine ? 0 : 0.12
-            };
-        }
-
-        async function togglePadukuhanLayer(show) {
-            if (!show) {
-                if (padukuhanLayer) {
-                    map.removeLayer(padukuhanLayer);
-                    padukuhanLayer = null;
-                }
-                return;
-            }
-
-            try {
-                const data = await ensurePadukuhanLayerData();
-                if (padukuhanLayer) map.removeLayer(padukuhanLayer);
-                padukuhanLayer = L.geoJSON(data, {
-                    style: function(feature) {
-                        return styleFromFeature(feature, '#2563eb');
-                    }
-                }).addTo(map);
-            } catch (e) {
-                document.getElementById('layer-padukuhan').checked = false;
-            }
-        }
-
-        async function ensureRwLayerData() {
-            try {
-                const res = await fetch('/editor/layers/rw');
-                if (!res.ok) throw new Error('Gagal memuat layer RW');
-                rwLayerData = await res.json();
-                return rwLayerData;
-            } catch (e) {
-                console.error(e);
-                alert('Gagal memuat data batas RW. Pastikan layer sudah dibuat di Editor.');
-                throw e;
-            }
-        }
-
-        async function toggleRwLayer(show) {
-            if (!show) {
-                if (rwLayer) { map.removeLayer(rwLayer); rwLayer = null; }
-                return;
-            }
-            try {
-                const data = await ensureRwLayerData();
-                if (rwLayer) map.removeLayer(rwLayer);
-                rwLayer = L.geoJSON(data, {
-                    style: function(feature) {
-                        return styleFromFeature(feature, '#0ea5e9');
-                    }
-                }).addTo(map);
-            } catch (e) {
-                document.getElementById('layer-rw').checked = false;
-            }
-        }
-
-        async function ensureRtLayerData() {
-            try {
-                const res = await fetch('/editor/layers/rt');
-                if (!res.ok) throw new Error('Gagal memuat layer RT');
-                rtLayerData = await res.json();
-                return rtLayerData;
-            } catch (e) {
-                console.error(e);
-                alert('Gagal memuat data batas RT. Pastikan layer sudah dibuat di Editor.');
-                throw e;
-            }
-        }
-
-        async function toggleRtLayer(show) {
-            if (!show) {
-                if (rtLayer) { map.removeLayer(rtLayer); rtLayer = null; }
-                return;
-            }
-            try {
-                const data = await ensureRtLayerData();
-                if (rtLayer) map.removeLayer(rtLayer);
-                rtLayer = L.geoJSON(data, {
-                    style: function(feature) {
-                        return styleFromFeature(feature, '#a855f7');
-                    }
-                }).addTo(map);
-            } catch (e) {
-                document.getElementById('layer-rt').checked = false;
-            }
-        }
-
-        async function ensureFasilitasEditorLayerData() {
-            if (fasilitasEditorLayerData) return fasilitasEditorLayerData;
-            try {
-                const res = await fetch('/editor/layers/fasilitas');
-                if (!res.ok) throw new Error('Gagal memuat layer fasilitas');
-                fasilitasEditorLayerData = await res.json();
-                return fasilitasEditorLayerData;
-            } catch (e) {
-                console.error(e);
-                alert('Gagal memuat data fasilitas desa. Pastikan layer sudah dibuat di Editor.');
-                throw e;
-            }
-        }
-
-        async function toggleFasilitasEditorLayer(show) {
-            if (!show) {
-                if (fasilitasEditorLayer) {
-                    map.removeLayer(fasilitasEditorLayer);
-                    fasilitasEditorLayer = null;
-                }
-                return;
-            }
-
-            try {
-                const data = await ensureFasilitasEditorLayerData();
-                if (fasilitasEditorLayer) {
-                    map.addLayer(fasilitasEditorLayer);
-                    return;
-                }
-
-                fasilitasEditorLayer = L.geoJSON(data, {
-                    pointToLayer: function(feature, latlng) {
-                        return L.circleMarker(latlng, { radius: 6, color: '#2563eb', weight: 2, fillColor: '#60a5fa', fillOpacity: 0.8 });
-                    },
-                    onEachFeature: function(feature, layer) {
-                        const p = feature && feature.properties ? feature.properties : {};
-                        const name = p.name || 'Fasilitas';
-                        const cat = p.category ? `<div class="text-xs text-gray-600">${p.category}</div>` : '';
-                        layer.bindPopup(`<div class="text-sm font-semibold">${name}</div>${cat}`);
-                    }
-                }).addTo(map);
-            } catch (e) {
-                document.getElementById('layer-fasilitas-editor').checked = false;
-            }
-        }
-
-        async function togglePemukimanLayer(show) {
-            if (!show) {
-                if (pemukimanLayer) {
-                    map.removeLayer(pemukimanLayer);
-                    pemukimanLayer = null;
-                }
-                return;
-            }
-
-            try {
-                const data = await ensurePemukimanLayerData();
-                if (pemukimanLayer) {
-                    map.addLayer(pemukimanLayer);
-                    return;
-                }
-
-                pemukimanLayer = L.geoJSON(data, {
-                    style: {
-                        color: '#795548', // Brown 500
-                        weight: 1,
-                        opacity: 0.7,
-                        fillColor: '#8d6e63', // Brown 400
-                        fillOpacity: 0.4
-                    }
-                }).addTo(map);
-            } catch (e) {
-                document.getElementById('layer-pemukiman').checked = false;
-            }
-        }
-
-        async function ensureSungaiLayerData() {
-            if (sungaiLayerData) return sungaiLayerData;
-            try {
-                const res = await fetch('/layers/sungai-line.geojson');
-                if (!res.ok) throw new Error('Gagal memuat layer sungai');
-                sungaiLayerData = await res.json();
-                return sungaiLayerData;
-            } catch (e) {
-                console.error(e);
-                alert('Gagal memuat data sungai. Pastikan file sungai-line.geojson tersedia di folder layers.');
-                throw e;
-            }
-        }
-
-        async function toggleSungaiLayer(show) {
-            if (!show) {
-                if (sungaiLayer) {
-                    map.removeLayer(sungaiLayer);
-                    sungaiLayer = null;
-                }
-                return;
-            }
-
-            try {
-                const data = await ensureSungaiLayerData();
-                if (sungaiLayer) {
-                    map.addLayer(sungaiLayer);
-                    return;
-                }
-
-                sungaiLayer = L.geoJSON(data, {
-                    style: {
-                        color: '#3b82f6',
-                        weight: 2,
-                        opacity: 0.8
-                    }
-                }).addTo(map);
-            } catch (e) {
-                document.getElementById('layer-sungai').checked = false;
-            }
-        }
-
-        async function ensureSawahLayerData() {
-            if (sawahLayerData) return sawahLayerData;
-            try {
-                const res = await fetch('/layers/sawah-area.geojson');
-                if (!res.ok) throw new Error('Gagal memuat layer sawah');
-                sawahLayerData = await res.json();
-                return sawahLayerData;
-            } catch (e) {
-                console.error(e);
-                alert('Gagal memuat data sawah. Pastikan file sawah-area.geojson tersedia di folder layers.');
-                throw e;
-            }
-        }
-
-        async function toggleSawahLayer(show) {
-            if (!show) {
-                if (sawahLayer) {
-                    map.removeLayer(sawahLayer);
-                    sawahLayer = null;
-                }
-                return;
-            }
-
-            try {
-                const data = await ensureSawahLayerData();
-                if (sawahLayer) {
-                    map.addLayer(sawahLayer);
-                    return;
-                }
-
-                const canvas = L.canvas({ padding: 0.5 });
-                sawahLayer = L.geoJSON(data, {
-                    interactive: false,
-                    renderer: canvas,
-                    style: {
-                        color: '#65a30d',
-                        weight: 1,
-                        opacity: 0.6,
-                        fillColor: '#84cc16',
-                        fillOpacity: 0.18
-                    }
-                }).addTo(map);
-            } catch (e) {
-                document.getElementById('layer-sawah').checked = false;
-            }
-        }
-
-        async function ensureBangunanLayerData() {
-            if (bangunanLayerData) return bangunanLayerData;
-            try {
-                const res = await fetch('/layers/bangunan-point-pondokrejo.json');
-                if (!res.ok) throw new Error('Gagal memuat layer bangunan');
-                bangunanLayerData = await res.json();
-                return bangunanLayerData;
-            } catch (e) {
-                console.error(e);
-                alert('Gagal memuat data bangunan. Pastikan file bangunan-point-pondokrejo.json tersedia.');
-                throw e;
-            }
-        }
-
-        // Helper to get FontAwesome icon based on properties
-        function getBuildingIcon(props) {
-            let icon = 'home';
-            let markerColor = 'blue';
-            let prefix = 'fa';
-
-            // Determine Icon and Color
-            if (props.amenity === 'school' || props.amenity === 'kindergarten') {
-                icon = 'school'; markerColor = 'purple';
-            } else if (props.amenity === 'place_of_worship') {
-                if (props.religion === 'muslim') icon = 'mosque';
-                else if (props.religion === 'christian') icon = 'church';
-                else icon = 'place-of-worship';
-                markerColor = 'green';
-            } else if (props.amenity === 'clinic' || props.amenity === 'hospital' || props.amenity === 'pharmacy') {
-                icon = 'notes-medical'; markerColor = 'red';
-            } else if (props.shop) {
-                icon = 'shop'; markerColor = 'orange';
-            } else if (props.office) {
-                icon = 'briefcase'; markerColor = 'cadetblue';
-            } else if (props.leisure) {
-                icon = 'futbol'; markerColor = 'darkgreen';
-            } else if (props.tourism) {
-                icon = 'camera'; markerColor = 'pink';
-            }
-
-            return L.AwesomeMarkers.icon({
-                icon: icon,
-                prefix: 'fa',
-                markerColor: markerColor,
-                iconColor: 'white'
-            });
-        }
-
-        async function toggleBangunanLayer(show) {
-            if (!show) {
-                if (bangunanLayer) {
-                    map.removeLayer(bangunanLayer);
-                    bangunanLayer = null;
-                }
-                return;
-            }
-
-            try {
-                const data = await ensureBangunanLayerData();
-                if (bangunanLayer) {
-                    map.addLayer(bangunanLayer);
-                    return;
-                }
-
-                // Use MarkerClusterGroup for buildings
-                bangunanLayer = L.markerClusterGroup({
-                    maxClusterRadius: 50,
-                    spiderfyOnMaxZoom: true,
-                    showCoverageOnHover: false,
-                    zoomToBoundsOnClick: true,
-                    disableClusteringAtZoom: 18 // Stop clustering at zoom level 18 (street level)
-                });
-
-                const geoJsonLayer = L.geoJSON(data, {
-                    pointToLayer: function (feature, latlng) {
-                        return L.marker(latlng, {
-                            icon: getBuildingIcon(feature.properties)
-                        });
-                    },
-                    onEachFeature: function (feature, layer) {
-                        const p = feature.properties;
-                        let content = `<div class="font-sans">`;
-                        
-                        // Smart Name/Category Logic
-                        let displayName = p.name;
-                        let category = "Bangunan";
-
-                        if (p.amenity) {
-                             category = p.amenity.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
-                             if (!displayName) displayName = category;
-                        } else if (p.shop) {
-                             category = "Toko " + p.shop.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
-                             if (!displayName) displayName = category;
-                        } else if (p.office) {
-                             category = "Kantor " + p.office.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
-                             if (!displayName) displayName = category;
-                        } else if (p.leisure) {
-                             category = p.leisure.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
-                             if (!displayName) displayName = category;
-                        } else if (p.type === 'yes' || !p.type) {
-                             category = "Rumah / Bangunan";
-                             if (!displayName) displayName = "Rumah Penduduk";
-                        }
-
-                        content += `<h3 class="font-bold text-sm mb-1 text-blue-800 border-b pb-1">${displayName}</h3>`;
-                        content += `<div class="text-xs text-gray-500 mb-2 italic">${category}</div>`;
-
-                        content += `<div class="text-xs space-y-1">`;
-                        if (p.amenity) content += `<div><span class="font-semibold">Fasilitas:</span> ${p.amenity}</div>`;
-                        if (p.shop) content += `<div><span class="font-semibold">Toko:</span> ${p.shop}</div>`;
-                        if (p.office) content += `<div><span class="font-semibold">Kantor:</span> ${p.office}</div>`;
-                        if (p.leisure) content += `<div><span class="font-semibold">Hiburan:</span> ${p.leisure}</div>`;
-                        // if (p.type && p.type !== 'yes') content += `<div><span class="font-semibold">Tipe:</span> ${p.type}</div>`;
-                        content += `</div></div>`;
-                        
-                        layer.bindPopup(content);
-                    }
-                });
-
-                bangunanLayer.addLayer(geoJsonLayer);
-                map.addLayer(bangunanLayer);
-
-            } catch (e) {
-                console.error(e);
-                document.getElementById('layer-bangunan').checked = false;
-            }
-        }
-
-        async function ensureJalanLayerData() {
-            if (jalanLayerData) return jalanLayerData;
-            try {
-                const res = await fetch('/layers/jalan-line.geojson');
-                if (!res.ok) throw new Error('Gagal memuat layer jalan');
-                jalanLayerData = await res.json();
-                return jalanLayerData;
-            } catch (e) {
-                console.error(e);
-                alert('Gagal memuat data jalan. Pastikan file jalan-line.geojson tersedia.');
-                throw e;
-            }
-        }
-
-        async function toggleJalanLayer(show) {
-            if (!show) {
-                if (jalanLayer) {
-                    map.removeLayer(jalanLayer);
-                    jalanLayer = null;
-                }
-                return;
-            }
-
-            try {
-                const data = await ensureJalanLayerData();
-                if (jalanLayer) {
-                    map.addLayer(jalanLayer);
-                    return;
-                }
-
-                const canvas = L.canvas({ padding: 0.5 });
-                jalanLayer = L.geoJSON(data, {
-                    interactive: false,
-                    renderer: canvas,
-                    style: {
-                        color: '#d97706',
-                        weight: 2,
-                        opacity: 0.85
-                    }
-                }).addTo(map);
-            } catch (e) {
-                document.getElementById('layer-jalan').checked = false;
-            }
-        }
-
-        async function ensureKonturLayerData() {
-            if (konturLayerData) return konturLayerData;
-            try {
-                const res = await fetch('/layers/kontur-line.geojson');
-                if (!res.ok) throw new Error('Gagal memuat layer kontur');
-                konturLayerData = await res.json();
-                return konturLayerData;
-            } catch (e) {
-                console.error(e);
-                alert('Gagal memuat data kontur. Pastikan file kontur-line.geojson tersedia.');
-                throw e;
-            }
-        }
-
-        async function toggleKonturLayer(show) {
-            if (!show) {
-                if (konturLayer) {
-                    map.removeLayer(konturLayer);
-                    konturLayer = null;
-                }
-                return;
-            }
-
-            try {
-                const data = await ensureKonturLayerData();
-                if (konturLayer) {
-                    map.addLayer(konturLayer);
-                    return;
-                }
-
-                // Color scale for elevation
-                function getColor(val) {
-                    return val > 240 ? '#3E2723' : // Brown 900
-                           val > 230 ? '#5D4037' : // Brown 700
-                           val > 220 ? '#795548' : // Brown 500
-                           val > 210 ? '#A1887F' : // Brown 300
-                                        '#D7CCC8';  // Brown 100
-                }
-
-                const canvas = L.canvas({ padding: 0.5 });
-                konturLayer = L.geoJSON(data, {
-                    renderer: canvas,
-                    interactive: false, // Performance optimization
-                    style: function(feature) {
-                        return {
-                            color: getColor(feature.properties.VALKNT || 0),
-                            weight: 2,
-                            opacity: 0.8
-                        };
-                    }
-                }).addTo(map);
-            } catch (e) {
-                document.getElementById('layer-kontur').checked = false;
-            }
-        }
-
-        async function ensureIrigasiLayerData() {
-            if (irigasiLayerData) return irigasiLayerData;
-            try {
-                const res = await fetch('/layers/irigasi-line.geojson');
-                if (!res.ok) throw new Error('Gagal memuat layer irigasi');
-                irigasiLayerData = await res.json();
-                return irigasiLayerData;
-            } catch (e) {
-                console.error(e);
-                alert('Gagal memuat data irigasi. Pastikan file irigasi-line.geojson tersedia.');
-                throw e;
-            }
-        }
-
-        async function toggleIrigasiLayer(show) {
-            if (!show) {
-                if (irigasiLayer) {
-                    map.removeLayer(irigasiLayer);
-                    irigasiLayer = null;
-                }
-                return;
-            }
-
-            try {
-                const data = await ensureIrigasiLayerData();
-                if (irigasiLayer) {
-                    map.addLayer(irigasiLayer);
-                    return;
-                }
-
-                const canvas = L.canvas({ padding: 0.5 });
-                irigasiLayer = L.geoJSON(data, {
-                    renderer: canvas,
-                    interactive: false,
-                    style: {
-                        color: '#06b6d4', // Cyan 500
-                        weight: 2,
-                        opacity: 0.8
-                    }
-                }).addTo(map);
-            } catch (e) {
-                document.getElementById('layer-irigasi').checked = false;
-            }
-        }
-
-        // Pendidikan Layer
-        async function ensurePendidikanLayerData() {
-            if (pendidikanLayerData) return pendidikanLayerData;
-            const res = await fetch('/layers/pendidikan-point.geojson');
-            if (!res.ok) throw new Error('Gagal memuat layer pendidikan');
-            pendidikanLayerData = await res.json();
-            return pendidikanLayerData;
-        }
-
-        async function togglePendidikanLayer(show) {
-            if (!show) {
-                if (pendidikanLayer) {
-                    map.removeLayer(pendidikanLayer);
-                    pendidikanLayer = null;
-                }
-                return;
-            }
-            try {
-                const data = await ensurePendidikanLayerData();
-                if (pendidikanLayer) { map.addLayer(pendidikanLayer); return; }
-                
-                pendidikanLayer = L.geoJSON(data, {
-                    pointToLayer: (f, latlng) => L.marker(latlng, { 
-                        icon: L.AwesomeMarkers.icon({
-                            icon: 'graduation-cap',
-                            prefix: 'fa',
-                            markerColor: 'darkpurple'
-                        })
-                    }),
-                    onEachFeature: (f, l) => { if (f.properties.NAMOBJ) l.bindPopup(`<b>${f.properties.NAMOBJ}</b><br>Pendidikan`); }
-                }).addTo(map);
-            } catch (e) { document.getElementById('layer-pendidikan').checked = false; }
-        }
-
-        // Toponimi Layer
-        async function ensureToponimiLayerData() {
-            if (toponimiLayerData) return toponimiLayerData;
-            const res = await fetch('/layers/toponimi-point.geojson');
-            if (!res.ok) throw new Error('Gagal memuat layer toponimi');
-            toponimiLayerData = await res.json();
-            return toponimiLayerData;
-        }
-
-        async function toggleToponimiLayer(show) {
-            if (!show) {
-                if (toponimiLayer) {
-                    map.removeLayer(toponimiLayer);
-                    toponimiLayer = null;
-                }
-                return;
-            }
-            try {
-                const data = await ensureToponimiLayerData();
-                if (toponimiLayer) { map.addLayer(toponimiLayer); return; }
-                
-                toponimiLayer = L.geoJSON(data, {
-                    pointToLayer: (f, latlng) => L.marker(latlng, { 
-                        icon: L.AwesomeMarkers.icon({
-                            icon: 'map-pin',
-                            prefix: 'fa',
-                            markerColor: 'green'
-                        })
-                    }),
-                    onEachFeature: (f, l) => { if (f.properties.NAMOBJ) l.bindPopup(`<b>${f.properties.NAMOBJ}</b>`); }
-                }).addTo(map);
-            } catch (e) { document.getElementById('layer-toponimi').checked = false; }
-        }
-
-        // Tonggak KM Layer
-        async function ensureTonggakLayerData() {
-            if (tonggakLayerData) return tonggakLayerData;
-            const res = await fetch('/layers/tonggak-km-point.geojson');
-            if (!res.ok) throw new Error('Gagal memuat layer tonggak km');
-            tonggakLayerData = await res.json();
-            return tonggakLayerData;
-        }
-
-        async function toggleTonggakLayer(show) {
-            if (!show) {
-                if (tonggakLayer) {
-                    map.removeLayer(tonggakLayer);
-                    tonggakLayer = null;
-                }
-                return;
-            }
-            try {
-                const data = await ensureTonggakLayerData();
-                if (tonggakLayer) { map.addLayer(tonggakLayer); return; }
-                
-                tonggakLayer = L.geoJSON(data, {
-                    pointToLayer: (f, latlng) => L.circleMarker(latlng, { radius: 4, fillColor: '#1d4ed8', color: '#fff', weight: 1, opacity: 1, fillOpacity: 0.8 }),
-                    onEachFeature: (f, l) => { if (f.properties.NAMOBJ) l.bindPopup(`<b>${f.properties.NAMOBJ}</b><br>${f.properties.REMARK || ''}`); }
-                }).addTo(map);
-            } catch (e) { document.getElementById('layer-tonggak').checked = false; }
-        }
-
-        // Pertambangan Layer
-        async function ensureTambangLayerData() {
-            if (tambangLayerData) return tambangLayerData;
-            const res = await fetch('/layers/pertambangan-point.geojson');
-            if (!res.ok) throw new Error('Gagal memuat layer pertambangan');
-            tambangLayerData = await res.json();
-            return tambangLayerData;
-        }
-
-        async function toggleTambangLayer(show) {
-            if (!show) {
-                if (tambangLayer) {
-                    map.removeLayer(tambangLayer);
-                    tambangLayer = null;
-                }
-                return;
-            }
-            try {
-                const data = await ensureTambangLayerData();
-                if (tambangLayer) { map.addLayer(tambangLayer); return; }
-                
-                tambangLayer = L.geoJSON(data, {
-                    pointToLayer: (f, latlng) => L.marker(latlng, {
-                        icon: L.AwesomeMarkers.icon({
-                            icon: 'hammer',
-                            prefix: 'fa',
-                            markerColor: 'black'
-                        })
-                    }),
-                    onEachFeature: (f, l) => { 
-                        let content = `<b>${f.properties.NAMOBJ || 'Lokasi Tambang'}</b>`;
-                        if (f.properties.REMARK) content += `<br>${f.properties.REMARK}`;
-                        l.bindPopup(content);
-                    }
-                }).addTo(map);
-            } catch (e) { document.getElementById('layer-tambang').checked = false; }
-        }
-
-        // New Layers Logic
-        
-        // TPS Layer
-        async function ensureTPSLayerData() {
-            if (tpsLayerData) return tpsLayerData;
-            const res = await fetch('/layers/tps_locations.geojson');
-            if (!res.ok) throw new Error('Gagal memuat layer tps');
-            tpsLayerData = await res.json();
-            return tpsLayerData;
-        }
-
-        async function toggleTPSLayer(show) {
-            if (!show) {
-                if (tpsLayer) { map.removeLayer(tpsLayer); tpsLayer = null; }
-                return;
-            }
-            try {
-                const data = await ensureTPSLayerData();
-                if (tpsLayer) { map.addLayer(tpsLayer); return; }
-                
-                tpsLayer = L.geoJSON(data, {
-                    pointToLayer: (f, latlng) => L.marker(latlng, {
-                        icon: L.AwesomeMarkers.icon({
-                            icon: 'trash',
-                            prefix: 'fa',
-                            markerColor: 'orange'
-                        })
-                    }),
-                    onEachFeature: (f, l) => { 
-                        let popup = `<b>Titik TPS</b>`;
-                        if (f.properties.Keterangan) popup += `<br>${f.properties.Keterangan}`;
-                        if (f.properties.Lokasi) popup += `<br>${f.properties.Lokasi}`;
-                        l.bindPopup(popup); 
-                    }
-                }).addTo(map);
-            } catch (e) { document.getElementById('layer-tps').checked = false; }
-        }
-
-        // Bank Sampah Layer
-        async function ensureBankSampahLayerData() {
-            if (bankSampahLayerData) return bankSampahLayerData;
-            const res = await fetch('/layers/waste_banks.geojson');
-            if (!res.ok) throw new Error('Gagal memuat layer bank sampah');
-            bankSampahLayerData = await res.json();
-            return bankSampahLayerData;
-        }
-
-        async function toggleBankSampahLayer(show) {
-            if (!show) {
-                if (bankSampahLayer) { map.removeLayer(bankSampahLayer); bankSampahLayer = null; }
-                return;
-            }
-            try {
-                const data = await ensureBankSampahLayerData();
-                if (bankSampahLayer) { map.addLayer(bankSampahLayer); return; }
-                
-                bankSampahLayer = L.geoJSON(data, {
-                    pointToLayer: (f, latlng) => L.marker(latlng, {
-                        icon: L.AwesomeMarkers.icon({
-                            icon: 'recycle',
-                            prefix: 'fa',
-                            markerColor: 'green'
-                        })
-                    }),
-                    onEachFeature: (f, l) => { 
-                        let popup = `<b>Bank Sampah</b>`;
-                        if (f.properties.Nama_Bank_) popup += `<br>${f.properties.Nama_Bank_}`;
-                        if (f.properties.Alamat) popup += `<br>${f.properties.Alamat}`;
-                        if (f.properties.Hari_Buka) popup += `<br>Buka: ${f.properties.Hari_Buka}`;
-                        l.bindPopup(popup); 
-                    }
-                }).addTo(map);
-            } catch (e) { document.getElementById('layer-bank-sampah').checked = false; }
-        }
-
-        // Rute Sampah Layer
-        async function ensureRuteSampahLayerData() {
-            if (ruteSampahLayerData) return ruteSampahLayerData;
-            const res = await fetch('/layers/waste_routes.geojson');
-            if (!res.ok) throw new Error('Gagal memuat layer rute sampah');
-            ruteSampahLayerData = await res.json();
-            return ruteSampahLayerData;
-        }
-
-        async function toggleRuteSampahLayer(show) {
-            if (!show) {
-                if (ruteSampahLayer) { map.removeLayer(ruteSampahLayer); ruteSampahLayer = null; }
-                return;
-            }
-            try {
-                const data = await ensureRuteSampahLayerData();
-                if (ruteSampahLayer) { map.addLayer(ruteSampahLayer); return; }
-                
-                ruteSampahLayer = L.geoJSON(data, {
-                    style: {
-                        color: '#dc2626', // red-600
-                        weight: 3,
-                        opacity: 0.8,
-                        dashArray: '5, 5'
-                    },
-                    onEachFeature: (f, l) => { l.bindPopup(`<b>Rute Pengangkutan Sampah</b>`); }
-                }).addTo(map);
-            } catch (e) { document.getElementById('layer-rute-sampah').checked = false; }
-        }
-
-        // Batas Kecamatan Layer
-        async function ensureBatasKecamatanLayerData() {
-            if (batasKecamatanLayerData) return batasKecamatanLayerData;
-            const res = await fetch('/layers/district_boundary.geojson');
-            if (!res.ok) throw new Error('Gagal memuat layer batas kecamatan');
-            batasKecamatanLayerData = await res.json();
-            return batasKecamatanLayerData;
-        }
-
-        async function toggleBatasKecamatanLayer(show) {
-            if (!show) {
-                if (batasKecamatanLayer) { map.removeLayer(batasKecamatanLayer); batasKecamatanLayer = null; }
-                return;
-            }
-            try {
-                const data = await ensureBatasKecamatanLayerData();
-                if (batasKecamatanLayer) { map.addLayer(batasKecamatanLayer); return; }
-                
-                batasKecamatanLayer = L.geoJSON(data, {
-                    style: {
-                        color: '#000',
-                        weight: 2,
-                        opacity: 1,
-                        fill: false,
-                        dashArray: '10, 5'
-                    }
-                }).addTo(map);
-            } catch (e) { document.getElementById('layer-batas-kecamatan').checked = false; }
-        }
-
-        // Disaster Mitigation Layers Logic
-        
-        async function toggleKRBLayer(show) {
-            if (!show) {
-                if (krb1Layer) { map.removeLayer(krb1Layer); krb1Layer = null; }
-                if (krb2Layer) { map.removeLayer(krb2Layer); krb2Layer = null; }
-                if (krb3Layer) { map.removeLayer(krb3Layer); krb3Layer = null; }
-                return;
-            }
-            try {
-                // Load KRB 3 (Most Dangerous)
-                if (!krb3LayerData) {
-                    const res = await fetch('/layers/krb_3.geojson');
-                    if (res.ok) krb3LayerData = await res.json();
-                }
-                if (krb3LayerData && !krb3Layer) {
-                    krb3Layer = L.geoJSON(krb3LayerData, {
-                        style: { color: '#ef4444', weight: 0, fillOpacity: 0.4, fillColor: '#ef4444' } // Red
-                    }).bindPopup("<b>KRB III</b><br>Kawasan Rawan Bencana Tinggi").addTo(map);
-                }
-
-                // Load KRB 2
-                if (!krb2LayerData) {
-                    const res = await fetch('/layers/krb_2.geojson');
-                    if (res.ok) krb2LayerData = await res.json();
-                }
-                if (krb2LayerData && !krb2Layer) {
-                    krb2Layer = L.geoJSON(krb2LayerData, {
-                        style: { color: '#f97316', weight: 0, fillOpacity: 0.3, fillColor: '#f97316' } // Orange
-                    }).bindPopup("<b>KRB II</b><br>Kawasan Rawan Bencana Sedang").addTo(map);
-                }
-
-                // Load KRB 1
-                if (!krb1LayerData) {
-                    const res = await fetch('/layers/krb_1.geojson');
-                    if (res.ok) krb1LayerData = await res.json();
-                }
-                if (krb1LayerData && !krb1Layer) {
-                    krb1Layer = L.geoJSON(krb1LayerData, {
-                        style: { color: '#eab308', weight: 0, fillOpacity: 0.2, fillColor: '#eab308' } // Yellow
-                    }).bindPopup("<b>KRB I</b><br>Kawasan Rawan Bencana Rendah").addTo(map);
-                }
-
-            } catch (e) { document.getElementById('layer-krb').checked = false; }
-        }
-
-        async function toggleEvacuationLayer(show) {
-            if (!show) {
-                if (evacuationLayer) { map.removeLayer(evacuationLayer); evacuationLayer = null; }
-                return;
-            }
-            try {
-                if (!evacuationLayerData) {
-                    const res = await fetch('/layers/evacuation_route.geojson');
-                    if (res.ok) evacuationLayerData = await res.json();
-                }
-                if (evacuationLayerData && !evacuationLayer) {
-                    evacuationLayer = L.geoJSON(evacuationLayerData, {
-                        style: { color: '#000', weight: 4, opacity: 0.8, dashArray: '10, 10' }
-                    }).bindPopup("<b>Jalur Evakuasi</b>").addTo(map);
-                }
-            } catch (e) { document.getElementById('layer-jalur-evakuasi').checked = false; }
-        }
-
-        async function toggleBarracksLayer(show) {
-            if (!show) {
-                if (barracksLayer) { map.removeLayer(barracksLayer); barracksLayer = null; }
-                return;
-            }
-            try {
-                if (!barracksLayerData) {
-                    const res = await fetch('/layers/barracks.geojson');
-                    if (res.ok) barracksLayerData = await res.json();
-                }
-                if (barracksLayerData && !barracksLayer) {
-                    barracksLayer = L.geoJSON(barracksLayerData, {
-                        pointToLayer: (f, latlng) => L.marker(latlng, {
-                            icon: L.AwesomeMarkers.icon({
-                                icon: 'bed',
-                                prefix: 'fa',
-                                markerColor: 'blue'
-                            })
-                        }),
-                        onEachFeature: (f, l) => l.bindPopup(`<b>Barak Pengungsian</b><br>${f.properties.Keterangan || ''}`)
-                    }).addTo(map);
-                }
-            } catch (e) { document.getElementById('layer-barak').checked = false; }
-        }
-
-        async function toggleAssemblyLayer(show) {
-            if (!show) {
-                if (assemblyLayer) { map.removeLayer(assemblyLayer); assemblyLayer = null; }
-                return;
-            }
-            try {
-                if (!assemblyLayerData) {
-                    const res = await fetch('/layers/assembly_points.geojson');
-                    if (res.ok) assemblyLayerData = await res.json();
-                }
-                if (assemblyLayerData && !assemblyLayer) {
-                    assemblyLayer = L.geoJSON(assemblyLayerData, {
-                        pointToLayer: (f, latlng) => L.marker(latlng, {
-                            icon: L.AwesomeMarkers.icon({
-                                icon: 'users',
-                                prefix: 'fa',
-                                markerColor: 'green'
-                            })
-                        }),
-                        onEachFeature: (f, l) => l.bindPopup(`<b>Titik Kumpul</b><br>${f.properties.Lokasi || ''}`)
-                    }).addTo(map);
-                }
-            } catch (e) { document.getElementById('layer-titik-kumpul').checked = false; }
-        }
-
-        async function toggleEWSLayer(show) {
-            if (!show) {
-                if (ewsLayer) { map.removeLayer(ewsLayer); ewsLayer = null; }
-                return;
-            }
-            try {
-                if (!ewsLayerData) {
-                    const res = await fetch('/layers/ews_location.geojson');
-                    if (res.ok) ewsLayerData = await res.json();
-                }
-                if (ewsLayerData && !ewsLayer) {
-                    ewsLayer = L.geoJSON(ewsLayerData, {
-                        pointToLayer: (f, latlng) => L.marker(latlng, {
-                            icon: L.AwesomeMarkers.icon({
-                                icon: 'bullhorn',
-                                prefix: 'fa',
-                                markerColor: 'orange'
-                            })
-                        }),
-                        onEachFeature: (f, l) => l.bindPopup(`<b>EWS (Early Warning System)</b><br>${f.properties.Keterangan || ''}`)
-                    }).addTo(map);
-                }
-            } catch (e) { document.getElementById('layer-ews').checked = false; }
-        }
-
-        async function toggleMerapiLayer(show) {
-            if (!show) {
-                if (merapiLayer) { map.removeLayer(merapiLayer); merapiLayer = null; }
-                return;
-            }
-            try {
-                if (!merapiLayerData) {
-                    const res = await fetch('/layers/merapi_distance.geojson');
-                    if (res.ok) merapiLayerData = await res.json();
-                }
-                if (merapiLayerData && !merapiLayer) {
-                    merapiLayer = L.geoJSON(merapiLayerData, {
-                        style: { color: '#6b7280', weight: 2, dashArray: '5, 5' }
-                    }).bindPopup("<b>Jarak dari Puncak Merapi</b>").addTo(map);
-                }
-            } catch (e) { document.getElementById('layer-jarak-merapi').checked = false; }
-        }
-
+        // Render Household Markers (MapLibre WebGL Clusters & Points)
         function renderMarkers() {
+            if (!map.isStyleLoaded()) return;
+
             const filterDesil = Array.from(document.querySelectorAll('.filter-desil:checked')).map(cb => parseInt(cb.value));
             const filterAid = Array.from(document.querySelectorAll('.filter-aid:checked')).map(cb => cb.value);
             const filterJob = Array.from(document.querySelectorAll('.filter-job:checked')).map(cb => cb.value);
@@ -1871,58 +1202,11 @@
             const filterDusun = Array.from(document.querySelectorAll('.filter-dusun:checked')).map(cb => cb.value);
             const filterVulnerable = Array.from(document.querySelectorAll('.filter-vulnerable:checked')).map(cb => cb.value);
             const filterNameRaw = document.getElementById('filter-name') ? document.getElementById('filter-name').value : '';
-            
-            // Heatmap Mode
             const heatmapMode = document.getElementById('toggle-heatmap') && document.getElementById('toggle-heatmap').checked;
-            
-            // Update Desil Count Display
-            const desilDisplay = document.getElementById('desil-count-display');
-            if (desilDisplay) {
-                if (filterDesil.length > 0) {
-                    let totalPeople = 0;
-                    let totalHH = 0;
-                    
-                    // Iterate to sum
-                    allHouseholds.forEach(hh => {
-                         const desil = parseInt(hh.welfare_level);
-                         let matches = false;
-                         
-                         // Check match using same logic as map filter
-                         if (filterDesil.includes(4)) {
-                             // If 4 is selected, it includes 4 and above
-                             if (desil >= 4 || filterDesil.includes(desil)) matches = true;
-                         } else {
-                             // Exact match
-                             if (filterDesil.includes(desil)) matches = true;
-                         }
-                         
-                         if (matches) {
-                             totalHH++;
-                             totalPeople += (hh.members ? hh.members.length : 0);
-                         }
-                    });
-                    
-                    desilDisplay.innerText = `${totalPeople.toLocaleString('id-ID')} Jiwa`;
-                    desilDisplay.classList.remove('hidden');
-                } else {
-                    desilDisplay.classList.add('hidden');
-                }
-            }
 
-            markers.clearLayers();
-            if (heatLayer) {
-                map.removeLayer(heatLayer);
-                heatLayer = null;
-            }
-            
             const normalize = (s) => (s || "").toString().trim().toUpperCase();
             const filterName = normalize(filterNameRaw);
             const membersOf = (hh) => Array.isArray(hh.members) ? hh.members : [];
-
-            const noFilters = filterDusun.length === 0 && filterDesil.length === 0 && filterAid.length === 0 && filterJob.length === 0 && filterBusiness.length === 0 && filterVulnerable.length === 0 && !filterName;
-            if (noFilters) {
-                return;
-            }
 
             const hasStandardAid = (aidsUpper) => aidsUpper.some(a => a.includes('PKH') || a.includes('BPNT') || a.includes('BLT') || a.includes('JAMKES') || a.includes('PRAKERJA') || a.includes('BANPRES') || a.includes('KUR') || a.includes('UMKM MIKRO') || a.includes('PIP') || a.includes('JAMKET'));
             const householdAidsUpper = (hh) => {
@@ -1946,10 +1230,8 @@
 
             const householdMatchesAid = (hh) => {
                 if (filterAid.length === 0) return true;
-
                 const aidsUpper = householdAidsUpper(hh);
                 let matched = false;
-
                 if (filterAid.includes('PKH') && aidsUpper.some(a => a.includes('PKH'))) matched = true;
                 if (filterAid.includes('BPNT') && aidsUpper.some(a => a.includes('BPNT'))) matched = true;
                 if (filterAid.includes('BLT') && aidsUpper.some(a => a.includes('BLT'))) matched = true;
@@ -1960,11 +1242,7 @@
                 if (filterAid.includes('UMKM Mikro') && aidsUpper.some(a => a.includes('UMKM MIKRO'))) matched = true;
                 if (filterAid.includes('PIP') && aidsUpper.some(a => a.includes('PIP'))) matched = true;
                 if (filterAid.includes('Jamket') && aidsUpper.some(a => a.includes('JAMKET'))) matched = true;
-
-                if (filterAid.includes('Lainnya')) {
-                    if (!hasStandardAid(aidsUpper)) matched = true;
-                }
-
+                if (filterAid.includes('Lainnya') && !hasStandardAid(aidsUpper)) matched = true;
                 return matched;
             };
 
@@ -1978,7 +1256,6 @@
                     const isUnemployed = unemployedKeywords.some(k => jd.includes(k));
                     if (!isUnemployed) return "working";
                 }
-                if (anyJobText) return "unemployed";
                 return "unemployed";
             };
 
@@ -1993,95 +1270,218 @@
 
             const householdMatchesVulnerable = (hh) => {
                 if (filterVulnerable.length === 0) return true;
-                
-                // 1. Lansia Tunggal (IsElderlyHead && Members <= 2)
                 if (filterVulnerable.includes('elderly_single')) {
                     if (hh.is_elderly_head && (hh.members ? hh.members.length : 0) <= 2) return true;
                 }
-                
-                // 2. Miskin dgn Balita (HasToddler && (Desil 1 or 2))
                 if (filterVulnerable.includes('poor_toddler')) {
                     const desil = parseInt(hh.welfare_level);
                     if (hh.has_toddler && (desil === 1 || desil === 2)) return true;
                 }
-                
                 return false;
             };
 
-            let heatPoints = [];
+            // Build GeoJSON Features
+            const features = [];
             let displayedCount = 0;
+            let desilTotalPeople = 0;
 
-            allHouseholds.forEach(hh => {
-                const desil = parseInt(hh.welfare_level);
-                
-                let matchesDesil = true;
-                if (filterDesil.length > 0) {
-                    if (filterDesil.includes(4)) {
-                        const matchesHigh = desil >= 4;
-                        const matchesExact = filterDesil.includes(desil);
-                        if (!matchesHigh && !matchesExact) matchesDesil = false;
-                    } else {
-                        if (!filterDesil.includes(desil)) matchesDesil = false;
+            const isWargaVisible = !!layerState['warga'];
+
+            if (isWargaVisible && allHouseholds.length > 0) {
+                allHouseholds.forEach(hh => {
+                    const desil = parseInt(hh.welfare_level) || 4;
+                    let matchesDesil = true;
+                    if (filterDesil.length > 0) {
+                        if (filterDesil.includes(4)) {
+                            if (desil < 4 && !filterDesil.includes(desil)) matchesDesil = false;
+                        } else {
+                            if (!filterDesil.includes(desil)) matchesDesil = false;
+                        }
                     }
-                }
-                
-                if (!matchesDesil) return;
+                    if (!matchesDesil) return;
+                    if (filterDusun.length > 0 && !filterDusun.includes(hh.dusun)) return;
+                    if (!householdMatchesAid(hh)) return;
+                    if (filterJob.length > 0 && !filterJob.includes(householdJobStatus(hh))) return;
+                    if (filterBusiness.length > 0) {
+                        const hasBiz = householdHasBusiness(hh);
+                        if (hasBiz && !filterBusiness.includes('has_business')) return;
+                        if (!hasBiz && !filterBusiness.includes('no_business')) return;
+                    }
+                    if (filterVulnerable.length > 0 && !householdMatchesVulnerable(hh)) return;
+                    if (!householdMatchesName(hh)) return;
 
-                if (filterDusun.length > 0 && !filterDusun.includes(hh.dusun)) return;
-
-                if (!householdMatchesAid(hh)) return;
-
-                if (filterJob.length > 0) {
-                    const status = householdJobStatus(hh);
-                    if (!filterJob.includes(status)) return;
-                }
-
-                if (filterBusiness.length > 0) {
-                    const hasBiz = householdHasBusiness(hh);
-                    if (hasBiz && !filterBusiness.includes('has_business')) return;
-                    if (!hasBiz && !filterBusiness.includes('no_business')) return;
-                }
-                
-                if (filterVulnerable.length > 0) {
-                    if (!householdMatchesVulnerable(hh)) return;
-                }
-
-                if (!householdMatchesName(hh)) return;
-
-                if (hh.latitude && hh.longitude) {
-                    displayedCount++;
-                    
-                    if (heatmapMode) {
-                        heatPoints.push([hh.latitude, hh.longitude, 1]);
-                    } else {
-                        let color = 'blue';
-                        if (desil === 1) color = 'red';
-                        else if (desil === 2) color = 'orange';
-                        else if (desil === 3) color = 'yellow';
-                        else if (desil >= 4) color = 'green';
-                        
-                        const marker = L.marker([hh.latitude, hh.longitude], { icon: icons[color] });
-                        
-                        let popupContent = `<b>${hh.head_name}</b><br>Desil ${desil}<br>${hh.dusun}`;
-                        marker.bindPopup(popupContent);
-                        
-                        marker.on('click', () => {
-                            showDetail(hh, color);
+                    if (hh.latitude && hh.longitude) {
+                        displayedCount++;
+                        desilTotalPeople += (hh.members ? hh.members.length : 0);
+                        features.push({
+                            type: "Feature",
+                            geometry: { type: "Point", coordinates: [hh.longitude, hh.latitude] },
+                            properties: {
+                                no_kk: hh.no_kk,
+                                head_name: hh.head_name,
+                                dusun: hh.dusun || '',
+                                desil: desil,
+                                address: hh.address || ''
+                            }
                         });
-    
-                        markers.addLayer(marker);
                     }
-                }
-            });
-            
-            if (heatmapMode && heatPoints.length > 0) {
-                heatLayer = L.heatLayer(heatPoints, {radius: 25, blur: 15, maxZoom: 17}).addTo(map);
-            } else {
-                map.addLayer(markers);
+                });
             }
-            
+
+            // Update UI Counters
+            const desilDisplay = document.getElementById('desil-count-display');
+            if (desilDisplay) {
+                if (filterDesil.length > 0) {
+                    desilDisplay.innerText = `${desilTotalPeople.toLocaleString('id-ID')} Jiwa`;
+                    desilDisplay.classList.remove('hidden');
+                } else {
+                    desilDisplay.classList.add('hidden');
+                }
+            }
             const totalCountEl = document.getElementById('total-count');
             if (totalCountEl) totalCountEl.innerText = displayedCount;
+
+            const geojsonData = { type: "FeatureCollection", features };
+
+            // Update or create MapLibre Household Source
+            if (!map.getSource('source-households')) {
+                map.addSource('source-households', {
+                    type: 'geojson',
+                    data: geojsonData,
+                    cluster: true,
+                    clusterMaxZoom: 15,
+                    clusterRadius: 40
+                });
+
+                // Clusters Layer
+                map.addLayer({
+                    id: 'household-clusters',
+                    type: 'circle',
+                    source: 'source-households',
+                    filter: ['has', 'point_count'],
+                    paint: {
+                        'circle-color': [
+                            'step',
+                            ['get', 'point_count'],
+                            '#3b82f6',
+                            10, '#0284c7',
+                            25, '#0369a1',
+                            50, '#1e3a8a'
+                        ],
+                        'circle-radius': [
+                            'step',
+                            ['get', 'point_count'],
+                            16,
+                            10, 20,
+                            25, 24,
+                            50, 28
+                        ],
+                        'circle-stroke-width': 2,
+                        'circle-stroke-color': '#ffffff'
+                    }
+                });
+
+                // Cluster Count Text
+                map.addLayer({
+                    id: 'household-cluster-count',
+                    type: 'symbol',
+                    source: 'source-households',
+                    filter: ['has', 'point_count'],
+                    layout: {
+                        'text-field': '{point_count_abbreviated}',
+                        'text-size': 11
+                    },
+                    paint: { 'text-color': '#ffffff' }
+                });
+
+                // Unclustered Points Layer (Color-coded by Desil)
+                map.addLayer({
+                    id: 'household-points',
+                    type: 'circle',
+                    source: 'source-households',
+                    filter: ['!', ['has', 'point_count']],
+                    paint: {
+                        'circle-color': [
+                            'match',
+                            ['get', 'desil'],
+                            1, '#ef4444',
+                            2, '#f97316',
+                            3, '#eab308',
+                            4, '#22c55e',
+                            '#3b82f6'
+                        ],
+                        'circle-radius': 6.5,
+                        'circle-stroke-width': 1.8,
+                        'circle-stroke-color': '#ffffff'
+                    }
+                });
+
+                // Heatmap Layer
+                map.addLayer({
+                    id: 'household-heatmap',
+                    type: 'heatmap',
+                    source: 'source-households',
+                    paint: {
+                        'heatmap-weight': 1,
+                        'heatmap-intensity': 1.2,
+                        'heatmap-color': [
+                            'interpolate', ['linear'], ['heatmap-density'],
+                            0, 'rgba(33,102,172,0)',
+                            0.2, 'rgb(103,169,207)',
+                            0.4, 'rgb(209,229,240)',
+                            0.6, 'rgb(253,219,199)',
+                            0.8, 'rgb(239,138,98)',
+                            1, 'rgb(178,24,43)'
+                        ],
+                        'heatmap-radius': 25,
+                        'heatmap-opacity': 0.85
+                    },
+                    layout: { 'visibility': 'none' }
+                });
+
+                // Event Listeners for Clusters & Points
+                map.on('click', 'household-clusters', async (e) => {
+                    const feats = map.queryRenderedFeatures(e.point, { layers: ['household-clusters'] });
+                    const clusterId = feats[0].properties.cluster_id;
+                    const zoom = await map.getSource('source-households').getClusterExpansionZoom(clusterId);
+                    map.easeTo({ center: feats[0].geometry.coordinates, zoom: zoom + 0.5 });
+                });
+
+                map.on('click', 'household-points', (e) => {
+                    const p = e.features[0].properties;
+                    const hh = allHouseholds.find(h => String(h.no_kk) === String(p.no_kk));
+                    if (hh) {
+                        const color = p.desil === 1 ? 'red' : (p.desil === 2 ? 'orange' : (p.desil === 3 ? 'yellow' : 'green'));
+                        showDetail(hh, color);
+                        new maplibregl.Popup({ offset: 12, closeButton: false })
+                            .setLngLat(e.features[0].geometry.coordinates)
+                            .setHTML(`<div class="p-1 text-xs"><b>${p.head_name}</b><br><span class="text-slate-500">${p.dusun || ''}</span><br><span class="font-bold text-emerald-600">Desil ${p.desil}</span></div>`)
+                            .addTo(map);
+                    }
+                });
+
+                map.on('mouseenter', 'household-clusters', () => { map.getCanvas().style.cursor = 'pointer'; });
+                map.on('mouseleave', 'household-clusters', () => { map.getCanvas().style.cursor = ''; });
+                map.on('mouseenter', 'household-points', () => { map.getCanvas().style.cursor = 'pointer'; });
+                map.on('mouseleave', 'household-points', () => { map.getCanvas().style.cursor = ''; });
+            } else {
+                map.getSource('source-households').setData(geojsonData);
+            }
+
+            // Toggle between Heatmap and Point view
+            if (map.getLayer('household-heatmap') && map.getLayer('household-points')) {
+                if (heatmapMode) {
+                    map.setLayoutProperty('household-heatmap', 'visibility', 'visible');
+                    map.setLayoutProperty('household-points', 'visibility', 'none');
+                    map.setLayoutProperty('household-clusters', 'visibility', 'none');
+                    map.setLayoutProperty('household-cluster-count', 'visibility', 'none');
+                } else {
+                    map.setLayoutProperty('household-heatmap', 'visibility', 'none');
+                    map.setLayoutProperty('household-points', 'visibility', 'visible');
+                    map.setLayoutProperty('household-clusters', 'visibility', 'visible');
+                    map.setLayoutProperty('household-cluster-count', 'visibility', 'visible');
+                }
+            }
         }
 
         function attachStaticFilterListeners() {
@@ -2090,10 +1490,23 @@
             });
             const nameInput = document.getElementById('filter-name');
             if (nameInput) nameInput.addEventListener('input', renderMarkers);
+
+            // Listeners for Detail Checkboxes
+            LAYER_DEFS.forEach(def => {
+                const cb = document.getElementById('layer-' + def.id);
+                if (cb) {
+                    cb.addEventListener('change', (e) => {
+                        layerState[def.id] = e.target.checked;
+                        syncUIWithLayerState();
+                        reapplyAllThematicLayers();
+                        updateLegend();
+                    });
+                }
+            });
         }
 
-        window.resetFilters = function() {
-            document.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+        function resetFilters() {
+            document.querySelectorAll('.filter-desil, .filter-aid, .filter-job, .filter-business, .filter-dusun, .filter-vulnerable').forEach(cb => {
                 cb.checked = false;
             });
             const nameInput = document.getElementById('filter-name');
@@ -2101,136 +1514,16 @@
             renderMarkers();
         }
 
-        function attachGeoLayerListeners() {
-            const cbPemukiman = document.getElementById('layer-pemukiman');
-            if (cbPemukiman) {
-                cbPemukiman.addEventListener('change', (e) => {
-                    togglePemukimanLayer(e.target.checked);
-                });
-            }
-            const cbPadukuhan = document.getElementById('layer-padukuhan');
-            if (cbPadukuhan) {
-                cbPadukuhan.addEventListener('change', (e) => {
-                    togglePadukuhanLayer(e.target.checked);
-                });
-            }
-            const cbRw = document.getElementById('layer-rw');
-            if (cbRw) {
-                cbRw.addEventListener('change', (e) => {
-                    toggleRwLayer(e.target.checked);
-                });
-            }
-            const cbRt = document.getElementById('layer-rt');
-            if (cbRt) {
-                cbRt.addEventListener('change', (e) => {
-                    toggleRtLayer(e.target.checked);
-                });
-            }
-            const cbFasilitasEditor = document.getElementById('layer-fasilitas-editor');
-            if (cbFasilitasEditor) {
-                cbFasilitasEditor.addEventListener('change', (e) => {
-                    toggleFasilitasEditorLayer(e.target.checked);
-                });
-            }
-            const cbSungai = document.getElementById('layer-sungai');
-            if (cbSungai) {
-                cbSungai.addEventListener('change', (e) => {
-                    toggleSungaiLayer(e.target.checked);
-                });
-            }
-            const cbSawah = document.getElementById('layer-sawah');
-            if (cbSawah) {
-                cbSawah.addEventListener('change', (e) => {
-                    toggleSawahLayer(e.target.checked);
-                });
-            }
-            const cbBangunan = document.getElementById('layer-bangunan');
-            if (cbBangunan) {
-                cbBangunan.addEventListener('change', (e) => {
-                    toggleBangunanLayer(e.target.checked);
-                });
-            }
-            const cbJalan = document.getElementById('layer-jalan');
-            if (cbJalan) {
-                cbJalan.addEventListener('change', (e) => {
-                    toggleJalanLayer(e.target.checked);
-                });
-            }
-            const cbKontur = document.getElementById('layer-kontur');
-            if (cbKontur) {
-                cbKontur.addEventListener('change', (e) => {
-                    toggleKonturLayer(e.target.checked);
-                });
-            }
-            const cbIrigasi = document.getElementById('layer-irigasi');
-            if (cbIrigasi) {
-                cbIrigasi.addEventListener('change', (e) => {
-                    toggleIrigasiLayer(e.target.checked);
-                });
-            }
-            const cbPendidikan = document.getElementById('layer-pendidikan');
-            if (cbPendidikan) cbPendidikan.addEventListener('change', (e) => togglePendidikanLayer(e.target.checked));
-
-            const cbToponimi = document.getElementById('layer-toponimi');
-            if (cbToponimi) cbToponimi.addEventListener('change', (e) => toggleToponimiLayer(e.target.checked));
-
-            const cbTonggak = document.getElementById('layer-tonggak');
-            if (cbTonggak) cbTonggak.addEventListener('change', (e) => toggleTonggakLayer(e.target.checked));
-
-            const cbTambang = document.getElementById('layer-tambang');
-            if (cbTambang) cbTambang.addEventListener('change', (e) => toggleTambangLayer(e.target.checked));
-
-            // New Listeners
-            const cbTPS = document.getElementById('layer-tps');
-            if (cbTPS) cbTPS.addEventListener('change', (e) => toggleTPSLayer(e.target.checked));
-
-            const cbBankSampah = document.getElementById('layer-bank-sampah');
-            if (cbBankSampah) cbBankSampah.addEventListener('change', (e) => toggleBankSampahLayer(e.target.checked));
-
-            const cbRuteSampah = document.getElementById('layer-rute-sampah');
-            if (cbRuteSampah) cbRuteSampah.addEventListener('change', (e) => toggleRuteSampahLayer(e.target.checked));
-
-            const cbBatasKecamatan = document.getElementById('layer-batas-kecamatan');
-            if (cbBatasKecamatan) cbBatasKecamatan.addEventListener('change', (e) => toggleBatasKecamatanLayer(e.target.checked));
-
-            // Disaster Mitigation Listeners
-            const cbKRB = document.getElementById('layer-krb');
-            if (cbKRB) cbKRB.addEventListener('change', (e) => toggleKRBLayer(e.target.checked));
-
-            const cbEvacuation = document.getElementById('layer-jalur-evakuasi');
-            if (cbEvacuation) cbEvacuation.addEventListener('change', (e) => toggleEvacuationLayer(e.target.checked));
-
-            const cbBarracks = document.getElementById('layer-barak');
-            if (cbBarracks) cbBarracks.addEventListener('change', (e) => toggleBarracksLayer(e.target.checked));
-
-            const cbAssembly = document.getElementById('layer-titik-kumpul');
-            if (cbAssembly) cbAssembly.addEventListener('change', (e) => toggleAssemblyLayer(e.target.checked));
-
-            const cbEWS = document.getElementById('layer-ews');
-            if (cbEWS) cbEWS.addEventListener('change', (e) => toggleEWSLayer(e.target.checked));
-
-            const cbMerapi = document.getElementById('layer-jarak-merapi');
-            if (cbMerapi) cbMerapi.addEventListener('change', (e) => toggleMerapiLayer(e.target.checked));
-        }
-
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', attachGeoLayerListeners);
-        } else {
-            attachGeoLayerListeners();
-        }
-
         function showDetail(hh, color) {
             const detailPanel = document.getElementById('sidebar-detail');
             const filtersPanel = document.getElementById('sidebar-filters');
             const contentDiv = document.getElementById('detail-content');
-            
-            // Show Detail, Hide Filters
+
             detailPanel.classList.remove('hidden');
             filtersPanel.classList.add('hidden');
 
-            // Build Content
-            let colorClass = color === 'red' ? 'bg-red-500' : color === 'orange' ? 'bg-orange-500' : color === 'yellow' ? 'bg-yellow-500' : 'bg-green-500';
-            
+            const colorClass = color === 'red' ? 'bg-red-500' : color === 'orange' ? 'bg-orange-500' : color === 'yellow' ? 'bg-yellow-500' : 'bg-green-500';
+
             let html = `
                 <div class="bg-white p-4 rounded shadow-sm border border-gray-200">
                     <div class="flex items-center justify-between mb-3">
@@ -2240,52 +1533,39 @@
                         <span class="text-xs text-gray-500 font-mono">KK: ${hh.no_kk}</span>
                     </div>
                     <h3 class="font-bold text-lg text-gray-800">${hh.head_name}</h3>
-                    <p class="text-gray-600 mt-1">${hh.address}</p>
+                    <p class="text-gray-600 mt-1">${hh.address || '-'}</p>
                     <p class="text-gray-500 text-xs mt-1">Padukuhan: ${hh.dusun || '-'}</p>
                 </div>
 
                 <div class="bg-white p-4 rounded shadow-sm border border-gray-200 space-y-2">
                     <h4 class="font-semibold text-gray-700 border-b pb-1">Informasi Rumah Tangga</h4>
-                    
                     <div class="grid grid-cols-2 gap-2 text-xs">
                         <div class="text-gray-500">Luas Lantai:</div>
                         <div class="font-medium">${hh.lantai_luas || '-'} m²</div>
-                        
                         <div class="text-gray-500">Penerima PKH:</div>
                         <div class="font-medium">${hh.pkh_thn ? 'Sejak ' + hh.pkh_thn : '-'}</div>
-                        
                         <div class="text-gray-500">Penerima BPNT:</div>
                         <div class="font-medium">${hh.bpnt_thn ? 'Sejak ' + hh.bpnt_thn : '-'}</div>
                     </div>
-
-                    ${hh.keterangan ? `
-                    <div class="mt-2 pt-2 border-t border-dashed">
-                        <div class="text-gray-500 text-xs mb-1">Catatan:</div>
-                        <div class="text-xs bg-yellow-50 p-2 rounded text-yellow-800 border border-yellow-100">
-                            ${hh.keterangan}
-                        </div>
-                    </div>` : ''}
                 </div>
 
                 <div class="bg-white p-4 rounded shadow-sm border border-gray-200">
                     <h4 class="font-semibold text-gray-700 border-b pb-2 mb-3">Anggota Keluarga (${hh.members ? hh.members.length : 0})</h4>
-                    <div class="space-y-4">
+                    <div class="space-y-3">
             `;
 
             if (hh.members) {
                 hh.members.forEach(m => {
                     html += `
-                        <div class="border-b border-gray-100 pb-3 last:border-0 last:pb-0">
+                        <div class="border-b border-gray-100 pb-2.5 last:border-0 last:pb-0 text-xs">
                             <div class="flex justify-between items-start">
                                 <div class="font-medium text-gray-800">${m.name}</div>
-                                <div class="text-xs text-gray-400 font-mono">${m.nik}</div>
+                                <div class="text-gray-400 font-mono text-[11px]">${m.nik}</div>
                             </div>
-                            
-                            ${m.kerja_detail ? `<div class="text-xs text-gray-600 mt-1">💼 ${m.kerja_detail}</div>` : ''}
-                            ${m.ush_detail ? `<div class="text-xs text-gray-600 mt-0.5">🏪 ${m.ush_detail}</div>` : ''}
-                            
+                            ${m.kerja_detail ? `<div class="text-gray-600 mt-0.5">Pekerjaan: ${m.kerja_detail}</div>` : ''}
+                            ${m.ush_detail ? `<div class="text-gray-600 mt-0.5">Usaha: ${m.ush_detail}</div>` : ''}
                             ${m.aid_list && m.aid_list.length > 0 ? `
-                            <div class="flex flex-wrap gap-1 mt-2">
+                            <div class="flex flex-wrap gap-1 mt-1.5">
                                 ${m.aid_list.map(aid => `<span class="px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded text-[10px] border border-blue-200">${aid}</span>`).join('')}
                             </div>` : ''}
                         </div>
@@ -2293,193 +1573,100 @@
                 });
             }
 
-            html += `
-                    </div>
-                </div>
-            `;
-
+            html += `</div></div>`;
             contentDiv.innerHTML = html;
         }
 
         function closeDetail() {
-            const detailPanel = document.getElementById('sidebar-detail');
-            const filtersPanel = document.getElementById('sidebar-filters');
-            
-            // Hide Detail, Show Filters
-            detailPanel.classList.add('hidden');
-            filtersPanel.classList.remove('hidden');
+            document.getElementById('sidebar-detail').classList.add('hidden');
+            document.getElementById('sidebar-filters').classList.remove('hidden');
         }
 
-        // Legend
-        const legend = L.control({position: 'bottomright'});
-        legend.onAdd = function (map) {
-            const div = L.DomUtil.create('div', 'legend');
-            div.id = 'map-legend';
-            updateLegend(div);
-            return div;
-        };
-        legend.addTo(map);
-
-        function updateLegend(container) {
-            if (!container) container = document.getElementById('map-legend');
+        function updateLegend() {
+            const container = document.getElementById('map-legend');
             if (!container) return;
 
-            let html = '';
+            let html = '<div class="text-xs font-bold text-slate-800 border-b pb-1 mb-2">Legenda Peta Aktif</div>';
+            let activeCount = 0;
 
-            // 1. Kesejahteraan (REMOVED as per user request - Legend is in sidebar)
-            /*
-            const desilChecked = document.querySelectorAll('.filter-desil:checked').length > 0;
-            if (desilChecked || document.querySelectorAll('.filter-desil:checked').length === 0) { 
-                 html += `
-                    <h4>Tingkat Kesejahteraan</h4>
-                    <div class="legend-item"><span class="legend-icon"><img src="https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png" width="12"></span> Desil 1 (Sangat Miskin)</div>
-                    <div class="legend-item"><span class="legend-icon"><img src="https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-orange.png" width="12"></span> Desil 2 (Miskin)</div>
-                    <div class="legend-item"><span class="legend-icon"><img src="https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-yellow.png" width="12"></span> Desil 3 (Hampir Miskin)</div>
-                    <div class="legend-item"><span class="legend-icon"><img src="https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png" width="12"></span> Mampu (Desil 4+)</div>
-                `;
-            }
-            */
-
-            // 2. Padukuhan (Always show if active)
-            const dusunChecked = document.querySelectorAll('.filter-dusun:checked').length > 0;
-            if (dusunChecked) {
+            if (layerState['warga']) {
+                activeCount++;
                 html += `
-                    <h4>Wilayah</h4>
-                    <div class="legend-item"><span class="legend-icon" style="background-color:#3b82f6"></span> Batas Padukuhan</div>
+                    <div class="mb-2">
+                        <div class="text-[11px] font-semibold text-slate-600 mb-1">Persebaran Warga</div>
+                        <div class="flex items-center text-[11px] mb-0.5"><span class="w-2.5 h-2.5 rounded-full bg-red-500 mr-1.5"></span> Desil 1 (Sangat Miskin)</div>
+                        <div class="flex items-center text-[11px] mb-0.5"><span class="w-2.5 h-2.5 rounded-full bg-orange-500 mr-1.5"></span> Desil 2 (Miskin)</div>
+                        <div class="flex items-center text-[11px] mb-0.5"><span class="w-2.5 h-2.5 rounded-full bg-yellow-500 mr-1.5"></span> Desil 3 (Hampir Miskin)</div>
+                        <div class="flex items-center text-[11px]"><span class="w-2.5 h-2.5 rounded-full bg-green-500 mr-1.5"></span> Desil 4+ (Mampu)</div>
+                    </div>
                 `;
             }
 
-            // 3. Penduduk Rentan
-            const vulnerableChecked = document.querySelectorAll('.filter-vulnerable:checked').length > 0;
-            if (vulnerableChecked) {
+            if (layerState['padukuhan']) {
+                activeCount++;
+                html += `<div class="flex items-center text-[11px] mb-1"><span class="w-3.5 h-0.5 bg-blue-600 mr-1.5"></span> Batas Padukuhan</div>`;
+            }
+            if (layerState['pemukiman']) {
+                activeCount++;
+                html += `<div class="flex items-center text-[11px] mb-1"><span class="w-3 h-3 bg-amber-700/40 border border-amber-700 mr-1.5"></span> Pemukiman</div>`;
+            }
+            if (layerState['sawah']) {
+                activeCount++;
+                html += `<div class="flex items-center text-[11px] mb-1"><span class="w-3 h-3 bg-lime-600/40 border border-lime-600 mr-1.5"></span> Sawah</div>`;
+            }
+            if (layerState['sungai']) {
+                activeCount++;
+                html += `<div class="flex items-center text-[11px] mb-1"><span class="w-3.5 h-0.5 bg-blue-500 mr-1.5"></span> Sungai</div>`;
+            }
+            if (layerState['jalan']) {
+                activeCount++;
+                html += `<div class="flex items-center text-[11px] mb-1"><span class="w-3.5 h-0.5 bg-amber-600 mr-1.5"></span> Jaringan Jalan</div>`;
+            }
+            if (layerState['krb']) {
+                activeCount++;
                 html += `
-                    <h4>Penduduk Rentan</h4>
-                    <div class="legend-item"><span class="legend-icon"><i class="fa fa-user-clock text-pink-500"></i></span> Lansia Tunggal</div>
-                    <div class="legend-item"><span class="legend-icon"><i class="fa fa-baby text-pink-500"></i></span> Miskin dgn Balita</div>
+                    <div class="my-1 pt-1 border-t">
+                        <div class="text-[11px] font-semibold text-red-700 mb-1">Kawasan Bencana Merapi</div>
+                        <div class="flex items-center text-[11px] mb-0.5"><span class="w-3 h-3 bg-red-500/40 border border-red-500 mr-1.5"></span> KRB III (Tinggi)</div>
+                        <div class="flex items-center text-[11px] mb-0.5"><span class="w-3 h-3 bg-orange-500/40 border border-orange-500 mr-1.5"></span> KRB II (Sedang)</div>
+                        <div class="flex items-center text-[11px]"><span class="w-3 h-3 bg-yellow-400/40 border border-yellow-400 mr-1.5"></span> KRB I (Rendah)</div>
+                    </div>
                 `;
             }
-
-            // 4. Bantuan (Show if any aid filter is checked)
-            const aidChecked = document.querySelectorAll('.filter-aid:checked').length > 0;
-            if (document.getElementById('layer-pemukiman').checked) {
-                html += `<h4>Pemukiman</h4><div class="legend-item"><span class="legend-color" style="background:#8d6e63; opacity:0.4"></span> Area Pemukiman</div>`;
+            if (layerState['jalur-evakuasi']) {
+                activeCount++;
+                html += `<div class="flex items-center text-[11px] mb-1"><span class="w-3.5 h-0.5 bg-yellow-600 mr-1.5"></span> Jalur Evakuasi</div>`;
             }
-            if (document.getElementById('layer-sungai').checked) {
-                html += `<h4>Sungai</h4><div class="legend-item"><span class="legend-line" style="background:#3b82f6; height:3px"></span> Sungai</div>`;
+            if (layerState['barak']) {
+                activeCount++;
+                html += `<div class="flex items-center text-[11px] mb-1"><span class="w-2.5 h-2.5 rounded-full bg-blue-800 mr-1.5"></span> Barak Pengungsian</div>`;
             }
-            if (document.getElementById('layer-sawah').checked) {
-                html += `<h4>Sawah</h4><div class="legend-item"><span class="legend-color" style="background:#84cc16; opacity:0.6"></span> Area Sawah</div>`;
+            if (layerState['titik-kumpul']) {
+                activeCount++;
+                html += `<div class="flex items-center text-[11px] mb-1"><span class="w-2.5 h-2.5 rounded-full bg-green-700 mr-1.5"></span> Titik Kumpul</div>`;
             }
-            if (document.getElementById('layer-bangunan').checked) {
-                html += `
-                    <h4>Bangunan</h4>
-                    <div class="legend-item"><i class="fa fa-home text-blue-500 w-5 text-center"></i> Rumah/Umum</div>
-                    <div class="legend-item"><i class="fa fa-school text-purple-500 w-5 text-center"></i> Pendidikan</div>
-                    <div class="legend-item"><i class="fa fa-mosque text-green-500 w-5 text-center"></i> Tempat Ibadah</div>
-                    <div class="legend-item"><i class="fa fa-notes-medical text-red-500 w-5 text-center"></i> Kesehatan</div>
-                    <div class="legend-item"><i class="fa fa-shop text-orange-500 w-5 text-center"></i> Toko/Niaga</div>
-                    <div class="legend-item"><i class="fa fa-briefcase text-teal-600 w-5 text-center"></i> Kantor</div>
-                `;
-            }
-            if (document.getElementById('layer-jalan').checked) {
-                html += `<h4>Jalan</h4><div class="legend-item"><span class="legend-line" style="background:#d97706; height:3px"></span> Jalan</div>`;
-            }
-            if (document.getElementById('layer-kontur').checked) {
-                html += `<h4>Kontur</h4><div class="legend-item"><span class="legend-line" style="background:#795548; height:2px"></span> Garis Kontur</div>`;
-            }
-            // Irigasi (Disabled/No Data) - Skip
-            
-            if (document.getElementById('layer-pendidikan').checked) {
-                html += `<h4>Pendidikan (Titik)</h4><div class="legend-item"><span class="legend-color" style="background:#be185d"></span> Lokasi Pendidikan</div>`;
-            }
-            if (document.getElementById('layer-toponimi').checked) {
-                html += `<h4>Toponimi</h4><div class="legend-item"><span class="legend-color" style="background:#059669"></span> Toponimi</div>`;
-            }
-            // Tonggak (Disabled/No Data) - Skip
-
-            if (document.getElementById('layer-tambang').checked) {
-                html += `<h4>Pertambangan</h4><div class="legend-item"><span class="legend-color" style="background:#1f2937"></span> Lokasi Tambang</div>`;
-            }
-
-            // 3. Kebersihan
-            if (document.getElementById('layer-tps').checked) {
-                html += `<h4>Kebersihan</h4><div class="legend-item"><span class="legend-color" style="background:#ea580c"></span> TPS</div>`;
-            }
-            if (document.getElementById('layer-bank-sampah').checked) {
-                html += `<div class="legend-item"><span class="legend-color" style="background:#16a34a"></span> Bank Sampah</div>`;
-            }
-            if (document.getElementById('layer-rute-sampah').checked) {
-                html += `<div class="legend-item"><span class="legend-line" style="border-top: 3px dashed #dc2626"></span> Rute Sampah</div>`;
-            }
-            if (document.getElementById('layer-batas-kecamatan').checked) {
-                html += `<h4>Batas Admin</h4><div class="legend-item"><span class="legend-line" style="border-top: 2px dashed #000"></span> Batas Kecamatan</div>`;
-            }
-
-            // 4. Mitigasi Bencana
-            let disasterHeader = false;
-            if (document.getElementById('layer-krb').checked) {
-                if (!disasterHeader) { html += `<h4>Mitigasi Bencana</h4>`; disasterHeader = true; }
-                html += `
-                    <div class="legend-item"><span class="legend-color" style="background:#ef4444; opacity:0.4"></span> KRB III (Tinggi)</div>
-                    <div class="legend-item"><span class="legend-color" style="background:#f97316; opacity:0.3"></span> KRB II (Sedang)</div>
-                    <div class="legend-item"><span class="legend-color" style="background:#eab308; opacity:0.2"></span> KRB I (Rendah)</div>
-                `;
-            }
-            if (document.getElementById('layer-jalur-evakuasi').checked) {
-                if (!disasterHeader) { html += `<h4>Mitigasi Bencana</h4>`; disasterHeader = true; }
-                html += `<div class="legend-item"><span class="legend-line" style="border-top: 3px dashed #000"></span> Jalur Evakuasi</div>`;
-            }
-            if (document.getElementById('layer-barak').checked) {
-                if (!disasterHeader) { html += `<h4>Mitigasi Bencana</h4>`; disasterHeader = true; }
-                html += `<div class="legend-item"><span class="legend-color" style="background:#1e40af"></span> Barak Pengungsian</div>`;
-            }
-            if (document.getElementById('layer-titik-kumpul').checked) {
-                if (!disasterHeader) { html += `<h4>Mitigasi Bencana</h4>`; disasterHeader = true; }
-                html += `<div class="legend-item"><span class="legend-color" style="background:#15803d"></span> Titik Kumpul</div>`;
-            }
-            if (document.getElementById('layer-ews').checked) {
-                if (!disasterHeader) { html += `<h4>Mitigasi Bencana</h4>`; disasterHeader = true; }
-                html += `<div class="legend-item"><span class="legend-color" style="background:#f97316"></span> EWS (Sirine)</div>`;
-            }
-            if (document.getElementById('layer-jarak-merapi').checked) {
-                if (!disasterHeader) { html += `<h4>Mitigasi Bencana</h4>`; disasterHeader = true; }
-                html += `<div class="legend-item"><span class="legend-line" style="border-top: 2px dashed #6b7280"></span> Jarak Merapi</div>`;
+            if (layerState['ews']) {
+                activeCount++;
+                html += `<div class="flex items-center text-[11px] mb-1"><span class="w-2.5 h-2.5 rounded-full bg-orange-500 mr-1.5"></span> EWS Sirine</div>`;
             }
 
             container.innerHTML = html;
-            
-            // Hide if empty (though Welfare is usually default)
-            container.style.display = html ? 'block' : 'none';
+            container.style.display = activeCount > 0 ? 'block' : 'none';
         }
 
-        // Attach listener to all checkboxes to update legend
-        document.querySelectorAll('input[type="checkbox"]').forEach(cb => {
-            cb.addEventListener('change', () => updateLegend());
-        });
+        function openRecommendations(e) {
+            e.preventDefault();
+            const loading = document.getElementById('rec-loading');
+            loading.classList.remove('hidden');
+            loading.classList.add('flex');
+            setTimeout(() => {
+                loading.classList.add('hidden');
+                loading.classList.remove('flex');
+                window.open('/recommendations', '_blank');
+            }, 2000);
+        }
 
-        // Initial Legend Load
-        // updateLegend(); - called by onAdd
-
-        // Fetch Boundary
-        fetch('boundary.geojson')
-            .then(response => response.json())
-            .then(data => {
-                const boundaryLayer = L.geoJSON(data, {
-                    style: {
-                        color: "#3b82f6", // Blue-500
-                        weight: 2,
-                        opacity: 1,
-                        fillOpacity: 0.1
-                    }
-                }).addTo(map);
-                
-                // Zoom to boundary
-                map.fitBounds(boundaryLayer.getBounds());
-            })
-            .catch(err => console.error("Error loading boundary:", err));
-
-        // Tab Switching Logic
-        function switchTab(tab) {
+function switchTab(tab) {
             const tabMap = document.getElementById('tab-map');
             const tabAnalysis = document.getElementById('tab-analysis');
             const contentMap = document.getElementById('content-map');
@@ -2500,8 +1687,6 @@
                 sidebarContainer.classList.add('sidebar-normal');
                 
                 // Restore Map View
-                if (analysisLayers.heatmap) map.removeLayer(analysisLayers.heatmap);
-                if (analysisLayers.choropleth) map.removeLayer(analysisLayers.choropleth);
                 renderMarkers(); // Restore normal markers
                 
             } else {
@@ -2522,7 +1707,7 @@
                     initAnalysisCharts();
                 }
             }
-            setTimeout(() => { map.invalidateSize(); }, 350); // Resize map after transition
+            setTimeout(() => { if (window.map && map.resize) map.resize(); }, 350); // Resize map after transition
         }
 
         // Toggle Sidebar Button
@@ -2535,7 +1720,7 @@
                  sidebarContainer.classList.remove('sidebar-wide');
                  sidebarContainer.classList.add('sidebar-normal');
              }
-             setTimeout(() => { map.invalidateSize(); }, 350);
+             setTimeout(() => { if (window.map && map.resize) map.resize(); }, 350);
         });
 
         // --- ANALYSIS LOGIC ---
@@ -2795,35 +1980,20 @@
         }
 
         function toggleAnalysisLayer(type) {
-            // Clear existing analysis layers
-            if (analysisLayers.heatmap) { map.removeLayer(analysisLayers.heatmap); analysisLayers.heatmap = null; }
-            if (analysisLayers.choropleth) { map.removeLayer(analysisLayers.choropleth); analysisLayers.choropleth = null; }
-
             if (type === 'heatmap') {
-                const points = allHouseholds.filter(hh => hh.latitude && hh.longitude).map(hh => [hh.latitude, hh.longitude, 1]);
-                analysisLayers.heatmap = L.heatLayer(points, { radius: 25, blur: 15, maxZoom: 17 }).addTo(map);
-                // alert('Layer Heatmap Kepadatan Penduduk diaktifkan.');
+                const heatToggle = document.getElementById('toggle-heatmap');
+                if (heatToggle) heatToggle.checked = !heatToggle.checked;
+                layerState['warga'] = true;
+                syncUIWithLayerState();
+                applyLayerVisibility();
+                renderMarkers();
             } else if (type === 'welfare') {
-                 const markers = L.layerGroup();
-                 allHouseholds.forEach(hh => {
-                     const desil = parseInt(hh.welfare_level) || 4;
-                     let color = '#22c55e'; // Green
-                     if (desil === 1) color = '#ef4444'; // Red
-                     else if (desil === 2) color = '#f97316'; // Orange
-                     else if (desil === 3) color = '#eab308'; // Yellow
-                     
-                     if (hh.latitude && hh.longitude) {
-                         L.circle([hh.latitude, hh.longitude], {
-                             radius: 20,
-                             color: color,
-                             fillColor: color,
-                             fillOpacity: 0.6,
-                             weight: 0
-                         }).bindPopup(`<b>KK: ${hh.no_kk}</b><br>Desil: ${desil}`).addTo(markers);
-                     }
-                 });
-                 analysisLayers.choropleth = markers.addTo(map);
-                 // alert('Layer Sebaran Kesejahteraan diaktifkan.');
+                const heatToggle = document.getElementById('toggle-heatmap');
+                if (heatToggle) heatToggle.checked = false;
+                layerState['warga'] = true;
+                syncUIWithLayerState();
+                applyLayerVisibility();
+                renderMarkers();
             }
         }
     </script>
