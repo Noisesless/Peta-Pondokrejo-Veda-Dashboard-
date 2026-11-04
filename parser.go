@@ -4,6 +4,7 @@ import (
 	_ "embed"
 	"encoding/json"
 	"fmt"
+	"math"
 	"os"
 	"strconv"
 	"strings"
@@ -689,6 +690,8 @@ func ParseExcel(filename string) ([]Household, error) {
 
 		// Only include households with valid coordinates for the map
 		if hh.Latitude != 0 && hh.Longitude != 0 {
+			hh.Latitude = math.Round(hh.Latitude*100000) / 100000
+			hh.Longitude = math.Round(hh.Longitude*100000) / 100000
 			result = append(result, *hh)
 		}
 	}
