@@ -152,22 +152,4 @@ server {
 }
 ```
 
----
 
-## 7. Daftar Endpoint API
-
-| Method | Path | Deskripsi |
-|---|---|---|
-| `GET` | `/` | Antarmuka peta utama interaktif MapLibre GL 2D |
-| `GET` | `/login` | Halaman login admin kalurahan |
-| `GET` | `/editor` | Antarmuka editor spasial marker & layer |
-| `GET` | `/editor/layers` | Daftar layer spasial yang tersimpan di editor |
-| `GET` | `/editor/layers/:name` | Mengambil GeoJSON layer editor (`padukuhan`, `rw`, `rt`, `fasilitas`) |
-| `POST` | `/editor/save` | Menyimpan perubahan koordinat marker & geometri layer |
-| `GET` | `/residents.json` | Data agregat keluarga & anggota keluarga teroptimasi |
-| `GET` | `/boundary.geojson` | Berkas GeoJSON batas resmi Kalurahan Pondokrejo |
-| `GET` | `/layers/*` | Berkas statis GeoJSON tematik kalurahan |
-| `GET` | `/analytics` | Dasbor analitik demografi & kependudukan |
-| `GET` | `/bansos` | Dasbor perlindungan sosial & pemetaan bansos |
-| `GET` | `/bansos/data` | Endpoint API data statistik bansos |
-| `GET` | `/recommendations` | Dokumen laporan rekomendasi hasil analitik |
