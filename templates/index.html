@@ -134,22 +134,6 @@
                 </div>
             </div>
 
-            <!-- Basemap Selector (OpenFreeMap + Esri Satelit - Bebas 403) -->
-            <div class="p-3 border-b bg-slate-50">
-                <div class="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">
-                    Gaya Peta Dasar
-                </div>
-                <div class="grid grid-cols-3 gap-1 mb-1">
-                    <button type="button" class="btn-basemap active text-xs font-semibold py-1.5 px-1 border transition text-center bg-emerald-700 text-white border-emerald-700" data-style="liberty" onclick="setBasemap('liberty')">Liberty</button>
-                    <button type="button" class="btn-basemap text-xs font-semibold py-1.5 px-1 border transition text-center bg-white text-slate-700 border-slate-300 hover:bg-slate-100" data-style="positron" onclick="setBasemap('positron')">Positron</button>
-                    <button type="button" class="btn-basemap text-xs font-semibold py-1.5 px-1 border transition text-center bg-white text-slate-700 border-slate-300 hover:bg-slate-100" data-style="bright" onclick="setBasemap('bright')">Bright</button>
-                </div>
-                <div class="grid grid-cols-2 gap-1">
-                    <button type="button" class="btn-basemap text-xs font-semibold py-1.5 px-1 border transition text-center bg-white text-slate-700 border-slate-300 hover:bg-slate-100" data-style="dark" onclick="setBasemap('dark')">Dark (OFM)</button>
-                    <button type="button" class="btn-basemap text-xs font-semibold py-1.5 px-1 border transition text-center bg-white text-slate-700 border-slate-300 hover:bg-slate-100" data-style="satelit" onclick="setBasemap('satelit')">Satelit Esri</button>
-                </div>
-            </div>
-
             <!-- Switcher: Mode Sederhana vs Mode Detail (Harmonis dengan Navigasi Tab Analisa Wilayah) -->
             <div class="flex border-b bg-gray-50 text-xs">
                 <button id="btn-mode-simple" type="button" onclick="setLayerSelectionMode('simple')" class="flex-1 py-2.5 text-center font-bold text-emerald-700 border-b-2 border-emerald-700 bg-white focus:outline-none transition">Mode Sederhana</button>
@@ -297,6 +281,37 @@
         </div><!-- Map Container -->
         <div class="flex-1 relative z-10 h-full">
             <div id="map" class="h-full w-full"></div>
+
+            <!-- Layer Switcher Icon Control (Top-Right on Map) -->
+            <div id="basemap-control" class="absolute top-3 right-12 z-20">
+                <button id="btn-toggle-basemap" type="button" class="w-8 h-8 bg-white border border-slate-300 shadow-md flex items-center justify-center hover:bg-slate-50 transition" title="Pilihan Layer Peta">
+                    <svg class="w-4 h-4 text-slate-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+                        <path d="M2 17l10 5 10-5"></path>
+                        <path d="M2 12l10 5 10-5"></path>
+                    </svg>
+                </button>
+                <div id="basemap-menu" class="hidden absolute top-9 right-0 bg-white border border-slate-300 shadow-lg p-2.5 min-w-[130px] space-y-2 text-xs">
+                    <div class="text-[10px] font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 pb-1">Peta Dasar</div>
+                    <label class="flex items-center space-x-2 cursor-pointer hover:text-emerald-700">
+                        <input type="radio" name="basemap-choice" value="liberty" checked class="form-radio text-emerald-700 focus:ring-0">
+                        <span class="font-medium text-slate-700">Standar</span>
+                    </label>
+                    <label class="flex items-center space-x-2 cursor-pointer hover:text-emerald-700">
+                        <input type="radio" name="basemap-choice" value="satelit" class="form-radio text-emerald-700 focus:ring-0">
+                        <span class="font-medium text-slate-700">Satelit</span>
+                    </label>
+                    <label class="flex items-center space-x-2 cursor-pointer hover:text-emerald-700">
+                        <input type="radio" name="basemap-choice" value="positron" class="form-radio text-emerald-700 focus:ring-0">
+                        <span class="font-medium text-slate-700">Terang</span>
+                    </label>
+                    <label class="flex items-center space-x-2 cursor-pointer hover:text-emerald-700">
+                        <input type="radio" name="basemap-choice" value="dark" class="form-radio text-emerald-700 focus:ring-0">
+                        <span class="font-medium text-slate-700">Gelap</span>
+                    </label>
+                </div>
+            </div>
+
             <!-- Floating Map Legend (Bottom Right - Non-Rounded Admin Style) -->
             <div id="map-legend" class="legend" style="position: absolute; bottom: 24px; right: 24px; z-index: 15; max-height: 48vh; overflow-y: auto; background: rgba(255,255,255,0.96); backdrop-filter: blur(8px); border: 1px solid #cbd5e1; border-radius: 0px; padding: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.15); width: 220px; display: none;"></div>
         </div>
@@ -716,6 +731,7 @@
             dark: "https://tiles.openfreemap.org/styles/dark",
             satelit: {
                 version: 8,
+                glyphs: "https://tiles.openfreemap.org/fonts/{fontstack}/{range}.pbf",
                 sources: {
                     "esri-satellite": {
                         type: "raster",
@@ -829,23 +845,42 @@
         function setBasemap(styleKey) {
             if (activeBasemap === styleKey) return;
             activeBasemap = styleKey;
-            document.querySelectorAll('.btn-basemap').forEach(b => {
-                if (b.dataset.style === styleKey) {
-                    b.className = 'btn-basemap active text-xs font-bold py-1.5 px-1 border transition text-center bg-emerald-700 text-white border-emerald-700 shadow-none';
-                } else {
-                    b.className = 'btn-basemap text-xs font-semibold py-1.5 px-1 border transition text-center bg-white text-slate-700 border-slate-300 hover:bg-slate-100 shadow-none';
-                }
+            document.querySelectorAll('input[name="basemap-choice"]').forEach(rb => {
+                rb.checked = (rb.value === styleKey);
             });
 
             // Re-apply boundary dan seluruh layer tematik segera setelah gaya peta baru selesai dimuat
-            map.once('style.load', async () => {
-                await loadBoundary();
-                await reapplyAllThematicLayers();
-                renderMarkers();
-                ensureBoundaryOnTop();
-            });
+            const onStyle = async (e) => {
+                if (e.dataType === 'style') {
+                    map.off('styledata', onStyle);
+                    await loadBoundary();
+                    await reapplyAllThematicLayers();
+                    renderMarkers();
+                    ensureBoundaryOnTop();
+                }
+            };
+            map.on('styledata', onStyle);
 
             map.setStyle(STYLES[styleKey]);
+        }
+
+        // Setup Basemap Control Events
+        const basemapCtrl = document.getElementById('basemap-control');
+        const basemapBtn = document.getElementById('btn-toggle-basemap');
+        const basemapMenu = document.getElementById('basemap-menu');
+
+        if (basemapCtrl && basemapBtn && basemapMenu) {
+            basemapCtrl.addEventListener('mouseenter', () => basemapMenu.classList.remove('hidden'));
+            basemapCtrl.addEventListener('mouseleave', () => basemapMenu.classList.add('hidden'));
+            basemapBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                basemapMenu.classList.toggle('hidden');
+            });
+            document.querySelectorAll('input[name="basemap-choice"]').forEach(rb => {
+                rb.addEventListener('change', (e) => {
+                    setBasemap(e.target.value);
+                });
+            });
         }
 
         // Switcher Tampilan Pemilihan Layer: Sederhana vs Detail (Non-Rounded Flat Tabs)
@@ -1112,6 +1147,11 @@
             }
         }
 
+        function addLayerBeforeBoundary(layerConfig) {
+            const beforeId = map.getLayer('layer-boundary-casing') ? 'layer-boundary-casing' : undefined;
+            map.addLayer(layerConfig, beforeId);
+        }
+
         async function reapplyAllThematicLayers() {
             for (const def of LAYER_DEFS) {
                 const isVisible = !!layerState[def.id];
@@ -1134,8 +1174,8 @@
                             if (!data) continue;
                             if (!map.getSource(sourceId)) {
                                 map.addSource(sourceId, { type: 'geojson', data });
-                                map.addLayer({ id: fillId, type: 'fill', source: sourceId, paint: { 'fill-color': k.color, 'fill-opacity': k.opacity } });
-                                map.addLayer({ id: lineId, type: 'line', source: sourceId, paint: { 'line-color': k.color, 'line-width': 1.5 } });
+                                addLayerBeforeBoundary({ id: fillId, type: 'fill', source: sourceId, paint: { 'fill-color': k.color, 'fill-opacity': k.opacity } });
+                                addLayerBeforeBoundary({ id: lineId, type: 'line', source: sourceId, paint: { 'line-color': k.color, 'line-width': 1.5 } });
                             }
                         } else {
                             const vis = isVisible ? 'visible' : 'none';
@@ -1158,7 +1198,7 @@
                         map.addSource(sourceId, { type: 'geojson', data });
 
                         if (def.type === 'fill') {
-                            map.addLayer({
+                            addLayerBeforeBoundary({
                                 id: layerId,
                                 type: 'fill',
                                 source: sourceId,
@@ -1174,14 +1214,14 @@
                                 'line-width': def.width || 2
                             };
                             if (def.dash) paint['line-dasharray'] = def.dash;
-                            map.addLayer({
+                            addLayerBeforeBoundary({
                                 id: layerId,
                                 type: 'line',
                                 source: sourceId,
                                 paint: paint
                             });
                         } else if (def.type === 'circle') {
-                            map.addLayer({
+                            addLayerBeforeBoundary({
                                 id: layerId,
                                 type: 'circle',
                                 source: sourceId,

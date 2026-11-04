@@ -3,14 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editor Marker Penduduk</title>
+    <title>Editor Marker Penduduk - Kalurahan Pondokrejo</title>
     <link rel="icon" type="image/png" href="logo.png">
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- MapLibre GL CSS & JS (2D Engine) -->
+    <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" />
+    <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
-        #map { height: 100%; }
+        #map { width: 100%; height: 100%; }
+        .maplibregl-popup-content {
+            padding: 10px 14px;
+            border-radius: 0px !important;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            border: 1px solid #e2e8f0;
+            font-family: inherit;
+        }
+        .maplibregl-popup-close-button {
+            padding: 4px 8px;
+            font-size: 14px;
+            color: #64748b;
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
     </style>
     <script>
         if (sessionStorage.getItem('isLoggedIn') !== 'true') {
@@ -18,64 +36,73 @@
         }
     </script>
 </head>
-<body class="bg-gray-100 flex flex-col h-screen overflow-hidden">
-    <div class="bg-blue-800 text-white shadow-md flex justify-between z-30 relative h-16">
-        <div class="flex items-center px-2">
-            <img src="logo.png" alt="Logo Kalurahan" class="h-12 w-auto mr-3 object-contain bg-white  p-1">
+<body class="bg-gray-100 flex flex-col h-screen overflow-hidden text-slate-800">
+    <!-- Header Admin (Non-Rounded Flat Navigation) -->
+    <div class="bg-emerald-800 text-white shadow flex justify-between z-30 relative h-14 items-center px-4">
+        <div class="flex items-center space-x-3">
+            <img src="logo.png" alt="Logo Kalurahan" class="h-9 w-auto object-contain bg-white p-0.5">
             <div>
-                <h1 class="text-xl font-bold leading-tight">Editor Marker</h1>
-                <p class="text-sm opacity-90">Penduduk Pondokrejo</p>
+                <h1 class="text-base font-bold leading-tight tracking-wide">Editor Marker</h1>
+                <p class="text-xs text-emerald-200">Penduduk Kalurahan Pondokrejo</p>
             </div>
         </div>
-        <div class="flex items-center pr-4 space-x-2">
-            <a href="/" class="bg-slate-100 hover:bg-white text-blue-800 font-bold py-1 px-3  text-sm shadow transition">
+        <div class="flex items-center space-x-2">
+            <a href="/" class="bg-white hover:bg-slate-100 text-emerald-800 font-semibold py-1.5 px-3 text-xs border border-white shadow-none transition">
                 <i class="fa fa-map mr-1"></i> Peta
             </a>
-            <a href="/login" onclick="sessionStorage.removeItem('isLoggedIn');" class="bg-red-600 hover:bg-red-700 text-white font-bold py-1 px-3  text-sm shadow transition">
+            <a href="/login" onclick="sessionStorage.removeItem('isLoggedIn');" class="bg-red-700 hover:bg-red-800 text-white font-semibold py-1.5 px-3 text-xs border border-red-700 shadow-none transition">
                 <i class="fa fa-sign-out-alt mr-1"></i> Logout
             </a>
         </div>
     </div>
 
     <div class="flex flex-1 overflow-hidden">
-        <div class="w-96 bg-white shadow-lg z-20 flex flex-col h-full overflow-hidden border-r">
-            <div class="p-4 bg-emerald-700 text-white shadow">
-                <h2 class="text-lg font-bold">Editor</h2>
-                <div id="stats" class="text-xs mt-1 opacity-90">Memuat data...</div>
+        <!-- Sidebar Controls -->
+        <div class="w-96 bg-white z-20 flex flex-col h-full overflow-hidden border-r border-slate-200">
+            <!-- Sidebar Title & Counter -->
+            <div class="p-3 bg-emerald-700 text-white">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-sm font-bold uppercase tracking-wider">Editor Spasial</h2>
+                    <div id="stats" class="text-xs text-emerald-100 font-medium">Memuat data...</div>
+                </div>
             </div>
 
-            <div class="p-4 space-y-4 overflow-y-auto flex-1">
-                <div class="flex items-center space-x-2">
-                    <input id="search" type="text" class="w-full border  px-3 py-2 text-sm" placeholder="Cari No KK / Nama Kepala / Dusun">
+            <!-- Scrollable Controls -->
+            <div class="p-3 space-y-3 overflow-y-auto flex-1">
+                <!-- Search Filter -->
+                <div>
+                    <input id="search" type="text" class="w-full border border-slate-300 px-3 py-2 text-xs focus:outline-none focus:border-emerald-600" placeholder="Cari No KK / Nama Kepala / Dusun">
                 </div>
 
-                <div class="flex items-center justify-between">
-                    <label class="flex items-center space-x-2 text-sm">
-                        <input id="toggle-households" type="checkbox" class="form-checkbox text-blue-600 " checked>
+                <!-- Layer Penduduk & Tambah Marker -->
+                <div class="flex items-center justify-between pb-1 border-b border-slate-100">
+                    <label class="flex items-center space-x-2 text-xs font-medium text-slate-700">
+                        <input id="toggle-households" type="checkbox" class="form-checkbox text-emerald-600 rounded-none" checked>
                         <span>Layer Penduduk</span>
                     </label>
-                    <button id="btn-add" class="text-xs bg-blue-600 hover:bg-blue-700 text-white font-semibold px-3 py-2  shadow">
+                    <button id="btn-add" class="text-xs bg-emerald-700 hover:bg-emerald-800 text-white font-semibold px-2.5 py-1.5 transition">
                         <i class="fa fa-plus mr-1"></i> Tambah Marker
                     </button>
                 </div>
 
-                <div class="border  p-3 bg-white space-y-2">
+                <!-- Batas Padukuhan Tool -->
+                <div class="border border-slate-200 p-2.5 bg-slate-50 space-y-2">
                     <div class="flex items-center justify-between">
-                        <div class="text-xs font-semibold text-gray-800">Batas Padukuhan</div>
-                        <label class="flex items-center gap-2 text-xs text-gray-700">
-                            <input id="toggle-padukuhan" type="checkbox" class="form-checkbox text-blue-600 " checked>
+                        <div class="text-xs font-bold text-slate-800 uppercase tracking-wide">Batas Padukuhan</div>
+                        <label class="flex items-center gap-1.5 text-xs text-slate-700">
+                            <input id="toggle-padukuhan" type="checkbox" class="form-checkbox text-emerald-600 rounded-none" checked>
                             <span>Tampil</span>
                         </label>
                     </div>
-                    <div class="grid grid-cols-2 gap-2">
-                        <select id="padukuhan-geom" class="text-xs border  px-2 py-2 bg-white">
+                    <div class="grid grid-cols-2 gap-1.5">
+                        <select id="padukuhan-geom" class="text-xs border border-slate-300 px-2 py-1.5 bg-white">
                             <option value="Polygon" selected>Polygon</option>
                             <option value="LineString">Garis</option>
                         </select>
-                        <input id="padukuhan-name" type="text" class="text-xs border  px-2 py-2" placeholder="Nama padukuhan (opsional)">
+                        <input id="padukuhan-name" type="text" class="text-xs border border-slate-300 px-2 py-1.5 bg-white" placeholder="Nama padukuhan">
                     </div>
-                    <div class="grid grid-cols-2 gap-2">
-                        <select id="padukuhan-color" class="text-xs border  px-2 py-2 bg-white">
+                    <div class="grid grid-cols-2 gap-1.5">
+                        <select id="padukuhan-color" class="text-xs border border-slate-300 px-2 py-1.5 bg-white">
                             <option value="#2563eb" selected>Biru</option>
                             <option value="#0ea5e9">Biru muda</option>
                             <option value="#16a34a">Hijau</option>
@@ -89,40 +116,41 @@
                             <option value="#0f766e">Teal</option>
                             <option value="#334155">Gelap</option>
                         </select>
-                        <div class="text-[11px] text-gray-600 flex items-center px-1">Warna garis/polygon</div>
+                        <div class="text-[11px] text-slate-500 flex items-center px-1">Warna fitur</div>
                     </div>
-                    <div class="grid grid-cols-2 gap-2">
-                        <button id="padukuhan-start" class="w-full text-xs px-3 py-2  bg-blue-600 hover:bg-blue-700 text-white font-semibold">Mulai</button>
-                        <button id="padukuhan-finish" class="w-full text-xs px-3 py-2  bg-emerald-600 hover:bg-emerald-700 text-white font-semibold">Selesai</button>
-                        <button id="padukuhan-undo" class="w-full text-xs px-3 py-2  border bg-white hover:bg-gray-50">Undo titik</button>
-                        <button id="padukuhan-clear" class="w-full text-xs px-3 py-2  border bg-white hover:bg-gray-50">Clear semua</button>
+                    <div class="grid grid-cols-2 gap-1.5">
+                        <button id="padukuhan-start" class="w-full text-xs px-2 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold transition">Mulai</button>
+                        <button id="padukuhan-finish" class="w-full text-xs px-2 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold transition">Selesai</button>
+                        <button id="padukuhan-undo" class="w-full text-xs px-2 py-1.5 border border-slate-300 bg-white hover:bg-slate-100 transition">Undo titik</button>
+                        <button id="padukuhan-clear" class="w-full text-xs px-2 py-1.5 border border-slate-300 bg-white hover:bg-slate-100 transition">Clear semua</button>
                     </div>
-                    <div class="grid grid-cols-2 gap-2">
-                        <button id="padukuhan-del-selected" class="w-full text-xs px-3 py-2  border bg-white hover:bg-gray-50 text-red-700 border-red-200">Hapus terpilih</button>
-                        <button id="padukuhan-del-line" class="w-full text-xs px-3 py-2  border bg-white hover:bg-gray-50 text-red-700 border-red-200">Hapus garis</button>
-                        <button id="padukuhan-del-poly" class="w-full text-xs px-3 py-2  border bg-white hover:bg-gray-50 text-red-700 border-red-200">Hapus polygon</button>
-                        <button id="padukuhan-clear-selection" class="w-full text-xs px-3 py-2  border bg-white hover:bg-gray-50">Batal pilih</button>
+                    <div class="grid grid-cols-2 gap-1.5">
+                        <button id="padukuhan-del-selected" class="w-full text-xs px-2 py-1.5 border border-red-300 bg-white hover:bg-red-50 text-red-700 transition">Hapus terpilih</button>
+                        <button id="padukuhan-del-line" class="w-full text-xs px-2 py-1.5 border border-red-300 bg-white hover:bg-red-50 text-red-700 transition">Hapus garis</button>
+                        <button id="padukuhan-del-poly" class="w-full text-xs px-2 py-1.5 border border-red-300 bg-white hover:bg-red-50 text-red-700 transition">Hapus polygon</button>
+                        <button id="padukuhan-clear-selection" class="w-full text-xs px-2 py-1.5 border border-slate-300 bg-white hover:bg-slate-100 transition">Batal pilih</button>
                     </div>
-                    <div id="padukuhan-status" class="text-[11px] text-gray-600"></div>
+                    <div id="padukuhan-status" class="text-[11px] text-slate-600 font-medium"></div>
                 </div>
 
-                <div class="border  p-3 bg-white space-y-2">
+                <!-- Batas RW Tool -->
+                <div class="border border-slate-200 p-2.5 bg-slate-50 space-y-2">
                     <div class="flex items-center justify-between">
-                        <div class="text-xs font-semibold text-gray-800">Batas RW</div>
-                        <label class="flex items-center gap-2 text-xs text-gray-700">
-                            <input id="toggle-rw" type="checkbox" class="form-checkbox text-blue-600 " checked>
+                        <div class="text-xs font-bold text-slate-800 uppercase tracking-wide">Batas RW</div>
+                        <label class="flex items-center gap-1.5 text-xs text-slate-700">
+                            <input id="toggle-rw" type="checkbox" class="form-checkbox text-emerald-600 rounded-none" checked>
                             <span>Tampil</span>
                         </label>
                     </div>
-                    <div class="grid grid-cols-2 gap-2">
-                        <select id="rw-geom" class="text-xs border  px-2 py-2 bg-white">
+                    <div class="grid grid-cols-2 gap-1.5">
+                        <select id="rw-geom" class="text-xs border border-slate-300 px-2 py-1.5 bg-white">
                             <option value="Polygon" selected>Polygon</option>
                             <option value="LineString">Garis</option>
                         </select>
-                        <input id="rw-name" type="text" class="text-xs border  px-2 py-2" placeholder="Nama RW (opsional)">
+                        <input id="rw-name" type="text" class="text-xs border border-slate-300 px-2 py-1.5 bg-white" placeholder="Nama RW">
                     </div>
-                    <div class="grid grid-cols-2 gap-2">
-                        <select id="rw-color" class="text-xs border  px-2 py-2 bg-white">
+                    <div class="grid grid-cols-2 gap-1.5">
+                        <select id="rw-color" class="text-xs border border-slate-300 px-2 py-1.5 bg-white">
                             <option value="#0ea5e9" selected>Biru muda</option>
                             <option value="#2563eb">Biru</option>
                             <option value="#16a34a">Hijau</option>
@@ -136,37 +164,38 @@
                             <option value="#0f766e">Teal</option>
                             <option value="#334155">Gelap</option>
                         </select>
-                        <div class="text-[11px] text-gray-600 flex items-center px-1">Warna garis/polygon</div>
+                        <div class="text-[11px] text-slate-500 flex items-center px-1">Warna fitur</div>
                     </div>
-                    <div class="grid grid-cols-2 gap-2">
-                        <button id="rw-start" class="w-full text-xs px-3 py-2  bg-blue-600 hover:bg-blue-700 text-white font-semibold">Mulai</button>
-                        <button id="rw-finish" class="w-full text-xs px-3 py-2  bg-emerald-600 hover:bg-emerald-700 text-white font-semibold">Selesai</button>
-                        <button id="rw-undo" class="w-full text-xs px-3 py-2  border bg-white hover:bg-gray-50">Undo titik</button>
-                        <button id="rw-clear" class="w-full text-xs px-3 py-2  border bg-white hover:bg-gray-50">Clear semua</button>
+                    <div class="grid grid-cols-2 gap-1.5">
+                        <button id="rw-start" class="w-full text-xs px-2 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold transition">Mulai</button>
+                        <button id="rw-finish" class="w-full text-xs px-2 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold transition">Selesai</button>
+                        <button id="rw-undo" class="w-full text-xs px-2 py-1.5 border border-slate-300 bg-white hover:bg-slate-100 transition">Undo titik</button>
+                        <button id="rw-clear" class="w-full text-xs px-2 py-1.5 border border-slate-300 bg-white hover:bg-slate-100 transition">Clear semua</button>
                     </div>
-                    <div id="rw-status" class="text-[11px] text-gray-600"></div>
+                    <div id="rw-status" class="text-[11px] text-slate-600 font-medium"></div>
                 </div>
 
-                <div class="border  p-3 bg-white space-y-2">
+                <!-- Batas RT Tool -->
+                <div class="border border-slate-200 p-2.5 bg-slate-50 space-y-2">
                     <div class="flex items-center justify-between">
-                        <div class="text-xs font-semibold text-gray-800">Batas RT</div>
-                        <label class="flex items-center gap-2 text-xs text-gray-700">
-                            <input id="toggle-rt" type="checkbox" class="form-checkbox text-blue-600 " checked>
+                        <div class="text-xs font-bold text-slate-800 uppercase tracking-wide">Batas RT</div>
+                        <label class="flex items-center gap-1.5 text-xs text-slate-700">
+                            <input id="toggle-rt" type="checkbox" class="form-checkbox text-emerald-600 rounded-none" checked>
                             <span>Tampil</span>
                         </label>
                     </div>
-                    <div class="grid grid-cols-2 gap-2">
-                        <select id="rt-geom" class="text-xs border  px-2 py-2 bg-white">
+                    <div class="grid grid-cols-2 gap-1.5">
+                        <select id="rt-geom" class="text-xs border border-slate-300 px-2 py-1.5 bg-white">
                             <option value="Polygon" selected>Polygon</option>
                             <option value="LineString">Garis</option>
                         </select>
-                        <input id="rt-name" type="text" class="text-xs border  px-2 py-2" placeholder="Nama RT (opsional)">
+                        <input id="rt-name" type="text" class="text-xs border border-slate-300 px-2 py-1.5 bg-white" placeholder="Nama RT">
                     </div>
-                    <div class="grid grid-cols-2 gap-2">
-                        <select id="rt-color" class="text-xs border  px-2 py-2 bg-white">
+                    <div class="grid grid-cols-2 gap-1.5">
+                        <select id="rt-color" class="text-xs border border-slate-300 px-2 py-1.5 bg-white">
                             <option value="#a855f7" selected>Ungu</option>
-                            <option value="#0ea5e9">Biru muda</option>
                             <option value="#2563eb">Biru</option>
+                            <option value="#0ea5e9">Biru muda</option>
                             <option value="#16a34a">Hijau</option>
                             <option value="#65a30d">Hijau muda</option>
                             <option value="#eab308">Kuning</option>
@@ -177,176 +206,221 @@
                             <option value="#0f766e">Teal</option>
                             <option value="#334155">Gelap</option>
                         </select>
-                        <div class="text-[11px] text-gray-600 flex items-center px-1">Warna garis/polygon</div>
+                        <div class="text-[11px] text-slate-500 flex items-center px-1">Warna fitur</div>
                     </div>
-                    <div class="grid grid-cols-2 gap-2">
-                        <button id="rt-start" class="w-full text-xs px-3 py-2  bg-blue-600 hover:bg-blue-700 text-white font-semibold">Mulai</button>
-                        <button id="rt-finish" class="w-full text-xs px-3 py-2  bg-emerald-600 hover:bg-emerald-700 text-white font-semibold">Selesai</button>
-                        <button id="rt-undo" class="w-full text-xs px-3 py-2  border bg-white hover:bg-gray-50">Undo titik</button>
-                        <button id="rt-clear" class="w-full text-xs px-3 py-2  border bg-white hover:bg-gray-50">Clear semua</button>
+                    <div class="grid grid-cols-2 gap-1.5">
+                        <button id="rt-start" class="w-full text-xs px-2 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold transition">Mulai</button>
+                        <button id="rt-finish" class="w-full text-xs px-2 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold transition">Selesai</button>
+                        <button id="rt-undo" class="w-full text-xs px-2 py-1.5 border border-slate-300 bg-white hover:bg-slate-100 transition">Undo titik</button>
+                        <button id="rt-clear" class="w-full text-xs px-2 py-1.5 border border-slate-300 bg-white hover:bg-slate-100 transition">Clear semua</button>
                     </div>
-                    <div id="rt-status" class="text-[11px] text-gray-600"></div>
+                    <div id="rt-status" class="text-[11px] text-slate-600 font-medium"></div>
                 </div>
 
-                <div class="border  p-3 bg-white space-y-2">
+                <!-- Fasilitas Desa Tool -->
+                <div class="border border-slate-200 p-2.5 bg-slate-50 space-y-2">
                     <div class="flex items-center justify-between">
-                        <div class="text-xs font-semibold text-gray-800">Fasilitas Desa</div>
-                        <label class="flex items-center gap-2 text-xs text-gray-700">
-                            <input id="toggle-fasilitas" type="checkbox" class="form-checkbox text-blue-600 " checked>
+                        <div class="text-xs font-bold text-slate-800 uppercase tracking-wide">Fasilitas Desa</div>
+                        <label class="flex items-center gap-1.5 text-xs text-slate-700">
+                            <input id="toggle-fasilitas" type="checkbox" class="form-checkbox text-emerald-600 rounded-none" checked>
                             <span>Tampil</span>
                         </label>
                     </div>
-                    <div class="grid grid-cols-2 gap-2">
-                        <input id="fasilitas-name" type="text" class="text-xs border  px-2 py-2" placeholder="Nama fasilitas">
-                        <input id="fasilitas-cat" type="text" class="text-xs border  px-2 py-2" placeholder="Kategori (opsional)">
+                    <div class="grid grid-cols-2 gap-1.5">
+                        <input id="fasilitas-name" type="text" class="text-xs border border-slate-300 px-2 py-1.5 bg-white" placeholder="Nama fasilitas">
+                        <input id="fasilitas-cat" type="text" class="text-xs border border-slate-300 px-2 py-1.5 bg-white" placeholder="Kategori">
                     </div>
-                    <div class="grid grid-cols-2 gap-2">
-                        <button id="fasilitas-start" class="w-full text-xs px-3 py-2  bg-blue-600 hover:bg-blue-700 text-white font-semibold">Tambah titik</button>
-                        <button id="fasilitas-undo" class="w-full text-xs px-3 py-2  border bg-white hover:bg-gray-50">Undo</button>
-                        <button id="fasilitas-del-selected" class="w-full text-xs px-3 py-2  border bg-white hover:bg-gray-50 text-red-700 border-red-200">Hapus terpilih</button>
-                        <button id="fasilitas-clear" class="w-full text-xs px-3 py-2  border bg-white hover:bg-gray-50">Clear semua</button>
+                    <div class="grid grid-cols-2 gap-1.5">
+                        <button id="fasilitas-start" class="w-full text-xs px-2 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold transition">Tambah titik</button>
+                        <button id="fasilitas-undo" class="w-full text-xs px-2 py-1.5 border border-slate-300 bg-white hover:bg-slate-100 transition">Undo</button>
+                        <button id="fasilitas-del-selected" class="w-full text-xs px-2 py-1.5 border border-red-300 bg-white hover:bg-red-50 text-red-700 transition">Hapus terpilih</button>
+                        <button id="fasilitas-clear" class="w-full text-xs px-2 py-1.5 border border-slate-300 bg-white hover:bg-slate-100 transition">Clear semua</button>
                     </div>
-                    <div id="fasilitas-status" class="text-[11px] text-gray-600"></div>
+                    <div id="fasilitas-status" class="text-[11px] text-slate-600 font-medium"></div>
                 </div>
 
-                <div class="flex items-center justify-between">
-                    <button id="btn-save" class="text-sm bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-4 py-2  shadow">
+                <!-- Simpan Button -->
+                <div class="flex items-center justify-between pt-1">
+                    <button id="btn-save" class="text-xs bg-emerald-700 hover:bg-emerald-800 text-white font-bold px-4 py-2 transition shadow-none">
                         <i class="fa fa-save mr-1"></i> Simpan
                     </button>
-                    <div id="save-status" class="text-xs text-gray-500"></div>
+                    <div id="save-status" class="text-xs text-slate-600 font-medium"></div>
                 </div>
 
-                <div class="border  overflow-hidden">
-                    <div class="bg-gray-50 px-3 py-2 text-xs font-semibold text-gray-700 border-b flex items-center justify-between gap-2">
+                <!-- Daftar Marker List Container -->
+                <div class="border border-slate-200 overflow-hidden bg-white">
+                    <div class="bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-700 border-b border-slate-200 flex items-center justify-between gap-1">
                         <div>Daftar Marker</div>
-                        <div class="flex items-center gap-2">
-                            <select id="list-mode" class="text-xs border  px-2 py-1 bg-white">
+                        <div class="flex items-center gap-1.5">
+                            <select id="list-mode" class="text-xs border border-slate-300 px-1.5 py-0.5 bg-white">
                                 <option value="load_more" selected>Load more</option>
                                 <option value="pagination">Pagination</option>
                             </select>
-                            <select id="page-size" class="text-xs border  px-2 py-1 bg-white">
+                            <select id="page-size" class="text-xs border border-slate-300 px-1.5 py-0.5 bg-white">
                                 <option value="25">25</option>
                                 <option value="50" selected>50</option>
                                 <option value="100">100</option>
                                 <option value="200">200</option>
                             </select>
-                            <button id="page-prev" class="text-xs px-2 py-1  border bg-white hover:bg-gray-100 hidden">Prev</button>
-                            <div id="page-info" class="text-[11px] text-gray-600 tabular-nums hidden"></div>
-                            <button id="page-next" class="text-xs px-2 py-1  border bg-white hover:bg-gray-100 hidden">Next</button>
+                            <button id="page-prev" class="text-xs px-2 py-0.5 border border-slate-300 bg-white hover:bg-slate-100 hidden">Prev</button>
+                            <div id="page-info" class="text-[11px] text-slate-600 tabular-nums hidden"></div>
+                            <button id="page-next" class="text-xs px-2 py-0.5 border border-slate-300 bg-white hover:bg-slate-100 hidden">Next</button>
                         </div>
                     </div>
-                    <div id="list" class="max-h-[45vh] overflow-y-auto divide-y"></div>
-                    <div id="load-more-wrap" class="px-3 py-2 border-t bg-white flex items-center justify-between">
-                        <button id="btn-load-more" class="text-xs px-3 py-2  bg-gray-100 hover:bg-gray-200 font-semibold">Load more</button>
-                        <div id="load-more-info" class="text-[11px] text-gray-600 tabular-nums"></div>
+                    <div id="list" class="max-h-[40vh] overflow-y-auto divide-y divide-slate-100"></div>
+                    <div id="load-more-wrap" class="px-3 py-2 border-t border-slate-200 bg-slate-50 flex items-center justify-between">
+                        <button id="btn-load-more" class="text-xs px-3 py-1.5 border border-slate-300 bg-white hover:bg-slate-100 font-semibold transition">Load more</button>
+                        <div id="load-more-info" class="text-[11px] text-slate-600 tabular-nums font-medium"></div>
                     </div>
                 </div>
 
-                <div id="selected" class="border  p-3 bg-gray-50 hidden">
-                    <div class="text-xs font-semibold text-gray-700 mb-2">Detail</div>
-                    <div class="grid grid-cols-2 gap-2 text-xs">
-                        <div class="text-gray-500">No KK</div>
-                        <div id="sel-nokk" class="font-medium"></div>
-                        <div class="text-gray-500">Kepala</div>
-                        <div id="sel-head" class="font-medium"></div>
-                        <div class="text-gray-500">Dusun</div>
-                        <div id="sel-dusun" class="font-medium"></div>
-                        <div class="text-gray-500">Lat</div>
-                        <div id="sel-lat" class="font-medium"></div>
-                        <div class="text-gray-500">Lng</div>
-                        <div id="sel-lng" class="font-medium"></div>
+                <!-- Detail Marker Terpilih -->
+                <div id="selected" class="border border-slate-200 p-2.5 bg-slate-50 hidden">
+                    <div class="text-xs font-bold text-slate-800 uppercase tracking-wide mb-2">Detail Marker Terpilih</div>
+                    <div class="grid grid-cols-2 gap-1.5 text-xs">
+                        <div class="text-slate-500">No KK:</div>
+                        <div id="sel-nokk" class="font-medium truncate"></div>
+                        <div class="text-slate-500">Kepala Keluarga:</div>
+                        <div id="sel-head" class="font-medium truncate"></div>
+                        <div class="text-slate-500">Dusun:</div>
+                        <div id="sel-dusun" class="font-medium truncate"></div>
+                        <div class="text-slate-500">Latitude:</div>
+                        <div id="sel-lat" class="font-mono text-[11px]"></div>
+                        <div class="text-slate-500">Longitude:</div>
+                        <div id="sel-lng" class="font-mono text-[11px]"></div>
                     </div>
-                    <div class="mt-3 text-xs text-gray-600">
-                        Geser marker di peta untuk mengubah posisi, lalu klik Simpan.
+                    <div class="mt-2 text-[11px] text-slate-600 bg-amber-50 p-1.5 border border-amber-200">
+                        Geser marker di peta untuk mengubah koordinat, lalu klik Simpan.
                     </div>
                 </div>
 
-                <div id="add-form" class="border  p-3 bg-white hidden">
-                    <div class="text-xs font-semibold text-gray-700 mb-2">Tambah Marker</div>
-                    <div class="space-y-2">
-                        <input id="add-head" type="text" class="w-full border  px-3 py-2 text-sm" placeholder="Nama Kepala Keluarga">
-                        <input id="add-dusun" type="text" class="w-full border  px-3 py-2 text-sm" placeholder="Dusun">
-                        <input id="add-address" type="text" class="w-full border  px-3 py-2 text-sm" placeholder="Alamat">
-                        <input id="add-desil" type="number" min="1" max="5" class="w-full border  px-3 py-2 text-sm" placeholder="Desil (1-5)">
-                        <div class="flex justify-end space-x-2">
-                            <button id="btn-add-cancel" class="text-sm px-3 py-2  border">Batal</button>
-                            <button id="btn-add-confirm" class="text-sm bg-blue-600 hover:bg-blue-700 text-white font-semibold px-3 py-2  shadow">Aktifkan Mode Tambah</button>
+                <!-- Form Tambah Marker Baru -->
+                <div id="add-form" class="border border-slate-200 p-2.5 bg-white hidden">
+                    <div class="text-xs font-bold text-slate-800 uppercase tracking-wide mb-2">Tambah Marker Penduduk</div>
+                    <div class="space-y-1.5">
+                        <input id="add-head" type="text" class="w-full border border-slate-300 px-2 py-1.5 text-xs" placeholder="Nama Kepala Keluarga">
+                        <input id="add-dusun" type="text" class="w-full border border-slate-300 px-2 py-1.5 text-xs" placeholder="Dusun">
+                        <input id="add-address" type="text" class="w-full border border-slate-300 px-2 py-1.5 text-xs" placeholder="Alamat">
+                        <input id="add-desil" type="number" min="1" max="5" class="w-full border border-slate-300 px-2 py-1.5 text-xs" placeholder="Desil (1-5)">
+                        <div class="flex justify-end space-x-1.5 pt-1">
+                            <button id="btn-add-cancel" class="text-xs px-2.5 py-1.5 border border-slate-300 hover:bg-slate-50">Batal</button>
+                            <button id="btn-add-confirm" class="text-xs bg-emerald-700 hover:bg-emerald-800 text-white font-semibold px-2.5 py-1.5">Aktifkan Titik Baru</button>
                         </div>
                     </div>
-                    <div class="mt-2 text-xs text-gray-600">
-                        Setelah mode aktif, klik di peta untuk menaruh marker baru.
+                    <div class="mt-2 text-[11px] text-slate-600 bg-blue-50 p-1.5 border border-blue-200">
+                        Setelah diaktifkan, klik lokasi di peta untuk menaruh marker baru.
                     </div>
                 </div>
             </div>
         </div>
 
+        <!-- Map Container with Layer Control -->
         <div class="flex-1 relative">
-            <div id="map" class="w-full h-full"></div>
+            <div id="map"></div>
+
+            <!-- Layer Switcher Icon Control (Top-Right on Map) -->
+            <div id="basemap-control" class="absolute top-3 right-12 z-20">
+                <button id="btn-toggle-basemap" type="button" class="w-8 h-8 bg-white border border-slate-300 shadow-md flex items-center justify-center hover:bg-slate-50 transition" title="Pilihan Layer Peta">
+                    <svg class="w-4 h-4 text-slate-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+                        <path d="M2 17l10 5 10-5"></path>
+                        <path d="M2 12l10 5 10-5"></path>
+                    </svg>
+                </button>
+                <div id="basemap-menu" class="hidden absolute top-9 right-0 bg-white border border-slate-300 shadow-lg p-2.5 min-w-[130px] space-y-2 text-xs">
+                    <div class="text-[10px] font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 pb-1">Peta Dasar</div>
+                    <label class="flex items-center space-x-2 cursor-pointer hover:text-emerald-700">
+                        <input type="radio" name="basemap-choice" value="liberty" checked class="form-radio text-emerald-700 focus:ring-0">
+                        <span class="font-medium text-slate-700">Standar</span>
+                    </label>
+                    <label class="flex items-center space-x-2 cursor-pointer hover:text-emerald-700">
+                        <input type="radio" name="basemap-choice" value="satelit" class="form-radio text-emerald-700 focus:ring-0">
+                        <span class="font-medium text-slate-700">Satelit</span>
+                    </label>
+                    <label class="flex items-center space-x-2 cursor-pointer hover:text-emerald-700">
+                        <input type="radio" name="basemap-choice" value="positron" class="form-radio text-emerald-700 focus:ring-0">
+                        <span class="font-medium text-slate-700">Terang</span>
+                    </label>
+                    <label class="flex items-center space-x-2 cursor-pointer hover:text-emerald-700">
+                        <input type="radio" name="basemap-choice" value="dark" class="form-radio text-emerald-700 focus:ring-0">
+                        <span class="font-medium text-slate-700">Gelap</span>
+                    </label>
+                </div>
+            </div>
         </div>
     </div>
 
+    <!-- MapLibre GL 2D Scripts -->
     <script>
-        const map = L.map('map', { zoomControl: true }).setView([-7.636, 110.316], 14);
+        // Gaya Peta Dasar (OpenFreeMap + Esri Satellite)
+        const STYLES = {
+            liberty: "https://tiles.openfreemap.org/styles/liberty",
+            positron: "https://tiles.openfreemap.org/styles/positron",
+            bright: "https://tiles.openfreemap.org/styles/bright",
+            dark: "https://tiles.openfreemap.org/styles/dark",
+            satelit: {
+                version: 8,
+                glyphs: "https://tiles.openfreemap.org/fonts/{fontstack}/{range}.pbf",
+                sources: {
+                    "esri-satellite": {
+                        type: "raster",
+                        tiles: [
+                            "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+                        ],
+                        tileSize: 256,
+                        maxzoom: 19,
+                        attribution: "Tiles &copy; Esri &mdash; World Imagery"
+                    }
+                },
+                layers: [
+                    {
+                        id: "esri-satellite-layer",
+                        type: "raster",
+                        source: "esri-satellite",
+                        minzoom: 0,
+                        maxzoom: 19
+                    }
+                ]
+            }
+        };
 
-        // Gaya Peta Dasar (Bebas Error 403, Ringan, Resolusi Tinggi)
-        const standardLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-            maxZoom: 19,
-            attribution: '&copy; OpenStreetMap contributors, &copy; CARTO'
-        }).addTo(map);
+        let activeBasemap = "liberty";
 
-        const satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-            maxZoom: 19,
-            attribution: 'Tiles &copy; Esri &mdash; World Imagery'
+        // Inisialisasi MapLibre GL 2D (Center Kalurahan Pondokrejo: [110.316, -7.636])
+        const map = new maplibregl.Map({
+            container: 'map',
+            style: STYLES.liberty,
+            center: [110.316, -7.636],
+            zoom: 14,
+            pitch: 0,
+            bearing: 0,
+            maxPitch: 0, // Strict 2D Mode
+            dragRotate: false,
+            touchPitch: false
         });
 
-        const lightLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-            maxZoom: 19,
-            attribution: '&copy; OpenStreetMap contributors, &copy; CARTO'
+        map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
+        map.addControl(new maplibregl.ScaleControl({ unit: 'metric' }), 'bottom-left');
+
+        // Setup Layer Control Toggle
+        const basemapCtrl = document.getElementById('basemap-control');
+        const basemapBtn = document.getElementById('btn-toggle-basemap');
+        const basemapMenu = document.getElementById('basemap-menu');
+
+        basemapCtrl.addEventListener('mouseenter', () => basemapMenu.classList.remove('hidden'));
+        basemapCtrl.addEventListener('mouseleave', () => basemapMenu.classList.add('hidden'));
+        basemapBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            basemapMenu.classList.toggle('hidden');
         });
 
-        const darkLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-            maxZoom: 19,
-            attribution: '&copy; OpenStreetMap contributors, &copy; CARTO'
+        document.querySelectorAll('input[name="basemap-choice"]').forEach(rb => {
+            rb.addEventListener('change', (e) => {
+                setBasemap(e.target.value);
+            });
         });
 
-        L.control.layers({
-            "Peta Standar": standardLayer,
-            "Satelit": satelliteLayer,
-            "Terang": lightLayer,
-            "Gelap": darkLayer
-        }, null, { position: 'topright' }).addTo(map);
-
-        // Batas Wilayah Kalurahan Pondokrejo (Dual-Tone Casing Kontras Tinggi)
-        let boundaryCasing = null;
-        let boundaryLine = null;
-
-        function bringBoundaryToFront() {
-            try {
-                if (boundaryCasing) boundaryCasing.bringToFront();
-                if (boundaryLine) boundaryLine.bringToFront();
-            } catch (e) {}
-        }
-
-        map.on('baselayerchange', bringBoundaryToFront);
-
-        fetch('/layers/boundary.geojson').then(res => {
-            if (!res.ok) return fetch('/layers/PONDOKREJO.geojson');
-            return res;
-        }).then(res => res.json()).then(data => {
-            // White halo casing agar batas selalu kontras di atas satelit, gelap, dan poligon sawah
-            boundaryCasing = L.geoJSON(data, {
-                style: { color: '#ffffff', weight: 4.6, opacity: 0.95, fill: false }
-            }).addTo(map);
-
-            // Garis batas luar biru pekat
-            boundaryLine = L.geoJSON(data, {
-                style: { color: '#1d4ed8', weight: 2.8, opacity: 1.0, fillColor: '#2563eb', fillOpacity: 0.05 }
-            }).addTo(map);
-
-            map.fitBounds(boundaryLine.getBounds(), { padding: [25, 25] });
-            bringBoundaryToFront();
-        }).catch(() => {});
-
+        // State Elements
         const listEl = document.getElementById('list');
         const statsEl = document.getElementById('stats');
         const searchEl = document.getElementById('search');
@@ -412,6 +486,8 @@
         const selLat = document.getElementById('sel-lat');
         const selLng = document.getElementById('sel-lng');
 
+        // Global Variables
+        let boundaryGeoJSON = null;
         let households = [];
         let markersByNoKK = new Map();
         let dirty = new Map();
@@ -422,285 +498,149 @@
         let pageSize = 50;
         let currentPage = 1;
         let listMode = 'load_more';
+
         let padukuhanGeoJSON = { type: 'FeatureCollection', features: [] };
-        let padukuhanLayer = null;
         let drawingPadukuhan = false;
         let drawingPoints = [];
-        let drawingPreview = null;
         let padukuhanDirty = false;
+        let selectedPadukuhanIdx = null;
+
         let rwGeoJSON = { type: 'FeatureCollection', features: [] };
-        let rwLayer = null;
         let drawingRW = false;
         let rwPoints = [];
-        let rwPreview = null;
         let rwDirty = false;
+
         let rtGeoJSON = { type: 'FeatureCollection', features: [] };
-        let rtLayer = null;
         let drawingRT = false;
         let rtPoints = [];
-        let rtPreview = null;
         let rtDirty = false;
+
         let fasilitasGeoJSON = { type: 'FeatureCollection', features: [] };
-        let fasilitasLayer = null;
         let fasilitasDirty = false;
         let addingFasilitas = false;
-        let householdsSuppressedByTool = false;
-        let householdsSuppressedPrevChecked = true;
-        let selectedPadukuhanIdx = null;
         let selectedFasilitasIdx = null;
 
-        function setBtnDisabled(btn, disabled) {
-            if (!btn) return;
-            btn.disabled = !!disabled;
-            btn.classList.toggle('opacity-50', !!disabled);
+        let householdsSuppressedByTool = false;
+        let householdsSuppressedPrevChecked = true;
+
+        // Memastikan Batas Kalurahan Selalu di Atas Layer Poligon Lain
+        function ensureBoundaryOnTop() {
+            try {
+                if (map.getLayer('layer-boundary-casing')) map.moveLayer('layer-boundary-casing');
+                if (map.getLayer('layer-boundary-line')) map.moveLayer('layer-boundary-line');
+            } catch (e) {}
         }
 
-        function countPadukuhan() {
-            const features = padukuhanGeoJSON && Array.isArray(padukuhanGeoJSON.features) ? padukuhanGeoJSON.features : [];
-            let lines = 0;
-            let polys = 0;
-            features.forEach(f => {
-                const t = f && f.geometry ? f.geometry.type : '';
-                if (t === 'LineString' || t === 'MultiLineString') lines++;
-                if (t === 'Polygon' || t === 'MultiPolygon') polys++;
-            });
-            return { total: features.length, lines, polys };
+        // Helper untuk memasukkan layer tepat sebelum batas casing
+        function addLayerBeforeBoundary(layerConfig) {
+            const beforeId = map.getLayer('layer-boundary-casing') ? 'layer-boundary-casing' : undefined;
+            map.addLayer(layerConfig, beforeId);
         }
 
-        function countFasilitas() {
-            const features = fasilitasGeoJSON && Array.isArray(fasilitasGeoJSON.features) ? fasilitasGeoJSON.features : [];
-            return { total: features.length };
-        }
-
-        function updateDeleteButtons() {
-            const p = countPadukuhan();
-            const f = countFasilitas();
-            setBtnDisabled(padukuhanDelSelectedEl, selectedPadukuhanIdx === null);
-            setBtnDisabled(padukuhanClearSelectionEl, selectedPadukuhanIdx === null);
-            setBtnDisabled(padukuhanDelLineEl, p.lines === 0);
-            setBtnDisabled(padukuhanDelPolyEl, p.polys === 0);
-            setBtnDisabled(fasilitasDelSelectedEl, selectedFasilitasIdx === null);
-            setBtnDisabled(fasilitasUndoEl, f.total === 0);
-        }
-
-        function clearSelection() {
-            selectedPadukuhanIdx = null;
-            selectedFasilitasIdx = null;
-            ensurePadukuhanLayer();
-            ensureFasilitasLayer();
-            updatePadukuhanStatus();
-            updateFasilitasStatus();
-        }
-
-        function updateHouseholdSuppression() {
-            const toolsActive = drawingPadukuhan || drawingRW || drawingRT || addingFasilitas || addMode;
-            toggleHouseholdsEl.disabled = toolsActive;
-            const label = toggleHouseholdsEl.closest('label');
-            if (label) label.classList.toggle('opacity-60', toolsActive);
-
-            if (toolsActive) {
-                if (!householdsSuppressedByTool) {
-                    householdsSuppressedPrevChecked = toggleHouseholdsEl.checked;
-                    householdsSuppressedByTool = true;
+        // Helper Bounding Box GeoJSON
+        function extendBoundsWithGeoJSON(bounds, geojson) {
+            function processCoords(c) {
+                if (!Array.isArray(c)) return;
+                if (c.length >= 2 && typeof c[0] === 'number' && typeof c[1] === 'number') {
+                    bounds.extend(c);
+                } else {
+                    c.forEach(processCoords);
                 }
-                if (toggleHouseholdsEl.checked) {
-                    toggleHouseholdsEl.checked = false;
+            }
+            if (geojson.features && Array.isArray(geojson.features)) {
+                geojson.features.forEach(f => {
+                    if (f.geometry && f.geometry.coordinates) processCoords(f.geometry.coordinates);
+                });
+            } else if (geojson.geometry && geojson.geometry.coordinates) {
+                processCoords(geojson.geometry.coordinates);
+            }
+        }
+
+        // Muat Batas Kalurahan Pondokrejo (Dual-Tone Halo Casing)
+        async function loadBoundary() {
+            try {
+                if (!boundaryGeoJSON) {
+                    let res = await fetch('/layers/boundary.geojson');
+                    if (!res.ok) res = await fetch('/boundary.geojson');
+                    if (!res.ok) res = await fetch('/layers/PONDOKREJO.geojson');
+                    if (res.ok) boundaryGeoJSON = await res.json();
+                }
+                if (!boundaryGeoJSON) return;
+
+                if (!map.getSource('source-boundary')) {
+                    map.addSource('source-boundary', { type: 'geojson', data: boundaryGeoJSON });
+                }
+
+                // Fill halus di dasar
+                if (!map.getLayer('layer-boundary-fill')) {
+                    map.addLayer({
+                        id: 'layer-boundary-fill',
+                        type: 'fill',
+                        source: 'source-boundary',
+                        paint: { 'fill-color': '#2563eb', 'fill-opacity': 0.04 }
+                    });
+                }
+
+                // White halo casing kontras tinggi
+                if (!map.getLayer('layer-boundary-casing')) {
+                    map.addLayer({
+                        id: 'layer-boundary-casing',
+                        type: 'line',
+                        source: 'source-boundary',
+                        paint: {
+                            'line-color': '#ffffff',
+                            'line-width': 4.6,
+                            'line-opacity': 0.95
+                        }
+                    });
+                }
+
+                // Garis batas utama biru solid
+                if (!map.getLayer('layer-boundary-line')) {
+                    map.addLayer({
+                        id: 'layer-boundary-line',
+                        type: 'line',
+                        source: 'source-boundary',
+                        paint: {
+                            'line-color': '#1d4ed8',
+                            'line-width': 2.8,
+                            'line-opacity': 1.0
+                        }
+                    });
+                }
+
+                ensureBoundaryOnTop();
+            } catch (err) {
+                console.error("Gagal memuat batas kalurahan:", err);
+            }
+        }
+
+        // Ganti Basemap (MapLibre v4 styledata Protocol)
+        function setBasemap(styleKey) {
+            if (activeBasemap === styleKey) return;
+            activeBasemap = styleKey;
+            document.querySelectorAll('input[name="basemap-choice"]').forEach(rb => {
+                rb.checked = (rb.value === styleKey);
+            });
+
+            const onStyle = async (e) => {
+                if (e.dataType === 'style') {
+                    map.off('styledata', onStyle);
+                    await loadBoundary();
+                    ensurePadukuhanLayer();
+                    ensureRwLayer();
+                    ensureRtLayer();
+                    ensureFasilitasLayer();
+                    ensurePreviewLayer();
                     renderMarkers();
-                    renderList();
+                    ensureBoundaryOnTop();
                 }
-                return;
-            }
-
-            if (householdsSuppressedByTool) {
-                toggleHouseholdsEl.checked = householdsSuppressedPrevChecked;
-                householdsSuppressedByTool = false;
-                renderMarkers();
-                renderList();
-            }
-        }
-
-        function updateFasilitasStatus() {
-            const total = fasilitasGeoJSON && Array.isArray(fasilitasGeoJSON.features) ? fasilitasGeoJSON.features.length : 0;
-            if (!addingFasilitas) {
-                fasilitasStatusEl.textContent = selectedFasilitasIdx === null ? `${total} titik tersimpan` : `${total} titik tersimpan • 1 dipilih`;
-                updateDeleteButtons();
-                return;
-            }
-            fasilitasStatusEl.textContent = `Mode tambah titik aktif • Total: ${total}`;
-            updateDeleteButtons();
-        }
-
-        function ensureFasilitasLayer() {
-            if (fasilitasLayer) {
-                map.removeLayer(fasilitasLayer);
-                fasilitasLayer = null;
-            }
-            if (!toggleFasilitasEl.checked) return;
-            const sanitized = sanitizeFeatureCollection(fasilitasGeoJSON, ['Point']);
-            sanitized.features.forEach((f, i) => { f._editorIdx = i; });
-            const overlayInteractive = !(drawingPadukuhan || drawingRW || drawingRT || addingFasilitas || addMode);
-            fasilitasLayer = L.geoJSON(sanitized, {
-                interactive: overlayInteractive,
-                pointToLayer: function(feature, latlng) {
-                    const isSelected = typeof feature._editorIdx === 'number' && feature._editorIdx === selectedFasilitasIdx;
-                    return L.circleMarker(latlng, { radius: 6, color: isSelected ? '#dc2626' : '#2563eb', weight: 2, fillColor: isSelected ? '#ef4444' : '#60a5fa', fillOpacity: 0.8 });
-                },
-                onEachFeature: function(feature, layer) {
-                    const p = feature && feature.properties ? feature.properties : {};
-                    const name = p.name || 'Fasilitas';
-                    const cat = p.category ? `<div class="text-xs text-gray-600">${p.category}</div>` : '';
-                    layer.bindPopup(`<div class="text-sm font-semibold">${name}</div>${cat}`);
-                    if (overlayInteractive) {
-                        layer.on('click', () => {
-                            selectedFasilitasIdx = typeof feature._editorIdx === 'number' ? feature._editorIdx : null;
-                            selectedPadukuhanIdx = null;
-                            ensurePadukuhanLayer();
-                            ensureFasilitasLayer();
-                            updatePadukuhanStatus();
-                            updateFasilitasStatus();
-                        });
-                    }
-                }
-            }).addTo(map);
-        }
-
-        function startAddFasilitas() {
-            stopDrawingPadukuhan();
-            stopDrawingRw();
-            stopDrawingRt();
-            addMode = false;
-            addDraft = null;
-            addingFasilitas = true;
-            selectedFasilitasIdx = null;
-            selectedPadukuhanIdx = null;
-            map.getContainer().style.cursor = 'crosshair';
-            updateFasilitasStatus();
-            saveStatusEl.textContent = 'Klik peta untuk menaruh titik fasilitas';
-            updateHouseholdSuppression();
-            ensurePadukuhanLayer();
-            ensureRwLayer();
-            ensureRtLayer();
-            ensureFasilitasLayer();
-        }
-
-        function stopAddFasilitas() {
-            addingFasilitas = false;
-            map.getContainer().style.cursor = '';
-            updateFasilitasStatus();
-            updateHouseholdSuppression();
-            ensurePadukuhanLayer();
-            ensureRwLayer();
-            ensureRtLayer();
-            ensureFasilitasLayer();
-        }
-
-        function undoFasilitas() {
-            if (!Array.isArray(fasilitasGeoJSON.features) || fasilitasGeoJSON.features.length === 0) return;
-            fasilitasGeoJSON.features = fasilitasGeoJSON.features.slice(0, fasilitasGeoJSON.features.length - 1);
-            fasilitasDirty = true;
-            selectedFasilitasIdx = null;
-            ensureFasilitasLayer();
-            updateFasilitasStatus();
-            saveStatusEl.textContent = 'Perubahan belum disimpan';
-        }
-
-        function clearFasilitas() {
-            if (!confirm('Hapus semua titik fasilitas?')) return;
-            fasilitasGeoJSON = { type: 'FeatureCollection', features: [] };
-            fasilitasDirty = true;
-            selectedFasilitasIdx = null;
-            ensureFasilitasLayer();
-            updateFasilitasStatus();
-            saveStatusEl.textContent = 'Perubahan belum disimpan';
-        }
-
-        function addFasilitasPoint(latlng) {
-            if (!addingFasilitas) return;
-            const name = (fasilitasNameEl.value || '').trim();
-            if (!name) {
-                alert('Nama fasilitas wajib diisi');
-                return;
-            }
-            const category = (fasilitasCatEl.value || '').trim();
-            const props = { name };
-            if (category) props.category = category;
-            const feature = {
-                type: 'Feature',
-                properties: props,
-                geometry: { type: 'Point', coordinates: [latlng.lng, latlng.lat] }
             };
-            fasilitasGeoJSON.features = Array.isArray(fasilitasGeoJSON.features) ? fasilitasGeoJSON.features.concat([feature]) : [feature];
-            fasilitasDirty = true;
-            selectedFasilitasIdx = null;
-            ensureFasilitasLayer();
-            updateFasilitasStatus();
-            saveStatusEl.textContent = 'Perubahan belum disimpan';
+            map.on('styledata', onStyle);
+            map.setStyle(STYLES[styleKey]);
         }
 
-        function deleteSelectedFasilitas() {
-            if (selectedFasilitasIdx === null) return;
-            if (!Array.isArray(fasilitasGeoJSON.features)) fasilitasGeoJSON.features = [];
-            if (selectedFasilitasIdx < 0 || selectedFasilitasIdx >= fasilitasGeoJSON.features.length) {
-                selectedFasilitasIdx = null;
-                updateFasilitasStatus();
-                return;
-            }
-            fasilitasGeoJSON.features.splice(selectedFasilitasIdx, 1);
-            fasilitasDirty = true;
-            selectedFasilitasIdx = null;
-            ensureFasilitasLayer();
-            updateFasilitasStatus();
-            saveStatusEl.textContent = 'Perubahan belum disimpan';
-        }
-
-        function normalize(s) {
-            return (s || '').toString().trim().toLowerCase();
-        }
-
-        function getLabel(hh) {
-            const head = hh.head_name || '(Tanpa Nama)';
-            const dusun = hh.dusun ? ` - ${hh.dusun}` : '';
-            return `${head}${dusun}`;
-        }
-
-        function setSelected(hh) {
-            selectedNoKK = hh.no_kk;
-            selNoKK.textContent = hh.no_kk || '-';
-            selHead.textContent = hh.head_name || '-';
-            selDusun.textContent = hh.dusun || '-';
-            selLat.textContent = (hh.latitude ?? '').toString();
-            selLng.textContent = (hh.longitude ?? '').toString();
-            selectedEl.classList.remove('hidden');
-        }
-
-        function updateSelectedFromMarker(noKK) {
-            const m = markersByNoKK.get(noKK);
-            if (!m) return;
-            const ll = m.getLatLng();
-            selLat.textContent = ll.lat.toFixed(7);
-            selLng.textContent = ll.lng.toFixed(7);
-        }
-
-        function createMarkerForHousehold(hh) {
-            const lat = Number(hh.latitude);
-            const lng = Number(hh.longitude);
-            if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
-            if (lat < -90 || lat > 90 || lng < -180 || lng > 180) return null;
-            if (lat === 0 && lng === 0) return null;
-            const marker = L.marker([lat, lng], { draggable: true });
-            marker.bindPopup(`<div class="text-sm font-semibold">${(hh.head_name || '-')}</div><div class="text-xs text-gray-600">${hh.no_kk || ''}</div>`);
-            marker.on('click', () => {
-                setSelected(hh);
-            });
-            marker.on('dragend', () => {
-                const ll = marker.getLatLng();
-                dirty.set(hh.no_kk, { latitude: ll.lat, longitude: ll.lng });
-                saveStatusEl.textContent = `Perubahan belum disimpan (${dirty.size})`;
-                if (selectedNoKK === hh.no_kk) updateSelectedFromMarker(hh.no_kk);
-            });
-            return marker;
-        }
-
+        // Sanitasi GeoJSON agar format koordinat valid
         function sanitizeFeatureCollection(input, allowedTypes) {
             if (!input || input.type !== 'FeatureCollection' || !Array.isArray(input.features)) {
                 return { type: 'FeatureCollection', features: [] };
@@ -774,85 +714,198 @@
             return { type: 'FeatureCollection', features };
         }
 
-        function getFilteredHouseholds() {
-            const q = normalize(searchEl.value);
-            return households.filter(hh => {
-                if (!q) return true;
-                return normalize(hh.no_kk).includes(q) ||
-                    normalize(hh.head_name).includes(q) ||
-                    normalize(hh.dusun).includes(q) ||
-                    normalize(hh.address).includes(q);
+        function setBtnDisabled(btn, disabled) {
+            if (!btn) return;
+            btn.disabled = !!disabled;
+            btn.classList.toggle('opacity-50', !!disabled);
+        }
+
+        function countPadukuhan() {
+            const features = padukuhanGeoJSON && Array.isArray(padukuhanGeoJSON.features) ? padukuhanGeoJSON.features : [];
+            let lines = 0;
+            let polys = 0;
+            features.forEach(f => {
+                const t = f && f.geometry ? f.geometry.type : '';
+                if (t === 'LineString' || t === 'MultiLineString') lines++;
+                if (t === 'Polygon' || t === 'MultiPolygon') polys++;
             });
+            return { total: features.length, lines, polys };
         }
 
-        function getVisibleHouseholds(filtered) {
-            if (listMode === 'pagination') {
-                const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
-                if (currentPage > totalPages) currentPage = totalPages;
-                if (currentPage < 1) currentPage = 1;
-                const startIndex = (currentPage - 1) * pageSize;
-                const endIndex = Math.min(filtered.length, startIndex + pageSize);
-                return {
-                    items: filtered.slice(startIndex, endIndex),
-                    startIndex,
-                    endIndex,
-                    totalPages
-                };
-            }
-
-            const endIndex = Math.min(filtered.length, pageSize * currentPage);
-            return {
-                items: filtered.slice(0, endIndex),
-                startIndex: filtered.length === 0 ? 0 : 0,
-                endIndex,
-                totalPages: Math.max(1, Math.ceil(filtered.length / pageSize))
-            };
+        function countFasilitas() {
+            const features = fasilitasGeoJSON && Array.isArray(fasilitasGeoJSON.features) ? fasilitasGeoJSON.features : [];
+            return { total: features.length };
         }
 
-        function ensurePadukuhanLayer() {
-            if (padukuhanLayer) {
-                map.removeLayer(padukuhanLayer);
-                padukuhanLayer = null;
-            }
-            if (!togglePadukuhanEl.checked) return;
+        function updateDeleteButtons() {
+            const p = countPadukuhan();
+            const f = countFasilitas();
+            setBtnDisabled(padukuhanDelSelectedEl, selectedPadukuhanIdx === null);
+            setBtnDisabled(padukuhanClearSelectionEl, selectedPadukuhanIdx === null);
+            setBtnDisabled(padukuhanDelLineEl, p.lines === 0);
+            setBtnDisabled(padukuhanDelPolyEl, p.polys === 0);
+            setBtnDisabled(fasilitasDelSelectedEl, selectedFasilitasIdx === null);
+            setBtnDisabled(fasilitasUndoEl, f.total === 0);
+        }
 
-            const sanitized = sanitizeFeatureCollection(padukuhanGeoJSON, ['Polygon', 'LineString', 'MultiPolygon', 'MultiLineString']);
-            sanitized.features.forEach((f, i) => { f._editorIdx = i; });
-            const overlayInteractive = !(drawingPadukuhan || drawingRW || drawingRT || addingFasilitas || addMode);
-            padukuhanLayer = L.geoJSON(sanitized, {
-                interactive: overlayInteractive,
-                style: (f) => {
-                    const t = (f && f.geometry && f.geometry.type) ? f.geometry.type : '';
-                    const isLine = t === 'LineString' || t === 'MultiLineString';
-                    const isSelected = typeof f._editorIdx === 'number' && f._editorIdx === selectedPadukuhanIdx;
-                    const p = f && f.properties ? f.properties : {};
-                    const baseColor = p.color ? p.color : '#2563eb';
-                    const stroke = isSelected ? '#dc2626' : baseColor;
-                    const fill = isSelected ? '#ef4444' : baseColor;
-                    return {
-                        color: stroke,
-                        weight: isLine ? 3 : 2,
-                        opacity: 0.9,
-                        fillColor: fill,
-                        fillOpacity: isLine ? 0 : 0.12
+        function clearSelection() {
+            selectedPadukuhanIdx = null;
+            selectedFasilitasIdx = null;
+            ensurePadukuhanLayer();
+            ensureFasilitasLayer();
+            updatePadukuhanStatus();
+            updateFasilitasStatus();
+        }
+
+        function updateHouseholdSuppression() {
+            const toolsActive = drawingPadukuhan || drawingRW || drawingRT || addingFasilitas || addMode;
+            toggleHouseholdsEl.disabled = toolsActive;
+            const label = toggleHouseholdsEl.closest('label');
+            if (label) label.classList.toggle('opacity-60', toolsActive);
+
+            if (toolsActive) {
+                if (!householdsSuppressedByTool) {
+                    householdsSuppressedPrevChecked = toggleHouseholdsEl.checked;
+                    householdsSuppressedByTool = true;
+                }
+                if (toggleHouseholdsEl.checked) {
+                    toggleHouseholdsEl.checked = false;
+                    renderMarkers();
+                    renderList();
+                }
+                return;
+            }
+
+            if (householdsSuppressedByTool) {
+                toggleHouseholdsEl.checked = householdsSuppressedPrevChecked;
+                householdsSuppressedByTool = false;
+                renderMarkers();
+                renderList();
+            }
+        }
+
+        // Preview Layer saat menggambar (garis/polygon interaktif)
+        function ensurePreviewLayer() {
+            const emptyGeo = { type: 'FeatureCollection', features: [] };
+            if (!map.getSource('source-draw-preview')) {
+                map.addSource('source-draw-preview', { type: 'geojson', data: emptyGeo });
+                addLayerBeforeBoundary({
+                    id: 'layer-draw-preview-fill',
+                    type: 'fill',
+                    source: 'source-draw-preview',
+                    filter: ['==', '$type', 'Polygon'],
+                    paint: {
+                        'fill-color': ['coalesce', ['get', 'color'], '#2563eb'],
+                        'fill-opacity': 0.15
+                    }
+                });
+                addLayerBeforeBoundary({
+                    id: 'layer-draw-preview-line',
+                    type: 'line',
+                    source: 'source-draw-preview',
+                    paint: {
+                        'line-color': ['coalesce', ['get', 'color'], '#2563eb'],
+                        'line-width': 2.5
+                    }
+                });
+            }
+        }
+
+        function updatePreview(points, color, geomType) {
+            ensurePreviewLayer();
+            const src = map.getSource('source-draw-preview');
+            if (!src) return;
+
+            if (!points || points.length === 0) {
+                src.setData({ type: 'FeatureCollection', features: [] });
+                return;
+            }
+
+            const coords = points.map(p => [p[1], p[0]]);
+            let feature = null;
+
+            if (geomType === 'LineString') {
+                if (coords.length >= 2) {
+                    feature = {
+                        type: 'Feature',
+                        properties: { color },
+                        geometry: { type: 'LineString', coordinates: coords }
                     };
                 }
-                ,
-                onEachFeature: function(feature, layer) {
-                    const p = feature && feature.properties ? feature.properties : {};
-                    if (p.name) layer.bindPopup(`<div class="text-sm font-semibold">${p.name}</div>`);
-                    if (overlayInteractive) {
-                        layer.on('click', () => {
-                            selectedPadukuhanIdx = typeof feature._editorIdx === 'number' ? feature._editorIdx : null;
-                            selectedFasilitasIdx = null;
-                            ensurePadukuhanLayer();
-                            ensureFasilitasLayer();
-                            updatePadukuhanStatus();
-                            updateFasilitasStatus();
-                        });
-                    }
+            } else {
+                if (coords.length >= 3) {
+                    const ring = coords.slice();
+                    const first = ring[0];
+                    const last = ring[ring.length - 1];
+                    if (first[0] !== last[0] || first[1] !== last[1]) ring.push([first[0], first[1]]);
+                    feature = {
+                        type: 'Feature',
+                        properties: { color },
+                        geometry: { type: 'Polygon', coordinates: [ring] }
+                    };
+                } else if (coords.length >= 2) {
+                    feature = {
+                        type: 'Feature',
+                        properties: { color },
+                        geometry: { type: 'LineString', coordinates: coords }
+                    };
                 }
-            }).addTo(map);
+            }
+
+            src.setData(feature ? { type: 'FeatureCollection', features: [feature] } : { type: 'FeatureCollection', features: [] });
+        }
+
+        // Layer Batas Padukuhan
+        function ensurePadukuhanLayer() {
+            const sanitized = sanitizeFeatureCollection(padukuhanGeoJSON, ['Polygon', 'LineString', 'MultiPolygon', 'MultiLineString']);
+            sanitized.features.forEach((f, i) => {
+                f.properties = f.properties || {};
+                f.properties._editorIdx = i;
+                f.properties._isSelected = (i === selectedPadukuhanIdx);
+            });
+
+            if (!map.getSource('source-padukuhan')) {
+                map.addSource('source-padukuhan', { type: 'geojson', data: sanitized });
+                addLayerBeforeBoundary({
+                    id: 'layer-padukuhan-fill',
+                    type: 'fill',
+                    source: 'source-padukuhan',
+                    filter: ['==', '$type', 'Polygon'],
+                    paint: {
+                        'fill-color': ['case', ['boolean', ['get', '_isSelected'], false], '#ef4444', ['coalesce', ['get', 'color'], '#2563eb']],
+                        'fill-opacity': 0.14
+                    }
+                });
+                addLayerBeforeBoundary({
+                    id: 'layer-padukuhan-line',
+                    type: 'line',
+                    source: 'source-padukuhan',
+                    paint: {
+                        'line-color': ['case', ['boolean', ['get', '_isSelected'], false], '#dc2626', ['coalesce', ['get', 'color'], '#2563eb']],
+                        'line-width': ['case', ['==', '$type', 'LineString'], 3, 2],
+                        'line-opacity': 0.95
+                    }
+                });
+
+                map.on('click', 'layer-padukuhan-fill', (e) => {
+                    if (drawingPadukuhan || drawingRW || drawingRT || addingFasilitas || addMode) return;
+                    if (e.features && e.features[0]) {
+                        selectedPadukuhanIdx = Number(e.features[0].properties._editorIdx);
+                        selectedFasilitasIdx = null;
+                        ensurePadukuhanLayer();
+                        ensureFasilitasLayer();
+                        updatePadukuhanStatus();
+                        updateFasilitasStatus();
+                    }
+                });
+            } else {
+                map.getSource('source-padukuhan').setData(sanitized);
+            }
+
+            const vis = togglePadukuhanEl.checked ? 'visible' : 'none';
+            if (map.getLayer('layer-padukuhan-fill')) map.setLayoutProperty('layer-padukuhan-fill', 'visibility', vis);
+            if (map.getLayer('layer-padukuhan-line')) map.setLayoutProperty('layer-padukuhan-line', 'visibility', vis);
+            ensureBoundaryOnTop();
         }
 
         function updatePadukuhanStatus() {
@@ -865,6 +918,103 @@
             }
             padukuhanStatusEl.textContent = `Mode gambar aktif • Titik: ${drawingPoints.length}`;
             updateDeleteButtons();
+        }
+
+        function startDrawingPadukuhan() {
+            stopAddFasilitas();
+            stopDrawingRw();
+            stopDrawingRt();
+            addMode = false;
+            addDraft = null;
+            drawingPadukuhan = true;
+            drawingPoints = [];
+            selectedPadukuhanIdx = null;
+            selectedFasilitasIdx = null;
+            map.getCanvas().style.cursor = 'crosshair';
+            updatePadukuhanStatus();
+            updateHouseholdSuppression();
+            ensurePadukuhanLayer();
+            ensureRwLayer();
+            ensureRtLayer();
+            ensureFasilitasLayer();
+        }
+
+        function stopDrawingPadukuhan() {
+            drawingPadukuhan = false;
+            drawingPoints = [];
+            updatePreview([], '', '');
+            map.getCanvas().style.cursor = '';
+            updatePadukuhanStatus();
+            updateHouseholdSuppression();
+            ensurePadukuhanLayer();
+        }
+
+        function addPadukuhanPoint(latlng) {
+            if (!drawingPadukuhan) return;
+            drawingPoints.push([latlng.lat, latlng.lng]);
+            const color = (padukuhanColorEl && padukuhanColorEl.value) ? padukuhanColorEl.value : '#2563eb';
+            const geom = padukuhanGeomEl.value === 'LineString' ? 'LineString' : 'Polygon';
+            updatePreview(drawingPoints, color, geom);
+            updatePadukuhanStatus();
+        }
+
+        function undoPadukuhanPoint() {
+            if (!drawingPadukuhan) return;
+            drawingPoints.pop();
+            const color = (padukuhanColorEl && padukuhanColorEl.value) ? padukuhanColorEl.value : '#2563eb';
+            const geom = padukuhanGeomEl.value === 'LineString' ? 'LineString' : 'Polygon';
+            updatePreview(drawingPoints, color, geom);
+            updatePadukuhanStatus();
+        }
+
+        function finishPadukuhan() {
+            if (!drawingPadukuhan) return;
+            const geom = padukuhanGeomEl.value === 'LineString' ? 'LineString' : 'Polygon';
+            const minPoints = geom === 'LineString' ? 2 : 3;
+            if (drawingPoints.length < minPoints) {
+                alert(`Minimal ${minPoints} titik untuk ${geom}`);
+                return;
+            }
+
+            const name = padukuhanNameEl.value.trim();
+            const color = (padukuhanColorEl && padukuhanColorEl.value) ? padukuhanColorEl.value : '';
+            const props = {};
+            if (name) props.name = name;
+            if (color) props.color = color;
+            let geometry = null;
+            if (geom === 'LineString') {
+                geometry = {
+                    type: 'LineString',
+                    coordinates: drawingPoints.map(p => [p[1], p[0]])
+                };
+            } else {
+                const ring = drawingPoints.map(p => [p[1], p[0]]);
+                const first = ring[0];
+                const last = ring[ring.length - 1];
+                if (first[0] !== last[0] || first[1] !== last[1]) ring.push([first[0], first[1]]);
+                geometry = {
+                    type: 'Polygon',
+                    coordinates: [ring]
+                };
+            }
+
+            const feature = { type: 'Feature', properties: props, geometry };
+            padukuhanGeoJSON.features = Array.isArray(padukuhanGeoJSON.features) ? padukuhanGeoJSON.features.concat([feature]) : [feature];
+            padukuhanDirty = true;
+            selectedPadukuhanIdx = null;
+            saveStatusEl.textContent = 'Perubahan belum disimpan';
+            stopDrawingPadukuhan();
+            ensurePadukuhanLayer();
+        }
+
+        function clearPadukuhan() {
+            if (!confirm('Hapus semua fitur batas padukuhan?')) return;
+            padukuhanGeoJSON = { type: 'FeatureCollection', features: [] };
+            padukuhanDirty = true;
+            selectedPadukuhanIdx = null;
+            ensurePadukuhanLayer();
+            updatePadukuhanStatus();
+            saveStatusEl.textContent = 'Perubahan belum disimpan';
         }
 
         function deleteSelectedPadukuhan() {
@@ -910,154 +1060,39 @@
             }
         }
 
-        function updatePreview() {
-            if (drawingPreview) {
-                map.removeLayer(drawingPreview);
-                drawingPreview = null;
-            }
-            if (!drawingPadukuhan) return;
-            if (drawingPoints.length === 0) return;
-
-            const color = (padukuhanColorEl && padukuhanColorEl.value) ? padukuhanColorEl.value : '#2563eb';
-            const geom = padukuhanGeomEl.value === 'LineString' ? 'LineString' : 'Polygon';
-            if (geom === 'LineString') {
-                drawingPreview = L.polyline(drawingPoints, { color, weight: 3, opacity: 0.9 }).addTo(map);
-            } else {
-                drawingPreview = L.polygon(drawingPoints, { color, weight: 2, fillColor: color, fillOpacity: 0.12 }).addTo(map);
-            }
-        }
-
-        function stopDrawingPadukuhan() {
-            drawingPadukuhan = false;
-            drawingPoints = [];
-            if (drawingPreview) {
-                map.removeLayer(drawingPreview);
-                drawingPreview = null;
-            }
-            map.getContainer().style.cursor = '';
-            updatePadukuhanStatus();
-            updateHouseholdSuppression();
-            ensurePadukuhanLayer();
-            ensureRwLayer();
-            ensureRtLayer();
-            ensureFasilitasLayer();
-        }
-
-        function startDrawingPadukuhan() {
-            stopAddFasilitas();
-            stopDrawingRw();
-            stopDrawingRt();
-            addMode = false;
-            addDraft = null;
-            stopDrawingPadukuhan();
-            drawingPadukuhan = true;
-            drawingPoints = [];
-            selectedPadukuhanIdx = null;
-            selectedFasilitasIdx = null;
-            map.getContainer().style.cursor = 'crosshair';
-            updatePadukuhanStatus();
-            updateHouseholdSuppression();
-            ensurePadukuhanLayer();
-            ensureRwLayer();
-            ensureRtLayer();
-            ensureFasilitasLayer();
-        }
-
-        function addPadukuhanPoint(latlng) {
-            if (!drawingPadukuhan) return;
-            drawingPoints.push([latlng.lat, latlng.lng]);
-            updatePreview();
-            updatePadukuhanStatus();
-        }
-
-        function undoPadukuhanPoint() {
-            if (!drawingPadukuhan) return;
-            drawingPoints.pop();
-            updatePreview();
-            updatePadukuhanStatus();
-        }
-
-        function finishPadukuhan() {
-            if (!drawingPadukuhan) return;
-            const geom = padukuhanGeomEl.value === 'LineString' ? 'LineString' : 'Polygon';
-            const minPoints = geom === 'LineString' ? 2 : 3;
-            if (drawingPoints.length < minPoints) {
-                alert(`Minimal ${minPoints} titik untuk ${geom}`);
-                return;
-            }
-
-            const name = padukuhanNameEl.value.trim();
-            const color = (padukuhanColorEl && padukuhanColorEl.value) ? padukuhanColorEl.value : '';
-            const props = {};
-            if (name) props.name = name;
-            if (color) props.color = color;
-            let geometry = null;
-            if (geom === 'LineString') {
-                geometry = {
-                    type: 'LineString',
-                    coordinates: drawingPoints.map(p => [p[1], p[0]])
-                };
-            } else {
-                const ring = drawingPoints.map(p => [p[1], p[0]]);
-                const first = ring[0];
-                const last = ring[ring.length - 1];
-                if (first[0] !== last[0] || first[1] !== last[1]) ring.push([first[0], first[1]]);
-                geometry = {
-                    type: 'Polygon',
-                    coordinates: [ring]
-                };
-            }
-
-            const feature = {
-                type: 'Feature',
-                properties: props,
-                geometry
-            };
-            padukuhanGeoJSON.features = Array.isArray(padukuhanGeoJSON.features) ? padukuhanGeoJSON.features.concat([feature]) : [feature];
-            padukuhanDirty = true;
-            selectedPadukuhanIdx = null;
-            saveStatusEl.textContent = `Perubahan belum disimpan`;
-            stopDrawingPadukuhan();
-            ensurePadukuhanLayer();
-        }
-
-        function clearPadukuhan() {
-            if (!confirm('Hapus semua fitur batas padukuhan?')) return;
-            padukuhanGeoJSON = { type: 'FeatureCollection', features: [] };
-            padukuhanDirty = true;
-            selectedPadukuhanIdx = null;
-            ensurePadukuhanLayer();
-            updatePadukuhanStatus();
-            saveStatusEl.textContent = `Perubahan belum disimpan`;
-        }
-
+        // Layer Batas RW
         function ensureRwLayer() {
-            if (rwLayer) {
-                map.removeLayer(rwLayer);
-                rwLayer = null;
-            }
-            if (!toggleRwEl.checked) return;
             const sanitized = sanitizeFeatureCollection(rwGeoJSON, ['Polygon', 'LineString', 'MultiPolygon', 'MultiLineString']);
-            rwLayer = L.geoJSON(sanitized, {
-                interactive: !(drawingPadukuhan || drawingRW || drawingRT || addingFasilitas || addMode),
-                style: (f) => {
-                    const t = f && f.geometry ? f.geometry.type : '';
-                    const isLine = t === 'LineString' || t === 'MultiLineString';
-                    const p = f && f.properties ? f.properties : {};
-                    const color = p.color ? p.color : '#0ea5e9';
-                    return {
-                        color,
-                        weight: isLine ? 3 : 2,
-                        opacity: 0.9,
-                        fillColor: color,
-                        fillOpacity: isLine ? 0 : 0.10
-                    };
-                },
-                onEachFeature: function(feature, layer) {
-                    const p = feature && feature.properties ? feature.properties : {};
-                    if (p.name) layer.bindPopup(`<div class="text-sm font-semibold">${p.name}</div>`);
-                }
-            }).addTo(map);
+            if (!map.getSource('source-rw')) {
+                map.addSource('source-rw', { type: 'geojson', data: sanitized });
+                addLayerBeforeBoundary({
+                    id: 'layer-rw-fill',
+                    type: 'fill',
+                    source: 'source-rw',
+                    filter: ['==', '$type', 'Polygon'],
+                    paint: {
+                        'fill-color': ['coalesce', ['get', 'color'], '#0ea5e9'],
+                        'fill-opacity': 0.12
+                    }
+                });
+                addLayerBeforeBoundary({
+                    id: 'layer-rw-line',
+                    type: 'line',
+                    source: 'source-rw',
+                    paint: {
+                        'line-color': ['coalesce', ['get', 'color'], '#0ea5e9'],
+                        'line-width': ['case', ['==', '$type', 'LineString'], 3, 2],
+                        'line-opacity': 0.95
+                    }
+                });
+            } else {
+                map.getSource('source-rw').setData(sanitized);
+            }
+
+            const vis = toggleRwEl.checked ? 'visible' : 'none';
+            if (map.getLayer('layer-rw-fill')) map.setLayoutProperty('layer-rw-fill', 'visibility', vis);
+            if (map.getLayer('layer-rw-line')) map.setLayoutProperty('layer-rw-line', 'visibility', vis);
+            ensureBoundaryOnTop();
         }
 
         function updateRwStatus() {
@@ -1069,37 +1104,6 @@
             rwStatusEl.textContent = `Mode gambar aktif • Titik: ${rwPoints.length}`;
         }
 
-        function updateRwPreview() {
-            if (rwPreview) {
-                map.removeLayer(rwPreview);
-                rwPreview = null;
-            }
-            if (!drawingRW) return;
-            if (rwPoints.length === 0) return;
-            const color = (rwColorEl && rwColorEl.value) ? rwColorEl.value : '#0ea5e9';
-            const geom = rwGeomEl.value === 'LineString' ? 'LineString' : 'Polygon';
-            if (geom === 'LineString') {
-                rwPreview = L.polyline(rwPoints, { color, weight: 3, opacity: 0.9 }).addTo(map);
-            } else {
-                rwPreview = L.polygon(rwPoints, { color, weight: 2, fillColor: color, fillOpacity: 0.10 }).addTo(map);
-            }
-        }
-
-        function stopDrawingRw() {
-            drawingRW = false;
-            rwPoints = [];
-            if (rwPreview) {
-                map.removeLayer(rwPreview);
-                rwPreview = null;
-            }
-            map.getContainer().style.cursor = '';
-            updateRwStatus();
-            updateHouseholdSuppression();
-            ensureRwLayer();
-            ensurePadukuhanLayer();
-            ensureFasilitasLayer();
-        }
-
         function startDrawingRw() {
             stopDrawingPadukuhan();
             stopAddFasilitas();
@@ -1108,25 +1112,37 @@
             addDraft = null;
             drawingRW = true;
             rwPoints = [];
-            map.getContainer().style.cursor = 'crosshair';
+            map.getCanvas().style.cursor = 'crosshair';
             updateRwStatus();
             updateHouseholdSuppression();
             ensureRwLayer();
-            ensurePadukuhanLayer();
-            ensureFasilitasLayer();
+        }
+
+        function stopDrawingRw() {
+            drawingRW = false;
+            rwPoints = [];
+            updatePreview([], '', '');
+            map.getCanvas().style.cursor = '';
+            updateRwStatus();
+            updateHouseholdSuppression();
+            ensureRwLayer();
         }
 
         function addRwPoint(latlng) {
             if (!drawingRW) return;
             rwPoints.push([latlng.lat, latlng.lng]);
-            updateRwPreview();
+            const color = (rwColorEl && rwColorEl.value) ? rwColorEl.value : '#0ea5e9';
+            const geom = rwGeomEl.value === 'LineString' ? 'LineString' : 'Polygon';
+            updatePreview(rwPoints, color, geom);
             updateRwStatus();
         }
 
         function undoRwPoint() {
             if (!drawingRW) return;
             rwPoints.pop();
-            updateRwPreview();
+            const color = (rwColorEl && rwColorEl.value) ? rwColorEl.value : '#0ea5e9';
+            const geom = rwGeomEl.value === 'LineString' ? 'LineString' : 'Polygon';
+            updatePreview(rwPoints, color, geom);
             updateRwStatus();
         }
 
@@ -1156,7 +1172,7 @@
             const feature = { type: 'Feature', properties: props, geometry };
             rwGeoJSON.features = Array.isArray(rwGeoJSON.features) ? rwGeoJSON.features.concat([feature]) : [feature];
             rwDirty = true;
-            saveStatusEl.textContent = `Perubahan belum disimpan`;
+            saveStatusEl.textContent = 'Perubahan belum disimpan';
             stopDrawingRw();
             ensureRwLayer();
         }
@@ -1167,36 +1183,42 @@
             rwDirty = true;
             ensureRwLayer();
             updateRwStatus();
-            saveStatusEl.textContent = `Perubahan belum disimpan`;
+            saveStatusEl.textContent = 'Perubahan belum disimpan';
         }
 
+        // Layer Batas RT
         function ensureRtLayer() {
-            if (rtLayer) {
-                map.removeLayer(rtLayer);
-                rtLayer = null;
-            }
-            if (!toggleRtEl.checked) return;
             const sanitized = sanitizeFeatureCollection(rtGeoJSON, ['Polygon', 'LineString', 'MultiPolygon', 'MultiLineString']);
-            rtLayer = L.geoJSON(sanitized, {
-                interactive: !(drawingPadukuhan || drawingRW || drawingRT || addingFasilitas || addMode),
-                style: (f) => {
-                    const t = f && f.geometry ? f.geometry.type : '';
-                    const isLine = t === 'LineString' || t === 'MultiLineString';
-                    const p = f && f.properties ? f.properties : {};
-                    const color = p.color ? p.color : '#a855f7';
-                    return {
-                        color,
-                        weight: isLine ? 3 : 2,
-                        opacity: 0.9,
-                        fillColor: color,
-                        fillOpacity: isLine ? 0 : 0.10
-                    };
-                },
-                onEachFeature: function(feature, layer) {
-                    const p = feature && feature.properties ? feature.properties : {};
-                    if (p.name) layer.bindPopup(`<div class="text-sm font-semibold">${p.name}</div>`);
-                }
-            }).addTo(map);
+            if (!map.getSource('source-rt')) {
+                map.addSource('source-rt', { type: 'geojson', data: sanitized });
+                addLayerBeforeBoundary({
+                    id: 'layer-rt-fill',
+                    type: 'fill',
+                    source: 'source-rt',
+                    filter: ['==', '$type', 'Polygon'],
+                    paint: {
+                        'fill-color': ['coalesce', ['get', 'color'], '#a855f7'],
+                        'fill-opacity': 0.12
+                    }
+                });
+                addLayerBeforeBoundary({
+                    id: 'layer-rt-line',
+                    type: 'line',
+                    source: 'source-rt',
+                    paint: {
+                        'line-color': ['coalesce', ['get', 'color'], '#a855f7'],
+                        'line-width': ['case', ['==', '$type', 'LineString'], 3, 2],
+                        'line-opacity': 0.95
+                    }
+                });
+            } else {
+                map.getSource('source-rt').setData(sanitized);
+            }
+
+            const vis = toggleRtEl.checked ? 'visible' : 'none';
+            if (map.getLayer('layer-rt-fill')) map.setLayoutProperty('layer-rt-fill', 'visibility', vis);
+            if (map.getLayer('layer-rt-line')) map.setLayoutProperty('layer-rt-line', 'visibility', vis);
+            ensureBoundaryOnTop();
         }
 
         function updateRtStatus() {
@@ -1208,37 +1230,6 @@
             rtStatusEl.textContent = `Mode gambar aktif • Titik: ${rtPoints.length}`;
         }
 
-        function updateRtPreview() {
-            if (rtPreview) {
-                map.removeLayer(rtPreview);
-                rtPreview = null;
-            }
-            if (!drawingRT) return;
-            if (rtPoints.length === 0) return;
-            const color = (rtColorEl && rtColorEl.value) ? rtColorEl.value : '#a855f7';
-            const geom = rtGeomEl.value === 'LineString' ? 'LineString' : 'Polygon';
-            if (geom === 'LineString') {
-                rtPreview = L.polyline(rtPoints, { color, weight: 3, opacity: 0.9 }).addTo(map);
-            } else {
-                rtPreview = L.polygon(rtPoints, { color, weight: 2, fillColor: color, fillOpacity: 0.10 }).addTo(map);
-            }
-        }
-
-        function stopDrawingRt() {
-            drawingRT = false;
-            rtPoints = [];
-            if (rtPreview) {
-                map.removeLayer(rtPreview);
-                rtPreview = null;
-            }
-            map.getContainer().style.cursor = '';
-            updateRtStatus();
-            updateHouseholdSuppression();
-            ensureRtLayer();
-            ensurePadukuhanLayer();
-            ensureFasilitasLayer();
-        }
-
         function startDrawingRt() {
             stopDrawingPadukuhan();
             stopAddFasilitas();
@@ -1247,25 +1238,37 @@
             addDraft = null;
             drawingRT = true;
             rtPoints = [];
-            map.getContainer().style.cursor = 'crosshair';
+            map.getCanvas().style.cursor = 'crosshair';
             updateRtStatus();
             updateHouseholdSuppression();
             ensureRtLayer();
-            ensurePadukuhanLayer();
-            ensureFasilitasLayer();
+        }
+
+        function stopDrawingRt() {
+            drawingRT = false;
+            rtPoints = [];
+            updatePreview([], '', '');
+            map.getCanvas().style.cursor = '';
+            updateRtStatus();
+            updateHouseholdSuppression();
+            ensureRtLayer();
         }
 
         function addRtPoint(latlng) {
             if (!drawingRT) return;
             rtPoints.push([latlng.lat, latlng.lng]);
-            updateRtPreview();
+            const color = (rtColorEl && rtColorEl.value) ? rtColorEl.value : '#a855f7';
+            const geom = rtGeomEl.value === 'LineString' ? 'LineString' : 'Polygon';
+            updatePreview(rtPoints, color, geom);
             updateRtStatus();
         }
 
         function undoRtPoint() {
             if (!drawingRT) return;
             rtPoints.pop();
-            updateRtPreview();
+            const color = (rtColorEl && rtColorEl.value) ? rtColorEl.value : '#a855f7';
+            const geom = rtGeomEl.value === 'LineString' ? 'LineString' : 'Polygon';
+            updatePreview(rtPoints, color, geom);
             updateRtStatus();
         }
 
@@ -1295,7 +1298,7 @@
             const feature = { type: 'Feature', properties: props, geometry };
             rtGeoJSON.features = Array.isArray(rtGeoJSON.features) ? rtGeoJSON.features.concat([feature]) : [feature];
             rtDirty = true;
-            saveStatusEl.textContent = `Perubahan belum disimpan`;
+            saveStatusEl.textContent = 'Perubahan belum disimpan';
             stopDrawingRt();
             ensureRtLayer();
         }
@@ -1306,9 +1309,260 @@
             rtDirty = true;
             ensureRtLayer();
             updateRtStatus();
-            saveStatusEl.textContent = `Perubahan belum disimpan`;
+            saveStatusEl.textContent = 'Perubahan belum disimpan';
         }
 
+        // Layer Fasilitas Desa
+        function ensureFasilitasLayer() {
+            const sanitized = sanitizeFeatureCollection(fasilitasGeoJSON, ['Point']);
+            sanitized.features.forEach((f, i) => {
+                f.properties = f.properties || {};
+                f.properties._editorIdx = i;
+                f.properties._isSelected = (i === selectedFasilitasIdx);
+            });
+
+            if (!map.getSource('source-fasilitas')) {
+                map.addSource('source-fasilitas', { type: 'geojson', data: sanitized });
+                addLayerBeforeBoundary({
+                    id: 'layer-fasilitas-circle',
+                    type: 'circle',
+                    source: 'source-fasilitas',
+                    paint: {
+                        'circle-radius': 6.5,
+                        'circle-color': ['case', ['boolean', ['get', '_isSelected'], false], '#ef4444', '#2563eb'],
+                        'circle-stroke-width': 2,
+                        'circle-stroke-color': '#ffffff'
+                    }
+                });
+
+                map.on('click', 'layer-fasilitas-circle', (e) => {
+                    if (drawingPadukuhan || drawingRW || drawingRT || addingFasilitas || addMode) return;
+                    if (e.features && e.features[0]) {
+                        selectedFasilitasIdx = Number(e.features[0].properties._editorIdx);
+                        selectedPadukuhanIdx = null;
+                        ensurePadukuhanLayer();
+                        ensureFasilitasLayer();
+                        updatePadukuhanStatus();
+                        updateFasilitasStatus();
+                    }
+                });
+            } else {
+                map.getSource('source-fasilitas').setData(sanitized);
+            }
+
+            const vis = toggleFasilitasEl.checked ? 'visible' : 'none';
+            if (map.getLayer('layer-fasilitas-circle')) map.setLayoutProperty('layer-fasilitas-circle', 'visibility', vis);
+            ensureBoundaryOnTop();
+        }
+
+        function updateFasilitasStatus() {
+            const total = fasilitasGeoJSON && Array.isArray(fasilitasGeoJSON.features) ? fasilitasGeoJSON.features.length : 0;
+            if (!addingFasilitas) {
+                fasilitasStatusEl.textContent = selectedFasilitasIdx === null ? `${total} titik tersimpan` : `${total} titik tersimpan • 1 dipilih`;
+                updateDeleteButtons();
+                return;
+            }
+            fasilitasStatusEl.textContent = `Mode tambah titik aktif • Total: ${total}`;
+            updateDeleteButtons();
+        }
+
+        function startAddFasilitas() {
+            stopDrawingPadukuhan();
+            stopDrawingRw();
+            stopDrawingRt();
+            addMode = false;
+            addDraft = null;
+            addingFasilitas = true;
+            selectedFasilitasIdx = null;
+            selectedPadukuhanIdx = null;
+            map.getCanvas().style.cursor = 'crosshair';
+            updateFasilitasStatus();
+            saveStatusEl.textContent = 'Klik peta untuk menaruh titik fasilitas';
+            updateHouseholdSuppression();
+            ensureFasilitasLayer();
+        }
+
+        function stopAddFasilitas() {
+            addingFasilitas = false;
+            map.getCanvas().style.cursor = '';
+            updateFasilitasStatus();
+            updateHouseholdSuppression();
+            ensureFasilitasLayer();
+        }
+
+        function addFasilitasPoint(latlng) {
+            if (!addingFasilitas) return;
+            const name = (fasilitasNameEl.value || '').trim();
+            if (!name) {
+                alert('Nama fasilitas wajib diisi');
+                return;
+            }
+            const category = (fasilitasCatEl.value || '').trim();
+            const props = { name };
+            if (category) props.category = category;
+            const feature = {
+                type: 'Feature',
+                properties: props,
+                geometry: { type: 'Point', coordinates: [latlng.lng, latlng.lat] }
+            };
+            fasilitasGeoJSON.features = Array.isArray(fasilitasGeoJSON.features) ? fasilitasGeoJSON.features.concat([feature]) : [feature];
+            fasilitasDirty = true;
+            selectedFasilitasIdx = null;
+            ensureFasilitasLayer();
+            updateFasilitasStatus();
+            saveStatusEl.textContent = 'Perubahan belum disimpan';
+        }
+
+        function undoFasilitas() {
+            if (!Array.isArray(fasilitasGeoJSON.features) || fasilitasGeoJSON.features.length === 0) return;
+            fasilitasGeoJSON.features = fasilitasGeoJSON.features.slice(0, fasilitasGeoJSON.features.length - 1);
+            fasilitasDirty = true;
+            selectedFasilitasIdx = null;
+            ensureFasilitasLayer();
+            updateFasilitasStatus();
+            saveStatusEl.textContent = 'Perubahan belum disimpan';
+        }
+
+        function clearFasilitas() {
+            if (!confirm('Hapus semua titik fasilitas?')) return;
+            fasilitasGeoJSON = { type: 'FeatureCollection', features: [] };
+            fasilitasDirty = true;
+            selectedFasilitasIdx = null;
+            ensureFasilitasLayer();
+            updateFasilitasStatus();
+            saveStatusEl.textContent = 'Perubahan belum disimpan';
+        }
+
+        function deleteSelectedFasilitas() {
+            if (selectedFasilitasIdx === null) return;
+            if (!Array.isArray(fasilitasGeoJSON.features)) fasilitasGeoJSON.features = [];
+            if (selectedFasilitasIdx < 0 || selectedFasilitasIdx >= fasilitasGeoJSON.features.length) {
+                selectedFasilitasIdx = null;
+                updateFasilitasStatus();
+                return;
+            }
+            fasilitasGeoJSON.features.splice(selectedFasilitasIdx, 1);
+            fasilitasDirty = true;
+            selectedFasilitasIdx = null;
+            ensureFasilitasLayer();
+            updateFasilitasStatus();
+            saveStatusEl.textContent = 'Perubahan belum disimpan';
+        }
+
+        // Helper string & data
+        function normalize(s) {
+            return (s || '').toString().trim().toLowerCase();
+        }
+
+        function getLabel(hh) {
+            const head = hh.head_name || '(Tanpa Nama)';
+            const dusun = hh.dusun ? ` - ${hh.dusun}` : '';
+            return `${head}${dusun}`;
+        }
+
+        function setSelected(hh) {
+            selectedNoKK = hh.no_kk;
+            selNoKK.textContent = hh.no_kk || '-';
+            selHead.textContent = hh.head_name || '-';
+            selDusun.textContent = hh.dusun || '-';
+            selLat.textContent = (hh.latitude ?? '').toString();
+            selLng.textContent = (hh.longitude ?? '').toString();
+            selectedEl.classList.remove('hidden');
+        }
+
+        function updateSelectedFromMarker(noKK) {
+            const m = markersByNoKK.get(noKK);
+            if (!m) return;
+            const ll = m.getLngLat();
+            selLat.textContent = ll.lat.toFixed(7);
+            selLng.textContent = ll.lng.toFixed(7);
+        }
+
+        function getFilteredHouseholds() {
+            const q = normalize(searchEl.value);
+            return households.filter(hh => {
+                if (!q) return true;
+                return normalize(hh.no_kk).includes(q) ||
+                    normalize(hh.head_name).includes(q) ||
+                    normalize(hh.dusun).includes(q) ||
+                    normalize(hh.address).includes(q);
+            });
+        }
+
+        function getVisibleHouseholds(filtered) {
+            if (listMode === 'pagination') {
+                const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+                if (currentPage > totalPages) currentPage = totalPages;
+                if (currentPage < 1) currentPage = 1;
+                const startIndex = (currentPage - 1) * pageSize;
+                const endIndex = Math.min(filtered.length, startIndex + pageSize);
+                return {
+                    items: filtered.slice(startIndex, endIndex),
+                    startIndex,
+                    endIndex,
+                    totalPages
+                };
+            }
+
+            const endIndex = Math.min(filtered.length, pageSize * currentPage);
+            return {
+                items: filtered.slice(0, endIndex),
+                startIndex: 0,
+                endIndex,
+                totalPages: Math.max(1, Math.ceil(filtered.length / pageSize))
+            };
+        }
+
+        // Render Marker MapLibre GL 2D (Draggable)
+        function renderMarkers() {
+            for (const [, marker] of markersByNoKK.entries()) {
+                marker.remove();
+            }
+            markersByNoKK.clear();
+
+            if (!toggleHouseholdsEl.checked) return;
+
+            const filtered = getFilteredHouseholds();
+            const visible = getVisibleHouseholds(filtered);
+
+            visible.items.forEach(hh => {
+                const lat = Number(hh.latitude);
+                const lng = Number(hh.longitude);
+                if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
+                if (lat < -90 || lat > 90 || lng < -180 || lng > 180) return;
+                if (lat === 0 && lng === 0) return;
+
+                const marker = new maplibregl.Marker({
+                    draggable: true,
+                    color: '#2563eb'
+                })
+                .setLngLat([lng, lat])
+                .setPopup(new maplibregl.Popup({ offset: 25 }).setHTML(`
+                    <div class="text-xs font-bold text-slate-800">${hh.head_name || '-'}</div>
+                    <div class="text-[11px] text-slate-500 font-mono">${hh.no_kk || ''}</div>
+                    <div class="text-[11px] text-slate-600">${hh.dusun || ''}</div>
+                `))
+                .addTo(map);
+
+                marker.getElement().addEventListener('click', () => {
+                    setSelected(hh);
+                });
+
+                marker.on('dragend', () => {
+                    const ll = marker.getLngLat();
+                    dirty.set(hh.no_kk, { latitude: ll.lat, longitude: ll.lng });
+                    saveStatusEl.textContent = `Perubahan belum disimpan (${dirty.size})`;
+                    if (selectedNoKK === hh.no_kk) {
+                        selLat.textContent = ll.lat.toFixed(7);
+                        selLng.textContent = ll.lng.toFixed(7);
+                    }
+                });
+
+                markersByNoKK.set(hh.no_kk, marker);
+            });
+        }
+
+        // Render List Panel
         function renderList() {
             listEl.innerHTML = '';
 
@@ -1340,20 +1594,22 @@
             visible.items.forEach(hh => {
                 const row = document.createElement('button');
                 row.type = 'button';
-                row.className = 'w-full text-left px-3 py-2 hover:bg-gray-50';
+                row.className = 'w-full text-left px-3 py-2 hover:bg-slate-50 transition border-b border-slate-100 last:border-0';
                 const hasChanges = dirty.has(hh.no_kk);
                 row.innerHTML = `
                     <div class="flex justify-between items-center">
-                        <div class="text-sm font-semibold text-gray-800 truncate">${getLabel(hh)}</div>
-                        ${hasChanges ? `<span class="text-[10px] px-2 py-0.5  bg-amber-100 text-amber-800 font-semibold">Edited</span>` : ``}
+                        <div class="text-xs font-bold text-slate-800 truncate">${getLabel(hh)}</div>
+                        ${hasChanges ? `<span class="text-[9px] px-1.5 py-0.5 bg-amber-100 text-amber-800 font-semibold border border-amber-300">Edited</span>` : ``}
                     </div>
-                    <div class="text-xs text-gray-500 truncate">${hh.no_kk || ''}${hh.address ? ' • ' + hh.address : ''}</div>
+                    <div class="text-[11px] text-slate-500 truncate">${hh.no_kk || ''}${hh.address ? ' • ' + hh.address : ''}</div>
                 `;
                 row.addEventListener('click', () => {
                     const marker = markersByNoKK.get(hh.no_kk);
-                    if (marker) {
-                        map.setView(marker.getLatLng(), Math.max(map.getZoom(), 17));
-                        marker.openPopup();
+                    const lat = Number(hh.latitude);
+                    const lng = Number(hh.longitude);
+                    if (Number.isFinite(lat) && Number.isFinite(lng) && lat !== 0 && lng !== 0) {
+                        map.flyTo({ center: [lng, lat], zoom: Math.max(map.getZoom(), 16.5) });
+                        if (marker) marker.togglePopup();
                     }
                     setSelected(hh);
                 });
@@ -1371,26 +1627,16 @@
             statsEl.textContent = `${rangeText} marker • Perubahan: ${dirty.size}`;
         }
 
-        function renderMarkers() {
-            for (const [, marker] of markersByNoKK.entries()) map.removeLayer(marker);
-            markersByNoKK.clear();
-            if (!toggleHouseholdsEl.checked) return;
-            const filtered = getFilteredHouseholds();
-            const visible = getVisibleHouseholds(filtered);
-            visible.items.forEach(hh => {
-                const marker = createMarkerForHousehold(hh);
-                if (!marker) return;
-                markersByNoKK.set(hh.no_kk, marker);
-                marker.addTo(map);
-            });
-        }
-
         async function fetchJSONOrNull(url) {
-            const res = await fetch(url);
-            if (!res.ok) return null;
-            const ct = (res.headers.get('content-type') || '').toLowerCase();
-            if (!ct.includes('application/json')) return null;
-            return await res.json();
+            try {
+                const res = await fetch(url);
+                if (!res.ok) return null;
+                const ct = (res.headers.get('content-type') || '').toLowerCase();
+                if (!ct.includes('application/json')) return null;
+                return await res.json();
+            } catch (e) {
+                return null;
+            }
         }
 
         async function loadData() {
@@ -1402,18 +1648,23 @@
             households = Array.isArray(data) ? data : [];
             customHouseholds = households.filter(hh => (hh.no_kk || '').startsWith('CUSTOM-'));
             currentPage = 1;
+
             const pad = await fetchJSONOrNull('/editor/layers/padukuhan');
             if (pad) padukuhanGeoJSON = sanitizeFeatureCollection(pad, ['Polygon', 'LineString', 'MultiPolygon', 'MultiLineString']);
             padukuhanDirty = false;
+
             const rw = await fetchJSONOrNull('/editor/layers/rw');
             if (rw) rwGeoJSON = sanitizeFeatureCollection(rw, ['Polygon', 'LineString', 'MultiPolygon', 'MultiLineString']);
             rwDirty = false;
+
             const rt = await fetchJSONOrNull('/editor/layers/rt');
             if (rt) rtGeoJSON = sanitizeFeatureCollection(rt, ['Polygon', 'LineString', 'MultiPolygon', 'MultiLineString']);
             rtDirty = false;
+
             const fas = await fetchJSONOrNull('/editor/layers/fasilitas');
             if (fas) fasilitasGeoJSON = sanitizeFeatureCollection(fas, ['Point']);
             fasilitasDirty = false;
+
             ensurePadukuhanLayer();
             updatePadukuhanStatus();
             ensureRwLayer();
@@ -1445,6 +1696,7 @@
             if (rwDirty) geoLayers.rw = rwGeoJSON;
             if (rtDirty) geoLayers.rt = rtGeoJSON;
             if (fasilitasDirty) geoLayers.fasilitas = fasilitasGeoJSON;
+
             const payload = { updates, custom_households: customHouseholds, geo_layers: geoLayers };
             const resp = await fetch('/editor/save', {
                 method: 'POST',
@@ -1480,7 +1732,7 @@
             addFormEl.classList.add('hidden');
             addMode = false;
             addDraft = null;
-            map.getContainer().style.cursor = '';
+            map.getCanvas().style.cursor = '';
             updateHouseholdSuppression();
             ensurePadukuhanLayer();
             ensureRwLayer();
@@ -1513,7 +1765,7 @@
             addMode = true;
             selectedPadukuhanIdx = null;
             selectedFasilitasIdx = null;
-            map.getContainer().style.cursor = 'crosshair';
+            map.getCanvas().style.cursor = 'crosshair';
             saveStatusEl.textContent = 'Klik peta untuk menaruh marker baru';
             updateHouseholdSuppression();
             ensurePadukuhanLayer();
@@ -1526,63 +1778,48 @@
             updateFasilitasStatus();
         }
 
+        // Map Click Event Handlers
         map.on('click', (e) => {
-            if (!addMode || !addDraft) return;
-            addDraft.latitude = e.latlng.lat;
-            addDraft.longitude = e.latlng.lng;
-            customHouseholds = customHouseholds.concat([addDraft]);
-            households = households.concat([addDraft]);
-            closeAddForm();
-            renderMarkers();
-            renderList();
-            dirty.set(addDraft.no_kk, { latitude: addDraft.latitude, longitude: addDraft.longitude });
-            saveStatusEl.textContent = `Perubahan belum disimpan (${dirty.size})`;
-            updateHouseholdSuppression();
-            ensurePadukuhanLayer();
-            ensureRwLayer();
-            ensureRtLayer();
-            ensureFasilitasLayer();
+            const latlng = { lat: e.lngLat.lat, lng: e.lngLat.lng };
+
+            if (addMode && addDraft) {
+                addDraft.latitude = latlng.lat;
+                addDraft.longitude = latlng.lng;
+                customHouseholds = customHouseholds.concat([addDraft]);
+                households = households.concat([addDraft]);
+                closeAddForm();
+                renderMarkers();
+                renderList();
+                dirty.set(addDraft.no_kk, { latitude: addDraft.latitude, longitude: addDraft.longitude });
+                saveStatusEl.textContent = `Perubahan belum disimpan (${dirty.size})`;
+                updateHouseholdSuppression();
+                return;
+            }
+
+            if (drawingPadukuhan) {
+                addPadukuhanPoint(latlng);
+                return;
+            }
+
+            if (drawingRW) {
+                addRwPoint(latlng);
+                return;
+            }
+
+            if (drawingRT) {
+                addRtPoint(latlng);
+                return;
+            }
+
+            if (addingFasilitas) {
+                addFasilitasPoint(latlng);
+                return;
+            }
         });
 
-        map.on('click', (e) => {
-            if (!drawingPadukuhan) return;
-            if (addMode) return;
-            if (addingFasilitas) return;
-            if (drawingRW) return;
-            if (drawingRT) return;
-            addPadukuhanPoint(e.latlng);
-        });
-
-        map.on('click', (e) => {
-            if (!drawingRW) return;
-            if (addMode) return;
-            if (addingFasilitas) return;
-            if (drawingPadukuhan) return;
-            if (drawingRT) return;
-            addRwPoint(e.latlng);
-        });
-
-        map.on('click', (e) => {
-            if (!drawingRT) return;
-            if (addMode) return;
-            if (addingFasilitas) return;
-            if (drawingPadukuhan) return;
-            if (drawingRW) return;
-            addRtPoint(e.latlng);
-        });
-
-        map.on('click', (e) => {
-            if (!addingFasilitas) return;
-            if (addMode) return;
-            if (drawingPadukuhan) return;
-            if (drawingRW) return;
-            if (drawingRT) return;
-            addFasilitasPoint(e.latlng);
-        });
-
+        // Event Listeners UI
         searchEl.addEventListener('input', () => {
             currentPage = 1;
-            if (listMode === 'load_more') currentPage = 1;
             renderList();
             renderMarkers();
         });
@@ -1645,92 +1882,46 @@
             startAddMode();
         });
 
-        padukuhanStartEl.addEventListener('click', (e) => {
-            e.preventDefault();
-            startDrawingPadukuhan();
-        });
-        padukuhanUndoEl.addEventListener('click', (e) => {
-            e.preventDefault();
-            undoPadukuhanPoint();
-        });
-        padukuhanFinishEl.addEventListener('click', (e) => {
-            e.preventDefault();
-            finishPadukuhan();
-        });
-        padukuhanClearEl.addEventListener('click', (e) => {
-            e.preventDefault();
-            clearPadukuhan();
-        });
-        padukuhanDelSelectedEl.addEventListener('click', (e) => {
-            e.preventDefault();
-            deleteSelectedPadukuhan();
-        });
-        padukuhanDelLineEl.addEventListener('click', (e) => {
-            e.preventDefault();
-            deleteLastPadukuhanByType('line');
-        });
-        padukuhanDelPolyEl.addEventListener('click', (e) => {
-            e.preventDefault();
-            deleteLastPadukuhanByType('poly');
-        });
-        padukuhanClearSelectionEl.addEventListener('click', (e) => {
-            e.preventDefault();
-            clearSelection();
-        });
-        rwStartEl.addEventListener('click', (e) => {
-            e.preventDefault();
-            startDrawingRw();
-        });
-        rwUndoEl.addEventListener('click', (e) => {
-            e.preventDefault();
-            undoRwPoint();
-        });
-        rwFinishEl.addEventListener('click', (e) => {
-            e.preventDefault();
-            finishRw();
-        });
-        rwClearEl.addEventListener('click', (e) => {
-            e.preventDefault();
-            clearRw();
-        });
-        rtStartEl.addEventListener('click', (e) => {
-            e.preventDefault();
-            startDrawingRt();
-        });
-        rtUndoEl.addEventListener('click', (e) => {
-            e.preventDefault();
-            undoRtPoint();
-        });
-        rtFinishEl.addEventListener('click', (e) => {
-            e.preventDefault();
-            finishRt();
-        });
-        rtClearEl.addEventListener('click', (e) => {
-            e.preventDefault();
-            clearRt();
-        });
+        padukuhanStartEl.addEventListener('click', (e) => { e.preventDefault(); startDrawingPadukuhan(); });
+        padukuhanUndoEl.addEventListener('click', (e) => { e.preventDefault(); undoPadukuhanPoint(); });
+        padukuhanFinishEl.addEventListener('click', (e) => { e.preventDefault(); finishPadukuhan(); });
+        padukuhanClearEl.addEventListener('click', (e) => { e.preventDefault(); clearPadukuhan(); });
+        padukuhanDelSelectedEl.addEventListener('click', (e) => { e.preventDefault(); deleteSelectedPadukuhan(); });
+        padukuhanDelLineEl.addEventListener('click', (e) => { e.preventDefault(); deleteLastPadukuhanByType('line'); });
+        padukuhanDelPolyEl.addEventListener('click', (e) => { e.preventDefault(); deleteLastPadukuhanByType('poly'); });
+        padukuhanClearSelectionEl.addEventListener('click', (e) => { e.preventDefault(); clearSelection(); });
+
+        rwStartEl.addEventListener('click', (e) => { e.preventDefault(); startDrawingRw(); });
+        rwUndoEl.addEventListener('click', (e) => { e.preventDefault(); undoRwPoint(); });
+        rwFinishEl.addEventListener('click', (e) => { e.preventDefault(); finishRw(); });
+        rwClearEl.addEventListener('click', (e) => { e.preventDefault(); clearRw(); });
+
+        rtStartEl.addEventListener('click', (e) => { e.preventDefault(); startDrawingRt(); });
+        rtUndoEl.addEventListener('click', (e) => { e.preventDefault(); undoRtPoint(); });
+        rtFinishEl.addEventListener('click', (e) => { e.preventDefault(); finishRt(); });
+        rtClearEl.addEventListener('click', (e) => { e.preventDefault(); clearRt(); });
+
         fasilitasStartEl.addEventListener('click', (e) => {
             e.preventDefault();
             if (addingFasilitas) stopAddFasilitas();
             else startAddFasilitas();
         });
-        fasilitasUndoEl.addEventListener('click', (e) => {
-            e.preventDefault();
-            undoFasilitas();
-        });
-        fasilitasDelSelectedEl.addEventListener('click', (e) => {
-            e.preventDefault();
-            deleteSelectedFasilitas();
-        });
-        fasilitasClearEl.addEventListener('click', (e) => {
-            e.preventDefault();
-            clearFasilitas();
-        });
+        fasilitasUndoEl.addEventListener('click', (e) => { e.preventDefault(); undoFasilitas(); });
+        fasilitasDelSelectedEl.addEventListener('click', (e) => { e.preventDefault(); deleteSelectedFasilitas(); });
+        fasilitasClearEl.addEventListener('click', (e) => { e.preventDefault(); clearFasilitas(); });
 
-        loadData().catch(err => {
-            console.error(err);
-            statsEl.textContent = 'Gagal memuat data';
-            alert(`Gagal memuat data editor: ${err && err.message ? err.message : err}`);
+        // Initial Map & Data Load
+        map.on('load', async () => {
+            await loadBoundary();
+            if (boundaryGeoJSON) {
+                const bounds = new maplibregl.LngLatBounds();
+                extendBoundsWithGeoJSON(bounds, boundaryGeoJSON);
+                map.fitBounds(bounds, { padding: 35 });
+            }
+            loadData().catch(err => {
+                console.error(err);
+                statsEl.textContent = 'Gagal memuat data';
+            });
         });
     </script>
 </body>
