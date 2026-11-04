@@ -128,16 +128,28 @@ $env:GOOS="linux"; $env:GOARCH="amd64"; $env:CGO_ENABLED="0"; go build -ldflags=
 GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -ldflags="-s -w" -o pondokrejo-app-linux
 ```
 
-### Konfigurasi Produksi Nargaroth Server
-- **Host Target:** `103.255.133.227:64001`
-- **User / Path:** `pondokrejo-peta` di `/home/pondokrejo-peta/htdocs/peta.pondokrejo.id/`
-- **Port Layanan:** `5092`
-- **Reverse Proxy:** Nginx dengan sertifikat SSL otomatis di [https://peta.pondokrejo.id](https://peta.pondokrejo.id)
+### Konfigurasi & Menjalankan Service
+Aplikasi membaca port dari environment variable `PORT` (default: `5092`):
 
-Untuk menjalankan ulang di server:
 ```bash
-cd /home/pondokrejo-peta/htdocs/peta.pondokrejo.id
-./run.sh
+# Menjalankan di background (Linux)
+PORT=5092 nohup ./pondokrejo-app-linux > app.log 2>&1 &
+```
+
+Contoh konfigurasi Nginx Reverse Proxy standar:
+```nginx
+server {
+    server_name your-domain.id;
+
+    location / {
+        proxy_pass http://127.0.0.1:5092;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
 ```
 
 ---

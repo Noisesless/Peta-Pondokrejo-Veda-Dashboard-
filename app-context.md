@@ -6,8 +6,7 @@
 - Domain: https://peta.pondokrejo.id
 - Stack: Golang 1.26 (Gin Framework), MapLibre GL JS v4.7.1 (2D Engine), Tailwind CSS, Chart.js
 - Local Port: 5092 (env: PORT)
-- Production Server: Nargaroth 103.255.133.227:64001 (User: pondokrejo-peta)
-- Production Path: /home/pondokrejo-peta/htdocs/peta.pondokrejo.id/
+- Production Server: Linux VPS (Port 5092 behind Nginx HTTPS)
 - Binary: pondokrejo-app-linux (Go single-binary with //go:embed)
 
 ## [STATE]
@@ -37,3 +36,4 @@
 ## [NEXT]
 - Pemeliharaan data KK berkala sesuai pembaruan dari Kalurahan
 - Penambahan layer tematik baru jika tersedia data spasial tambahan dari Kapanewon/Pemkab Sleman
+
