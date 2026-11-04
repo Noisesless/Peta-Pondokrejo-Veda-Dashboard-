@@ -132,14 +132,12 @@
                     <h2 class="text-sm font-bold leading-tight">Data Geografis</h2>
                     <div class="text-[11px] text-emerald-200">Kalurahan Pondokrejo</div>
                 </div>
-                <span class="text-[10px] bg-emerald-950 text-emerald-200 px-2 py-0.5 border border-emerald-500 font-semibold tracking-wide">MapLibre 2D</span>
             </div>
 
             <!-- Basemap Selector (OpenFreeMap + Esri Satelit - Bebas 403) -->
             <div class="p-3 border-b bg-slate-50">
-                <div class="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2 flex items-center justify-between">
-                    <span>Gaya Peta Dasar</span>
-                    <span class="text-[10px] text-emerald-700 font-semibold flex items-center"><i class="fa fa-shield-alt mr-1"></i> Bebas 403</span>
+                <div class="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">
+                    Gaya Peta Dasar
                 </div>
                 <div class="grid grid-cols-3 gap-1 mb-1">
                     <button type="button" class="btn-basemap active text-xs font-semibold py-1.5 px-1 border transition text-center bg-emerald-700 text-white border-emerald-700" data-style="liberty" onclick="setBasemap('liberty')">Liberty</button>
@@ -838,6 +836,15 @@
                     b.className = 'btn-basemap text-xs font-semibold py-1.5 px-1 border transition text-center bg-white text-slate-700 border-slate-300 hover:bg-slate-100 shadow-none';
                 }
             });
+
+            // Re-apply boundary dan seluruh layer tematik segera setelah gaya peta baru selesai dimuat
+            map.once('style.load', async () => {
+                await loadBoundary();
+                await reapplyAllThematicLayers();
+                renderMarkers();
+                ensureBoundaryOnTop();
+            });
+
             map.setStyle(STYLES[styleKey]);
         }
 
@@ -1004,6 +1011,29 @@
             }
         }
 
+        // Memastikan Garis Batas Kalurahan Selalu di Atas Layer Poligon Lain
+        function ensureBoundaryOnTop() {
+            try {
+                if (map.getLayer('layer-boundary-casing')) {
+                    map.moveLayer('layer-boundary-casing');
+                }
+                if (map.getLayer('layer-boundary-line')) {
+                    map.moveLayer('layer-boundary-line');
+                }
+                if (map.getLayer('household-points')) {
+                    map.moveLayer('household-points');
+                }
+                if (map.getLayer('household-clusters')) {
+                    map.moveLayer('household-clusters');
+                }
+                if (map.getLayer('household-cluster-count')) {
+                    map.moveLayer('household-cluster-count');
+                }
+            } catch (e) {
+                // Ignore if layers not yet mounted
+            }
+        }
+
         // MapLibre Layer Helpers: Batas Wilayah Kalurahan Pondokrejo
         async function loadBoundary() {
             try {
@@ -1023,19 +1053,37 @@
                         type: 'geojson',
                         data: boundaryGeoJSON
                     });
+                }
 
-                    // Layer Area Fill Pondokrejo
+                // Area Fill Pondokrejo (Tint lembut)
+                if (!map.getLayer('layer-boundary-fill')) {
                     map.addLayer({
                         id: 'layer-boundary-fill',
                         type: 'fill',
                         source: 'source-boundary',
                         paint: {
                             'fill-color': '#2563eb',
-                            'fill-opacity': 0.06
+                            'fill-opacity': 0.05
                         }
                     });
+                }
 
-                    // Layer Garis Batas Luar Pondokrejo (Tegas, Biru Pekat, Solid 2.8px)
+                // Casing Batas Luar (Halo putih kontras tinggi untuk satelit/gelap/sawah)
+                if (!map.getLayer('layer-boundary-casing')) {
+                    map.addLayer({
+                        id: 'layer-boundary-casing',
+                        type: 'line',
+                        source: 'source-boundary',
+                        paint: {
+                            'line-color': '#ffffff',
+                            'line-width': 4.6,
+                            'line-opacity': 0.95
+                        }
+                    });
+                }
+
+                // Garis Batas Luar Utama (Solid Biru Pekat 2.8px)
+                if (!map.getLayer('layer-boundary-line')) {
                     map.addLayer({
                         id: 'layer-boundary-line',
                         type: 'line',
@@ -1043,10 +1091,12 @@
                         paint: {
                             'line-color': '#1d4ed8',
                             'line-width': 2.8,
-                            'line-opacity': 0.95
+                            'line-opacity': 1.0
                         }
                     });
                 }
+
+                ensureBoundaryOnTop();
 
                 // Zoom fitBounds ke batas Kalurahan Pondokrejo
                 if (!boundaryBounds && boundaryGeoJSON) {
@@ -1167,12 +1217,14 @@
                     }
                 }
             }
+            ensureBoundaryOnTop();
         }
 
-        function reapplyAllLayers() {
-            loadBoundary();
-            reapplyAllThematicLayers();
+        async function reapplyAllLayers() {
+            await loadBoundary();
+            await reapplyAllThematicLayers();
             renderMarkers();
+            ensureBoundaryOnTop();
         }
 
         map.on('load', reapplyAllLayers);
