@@ -1320,6 +1320,9 @@
             .then(res => res.json())
             .then(data => {
                 allHouseholds = data || [];
+                allHouseholds.forEach((hh, idx) => {
+                    hh._id = idx;
+                });
                 isResidentsLoaded = true;
                 extractMetadata();
                 populateFilters();
@@ -1488,8 +1491,10 @@
                         desilTotalPeople += (hh.members ? hh.members.length : 0);
                         features.push({
                             type: "Feature",
+                            id: hh._id,
                             geometry: { type: "Point", coordinates: [hh.longitude, hh.latitude] },
                             properties: {
+                                _id: hh._id,
                                 no_kk: hh.no_kk,
                                 head_name: hh.head_name,
                                 dusun: hh.dusun || '',
@@ -1629,13 +1634,29 @@
 
                 map.on('click', 'household-points', (e) => {
                     const p = e.features[0].properties;
-                    const hh = allHouseholds.find(h => String(h.no_kk) === String(p.no_kk));
+                    // Resolusi Presisi: Cari objek KK exact match berdasarkan _id index
+                    let hh = null;
+                    if (p._id !== undefined && p._id !== null) {
+                        const idx = parseInt(p._id, 10);
+                        if (!isNaN(idx) && allHouseholds[idx]) {
+                            hh = allHouseholds[idx];
+                        }
+                    } else if (e.features[0].id !== undefined && e.features[0].id !== null) {
+                        const idx = parseInt(e.features[0].id, 10);
+                        if (!isNaN(idx) && allHouseholds[idx]) {
+                            hh = allHouseholds[idx];
+                        }
+                    }
+                    // Fallback bertingkat: Composite match nama kepala keluarga + dusun
+                    if (!hh) {
+                        hh = allHouseholds.find(h => h.head_name === p.head_name && (h.dusun === p.dusun || String(h.no_kk) === String(p.no_kk)));
+                    }
                     if (hh) {
                         const color = p.desil === 1 ? 'red' : (p.desil === 2 ? 'orange' : (p.desil === 3 ? 'yellow' : 'green'));
                         showDetail(hh, color);
                         new maplibregl.Popup({ offset: 12, closeButton: false })
                             .setLngLat(e.features[0].geometry.coordinates)
-                            .setHTML(`<div class="p-1 text-xs"><b>${p.head_name}</b><br><span class="text-slate-500">${p.dusun || ''}</span><br><span class="font-bold text-emerald-600">Desil ${p.desil}</span></div>`)
+                            .setHTML(`<div class="p-1 text-xs"><b>${hh.head_name}</b><br><span class="text-slate-500">${hh.dusun || ''}</span><br><span class="font-bold text-emerald-600">Desil ${p.desil}</span></div>`)
                             .addTo(map);
                     }
                 });
