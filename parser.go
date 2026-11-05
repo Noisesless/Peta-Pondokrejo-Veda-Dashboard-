@@ -598,20 +598,6 @@ func ParseExcel(filename string) ([]Household, error) {
 		hh.Members = append(hh.Members, member)
 	}
 
-	// Post-processing and map to slice conversion
-	var result []Household
-	for _, hh := range householdsMap {
-		// Calculate Stunting Risk if not explicitly set in Excel
-		// Logic: Miskin (Desil 1, 2, 3) + Has Toddler = Stunting Risk
-		if !hh.IsStun {
-			isPoor := hh.WelfareLevel == "1" || hh.WelfareLevel == "2" || hh.WelfareLevel == "3"
-			if isPoor && hh.HasToddler {
-				hh.IsStun = true
-			}
-		}
-		result = append(result, *hh)
-	}
-
 	// Verification Map for Dusun Counts
 	dusunCounts := make(map[string]int)
 
@@ -625,9 +611,7 @@ func ParseExcel(filename string) ([]Household, error) {
 
 		for _, hh := range householdsMap {
 			if hh.Latitude != 0 && hh.Longitude != 0 && hh.Dusun != "" {
-				dusunCounts[hh.Dusun]++ // Count valid only
 				if IsPointInPolygon(hh.Latitude, hh.Longitude, boundary) {
-					// Valid Point
 					s := dusunCentroids[hh.Dusun]
 					s.sumLat += hh.Latitude
 					s.sumLng += hh.Longitude
@@ -637,34 +621,46 @@ func ParseExcel(filename string) ([]Household, error) {
 			}
 		}
 
-		// Apply Correction
+		// Apply Correction for missing or out-of-boundary coordinates
 		for _, hh := range householdsMap {
-			if hh.Latitude != 0 && hh.Longitude != 0 {
-				if !IsPointInPolygon(hh.Latitude, hh.Longitude, boundary) {
-					// Outside!
-					// Find neighbors in same Dusun
-					s, ok := dusunCentroids[hh.Dusun]
-					if ok && s.count > 0 {
-						// Move to Centroid
-						newLat := s.sumLat / float64(s.count)
-						newLng := s.sumLng / float64(s.count)
+			needsCorrection := hh.Latitude == 0 || hh.Longitude == 0 || !IsPointInPolygon(hh.Latitude, hh.Longitude, boundary)
+			if needsCorrection && hh.Dusun != "" {
+				s, ok := dusunCentroids[hh.Dusun]
+				if ok && s.count > 0 {
+					baseLat := s.sumLat / float64(s.count)
+					baseLng := s.sumLng / float64(s.count)
 
-						hh.Latitude = newLat
-						hh.Longitude = newLng
-
-						if hh.Keterangan != "" {
-							hh.Keterangan += "; "
-						}
-						hh.Keterangan += "Koordinat digeser (Auto-Correction)"
+					// Deterministic micro-jitter (~15-30m) so points don't stack directly on top of each other
+					var hashVal uint32
+					for _, c := range hh.NoKK + hh.HeadName {
+						hashVal = hashVal*31 + uint32(c)
 					}
+					jLat := float64((int(hashVal%200) - 100)) / 300000.0
+					jLng := float64((int((hashVal/200)%200) - 100)) / 300000.0
+
+					hh.Latitude = baseLat + jLat
+					hh.Longitude = baseLng + jLng
+
+					if hh.Keterangan != "" {
+						hh.Keterangan += "; "
+					}
+					hh.Keterangan += fmt.Sprintf("Koordinat dinormalisasi ke %s", hh.Dusun)
 				}
 			}
 		}
 	}
 
+	// Post-processing and map to slice conversion (Single clean pass)
+	var result []Household
 	for _, hh := range householdsMap {
-		// Derive IsStun: keluarga miskin (Desil 1-2) yang memiliki balita < 5 tahun
-		// Kolom IS Stun di file Excel kosong — dihitung secara derivatif
+		// Calculate Stunting Risk if not explicitly set in Excel
+		if !hh.IsStun {
+			isPoor := hh.WelfareLevel == "1" || hh.WelfareLevel == "2" || hh.WelfareLevel == "3"
+			if isPoor && hh.HasToddler {
+				hh.IsStun = true
+			}
+		}
+
 		if hh.HasToddler {
 			wl := strings.TrimSpace(hh.WelfareLevel)
 			if wl == "1" || wl == "2" {
@@ -672,14 +668,13 @@ func ParseExcel(filename string) ([]Household, error) {
 			}
 		}
 
-		// Only include households with valid coordinates for the map
 		if hh.Latitude != 0 && hh.Longitude != 0 {
 			hh.Latitude = math.Round(hh.Latitude*100000) / 100000
 			hh.Longitude = math.Round(hh.Longitude*100000) / 100000
+			dusunCounts[hh.Dusun]++
 			result = append(result, *hh)
 		}
 	}
-
 	fmt.Println("--- DUSUN COUNT VERIFICATION ---")
 	for k, v := range dusunCounts {
 		fmt.Printf("%s: %d\n", k, v)
