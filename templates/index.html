@@ -822,7 +822,7 @@
 
         const LAYER_DEFS = [
             { id: 'pemukiman', file: '/layers/pemukiman-area.geojson', type: 'fill', color: '#b45309', opacity: 0.35, outline: '#92400e' },
-            { id: 'padukuhan', file: '/editor/layers/padukuhan', type: 'line', color: '#2563eb', width: 2.5, dash: [3, 2] },
+            { id: 'padukuhan', file: '/layers/padukuhan.geojson', type: 'line', color: '#2563eb', width: 2.2, dash: [4, 2] },
             { id: 'rw', file: '/editor/layers/rw', type: 'line', color: '#0284c7', width: 2, dash: [2, 2] },
             { id: 'rt', file: '/editor/layers/rt', type: 'line', color: '#7c3aed', width: 1.5, dash: [1, 2] },
             { id: 'fasilitas-editor', file: '/editor/layers/fasilitas', type: 'circle', color: '#2563eb', radius: 6 },
@@ -1240,6 +1240,26 @@
                                 source: sourceId,
                                 paint: paint
                             });
+
+                            if (def.id === 'padukuhan') {
+                                addLayerBeforeBoundary({
+                                    id: 'layer-padukuhan-label',
+                                    type: 'symbol',
+                                    source: sourceId,
+                                    layout: {
+                                        'text-field': ['get', 'nama'],
+                                        'text-font': ['Noto Sans Regular'],
+                                        'text-size': 11.5,
+                                        'text-transform': 'uppercase',
+                                        'text-letter-spacing': 0.08
+                                    },
+                                    paint: {
+                                        'text-color': '#1d4ed8',
+                                        'text-halo-color': '#ffffff',
+                                        'text-halo-width': 2.5
+                                    }
+                                });
+                            }
                         } else if (def.type === 'circle') {
                             addLayerBeforeBoundary({
                                 id: layerId,
@@ -1274,6 +1294,9 @@
                     const vis = isVisible ? 'visible' : 'none';
                     if (map.getLayer(layerId)) {
                         map.setLayoutProperty(layerId, 'visibility', vis);
+                    }
+                    if (def.id === 'padukuhan' && map.getLayer('layer-padukuhan-label')) {
+                        map.setLayoutProperty('layer-padukuhan-label', 'visibility', vis);
                     }
                 }
             }
@@ -1642,21 +1665,32 @@
 
             // Update Selected Dusun Highlight Layer (Visual Boundary Padukuhan Terpilih)
             const dusunFeatures = [];
+            const officialPadukuhanData = layerCache['/layers/padukuhan.geojson'];
             if (filterDusun.length > 0) {
                 filterDusun.forEach(dusunName => {
-                    const dPts = allHouseholds
-                        .filter(h => h.dusun === dusunName && h.latitude && h.longitude)
-                        .filter(h => h.latitude >= -7.676 && h.latitude <= -7.651 && h.longitude >= 110.296 && h.longitude <= 110.318)
-                        .map(h => [h.longitude, h.latitude]);
-                    if (dPts.length >= 3) {
-                        const hull = calculateConvexHull(dPts);
-                        if (hull && hull.length >= 3) {
-                            const closedHull = [...hull, hull[0]];
-                            dusunFeatures.push({
-                                type: "Feature",
-                                properties: { name: dusunName },
-                                geometry: { type: "Polygon", coordinates: [closedHull] }
-                            });
+                    let foundOfficial = false;
+                    if (officialPadukuhanData && Array.isArray(officialPadukuhanData.features)) {
+                        const feat = officialPadukuhanData.features.find(f => f.properties && (f.properties.nama === dusunName || f.properties.nama_dusun === dusunName));
+                        if (feat) {
+                            dusunFeatures.push(feat);
+                            foundOfficial = true;
+                        }
+                    }
+                    if (!foundOfficial) {
+                        const dPts = allHouseholds
+                            .filter(h => h.dusun === dusunName && h.latitude && h.longitude)
+                            .filter(h => h.latitude >= -7.676 && h.latitude <= -7.651 && h.longitude >= 110.296 && h.longitude <= 110.318)
+                            .map(h => [h.longitude, h.latitude]);
+                        if (dPts.length >= 3) {
+                            const hull = calculateConvexHull(dPts);
+                            if (hull && hull.length >= 3) {
+                                const closedHull = [...hull, hull[0]];
+                                dusunFeatures.push({
+                                    type: "Feature",
+                                    properties: { name: dusunName },
+                                    geometry: { type: "Polygon", coordinates: [closedHull] }
+                                });
+                            }
                         }
                     }
                 });

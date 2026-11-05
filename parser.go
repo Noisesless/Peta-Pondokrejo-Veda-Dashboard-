@@ -160,10 +160,8 @@ func ExtractDusun(address, rw string) string {
 		switch rwInt {
 		case 1, 2:
 			return "Ngentak"
-		case 3:
-			return "Plotengan"
-		case 4:
-			return "Badalan"
+		case 3, 4:
+			return "Plotengan" // RW 04 Badalan merupakan bagian resmi Padukuhan Plotengan
 		case 5, 6:
 			return "Jlopo"
 		case 7, 8:
@@ -176,19 +174,15 @@ func ExtractDusun(address, rw string) string {
 			return "Banjarharjo"
 		case 16, 17:
 			return "Glagahombo"
-		case 18:
-			return "Watupecah"
-		case 19:
-			return "Jenengan"
-		case 20:
-			return "Mlesan Balan"
+		case 18, 19, 20:
+			return "Watupecah" // RW 19 Jenengan & RW 20 Mlesan Balan merupakan bagian resmi Padukuhan Watupecah
 		}
 	}
 
 	// 2. Fallback to Text Analysis (If RW is 0 or invalid)
 	s := strings.ToUpper(address)
 
-	// Standardization Map based on 12 Valid Padukuhan
+	// Standardization Map based on 9 Official Padukuhan
 	if strings.Contains(s, "BANJAR") {
 		return "Banjarharjo"
 	}
@@ -210,22 +204,12 @@ func ExtractDusun(address, rw string) string {
 	if strings.Contains(s, "NGENTAK") {
 		return "Ngentak"
 	}
-	if strings.Contains(s, "PLOTENG") {
+	if strings.Contains(s, "PLOTENG") || strings.Contains(s, "BADAL") {
 		return "Plotengan"
 	}
-	if strings.Contains(s, "WATU") {
+	if strings.Contains(s, "WATU") || strings.Contains(s, "JENENG") || strings.Contains(s, "MLES") || strings.Contains(s, "BALAN") {
 		return "Watupecah"
-	} // Norm: Watupecah
-	if strings.Contains(s, "MLES") || strings.Contains(s, "BALAN") {
-		return "Mlesan Balan"
 	}
-	if strings.Contains(s, "BADAL") {
-		return "Badalan"
-	}
-	if strings.Contains(s, "JENENG") {
-		return "Jenengan"
-	}
-
 	return "Padukuhan Lainnya"
 }
 
