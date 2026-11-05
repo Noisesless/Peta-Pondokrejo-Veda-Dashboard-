@@ -282,6 +282,9 @@
         <div class="flex-1 relative z-10 h-full">
             <div id="map" class="h-full w-full"></div>
 
+            <!-- Active Filter Badges (Floating Top Left) -->
+            <div id="active-filter-chips" class="absolute top-3 left-3 z-20 flex flex-wrap items-center gap-1.5 max-w-[calc(100%-180px)] pointer-events-auto"></div>
+
             <!-- Layer Switcher Icon Control (Top-Right on Map) -->
             <div id="basemap-control" class="absolute top-3 right-12 z-20">
                 <button id="btn-toggle-basemap" type="button" class="w-8 h-8 bg-white border border-slate-300 shadow-md flex items-center justify-center hover:bg-slate-50 transition" title="Pilihan Layer Peta">
@@ -338,8 +341,11 @@
                 <!-- Default Sidebar Content (Filters) -->
                 <div id="sidebar-filters" class="p-4 space-y-4">
                     <div class="flex justify-between items-center mb-2">
-                        <h2 class="font-bold text-gray-800 text-lg">Geospasial Filter</h2>
-                        <button onclick="resetFilters()" class="text-xs text-blue-600 hover:text-blue-800">Reset</button>
+                        <div class="flex items-center space-x-2">
+                            <h2 class="font-bold text-gray-800 text-lg">Geospasial Filter</h2>
+                            <span id="total-count" class="bg-blue-100 text-blue-800 text-xs font-bold px-2 py-0.5 rounded-full">0</span>
+                        </div>
+                        <button onclick="resetFilters()" class="text-xs text-blue-600 hover:text-blue-800 font-semibold cursor-pointer">Reset</button>
                     </div>
 
                     <div>
@@ -772,6 +778,7 @@
 
         map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
         map.addControl(new maplibregl.ScaleControl({ unit: 'metric' }), 'bottom-left');
+        window.map = map;
 
         const hoverPopup = new maplibregl.Popup({ closeButton: false, closeOnClick: false, offset: 12 });
 
@@ -955,6 +962,7 @@
             highlightActivePresetCard(presetName);
             syncUIWithLayerState();
             reapplyAllThematicLayers();
+            renderMarkers();
             updateLegend();
         }
 
@@ -1046,23 +1054,35 @@
             }
         }
 
-        // Memastikan Garis Batas Kalurahan Selalu di Atas Layer Poligon Lain
+        // Memastikan Garis Batas Kalurahan dan Marker Selalu di Atas Layer Poligon Lain
         function ensureBoundaryOnTop() {
             try {
+                if (map.getLayer('layer-selected-dusun-fill')) {
+                    map.moveLayer('layer-selected-dusun-fill');
+                }
+                if (map.getLayer('layer-selected-dusun-line')) {
+                    map.moveLayer('layer-selected-dusun-line');
+                }
+                if (map.getLayer('layer-boundary-fill')) {
+                    map.moveLayer('layer-boundary-fill');
+                }
                 if (map.getLayer('layer-boundary-casing')) {
                     map.moveLayer('layer-boundary-casing');
                 }
                 if (map.getLayer('layer-boundary-line')) {
                     map.moveLayer('layer-boundary-line');
                 }
-                if (map.getLayer('household-points')) {
-                    map.moveLayer('household-points');
+                if (map.getLayer('household-heatmap')) {
+                    map.moveLayer('household-heatmap');
                 }
                 if (map.getLayer('household-clusters')) {
                     map.moveLayer('household-clusters');
                 }
                 if (map.getLayer('household-cluster-count')) {
                     map.moveLayer('household-cluster-count');
+                }
+                if (map.getLayer('household-points')) {
+                    map.moveLayer('household-points');
                 }
             } catch (e) {
                 // Ignore if layers not yet mounted
@@ -1270,14 +1290,19 @@
         map.on('load', reapplyAllLayers);
         map.on('style.load', reapplyAllLayers);
 
+        let isResidentsLoaded = false;
+
         // Fetch Residents Data
         fetch('/residents.json')
             .then(res => res.json())
             .then(data => {
                 allHouseholds = data || [];
+                isResidentsLoaded = true;
                 extractMetadata();
                 populateFilters();
-                renderMarkers();
+                if (map && map.isStyleLoaded()) {
+                    renderMarkers();
+                }
             })
             .catch(err => console.error("Error fetching residents:", err));
 
@@ -1299,13 +1324,13 @@
         }
 
         function populateFilters() {
-            const dusunContainer = document.getElementById('filter-dusun-container');
+            const dusunContainer = document.getElementById('filter-dusun');
             if (dusunContainer && uniqueDusuns.size > 0) {
                 let html = '';
                 Array.from(uniqueDusuns).sort().forEach(dusun => {
                     html += `
-                        <label class="flex items-center space-x-2 text-xs text-gray-700">
-                            <input type="checkbox" value="${dusun}" class="filter-dusun text-blue-600">
+                        <label class="flex items-center space-x-2 text-xs text-gray-700 cursor-pointer hover:text-blue-700">
+                            <input type="checkbox" value="${dusun}" class="filter-dusun form-checkbox text-blue-600 rounded">
                             <span>${dusun}</span>
                         </label>
                     `;
@@ -1317,6 +1342,9 @@
         }
 
         function renderMarkers() {
+            if (!map || !map.isStyleLoaded()) return;
+            if (!isResidentsLoaded || !allHouseholds || allHouseholds.length === 0) return;
+
             const filterDesil = Array.from(document.querySelectorAll('.filter-desil:checked')).map(cb => parseInt(cb.value));
             const filterAid = Array.from(document.querySelectorAll('.filter-aid:checked')).map(cb => cb.value);
             const filterJob = Array.from(document.querySelectorAll('.filter-job:checked')).map(cb => cb.value);
@@ -1510,7 +1538,8 @@
                     source: 'source-households',
                     filter: ['has', 'point_count'],
                     layout: {
-                        'text-field': '{point_count_abbreviated}',
+                        'text-field': ['get', 'point_count_abbreviated'],
+                        'text-font': ['Noto Sans Regular'],
                         'text-size': 11
                     },
                     paint: { 'text-color': '#ffffff' }
@@ -1562,11 +1591,17 @@
                 });
 
                 // Event Listeners for Clusters & Points
-                map.on('click', 'household-clusters', async (e) => {
+                map.on('click', 'household-clusters', (e) => {
                     const feats = map.queryRenderedFeatures(e.point, { layers: ['household-clusters'] });
+                    if (!feats || !feats[0]) return;
                     const clusterId = feats[0].properties.cluster_id;
-                    const zoom = await map.getSource('source-households').getClusterExpansionZoom(clusterId);
-                    map.easeTo({ center: feats[0].geometry.coordinates, zoom: zoom + 0.5 });
+                    const source = map.getSource('source-households');
+                    if (source && source.getClusterExpansionZoom) {
+                        source.getClusterExpansionZoom(clusterId, (err, zoom) => {
+                            if (err) return;
+                            map.easeTo({ center: feats[0].geometry.coordinates, zoom: zoom + 0.5 });
+                        });
+                    }
                 });
 
                 map.on('click', 'household-points', (e) => {
@@ -1604,7 +1639,172 @@
                     map.setLayoutProperty('household-cluster-count', 'visibility', 'visible');
                 }
             }
+
+            // Update Selected Dusun Highlight Layer (Visual Boundary Padukuhan Terpilih)
+            const dusunFeatures = [];
+            if (filterDusun.length > 0) {
+                filterDusun.forEach(dusunName => {
+                    const dPts = allHouseholds
+                        .filter(h => h.dusun === dusunName && h.latitude && h.longitude)
+                        .filter(h => h.latitude >= -7.676 && h.latitude <= -7.651 && h.longitude >= 110.296 && h.longitude <= 110.318)
+                        .map(h => [h.longitude, h.latitude]);
+                    if (dPts.length >= 3) {
+                        const hull = calculateConvexHull(dPts);
+                        if (hull && hull.length >= 3) {
+                            const closedHull = [...hull, hull[0]];
+                            dusunFeatures.push({
+                                type: "Feature",
+                                properties: { name: dusunName },
+                                geometry: { type: "Polygon", coordinates: [closedHull] }
+                            });
+                        }
+                    }
+                });
+            }
+            const dusunGeoJSON = { type: "FeatureCollection", features: dusunFeatures };
+            if (!map.getSource('source-selected-dusun')) {
+                map.addSource('source-selected-dusun', { type: 'geojson', data: dusunGeoJSON });
+                map.addLayer({
+                    id: 'layer-selected-dusun-fill',
+                    type: 'fill',
+                    source: 'source-selected-dusun',
+                    paint: {
+                        'fill-color': '#2563eb',
+                        'fill-opacity': 0.12
+                    }
+                }, 'household-points');
+                map.addLayer({
+                    id: 'layer-selected-dusun-line',
+                    type: 'line',
+                    source: 'source-selected-dusun',
+                    paint: {
+                        'line-color': '#1d4ed8',
+                        'line-width': 2.2,
+                        'line-dasharray': [4, 2]
+                    }
+                }, 'household-points');
+            } else {
+                map.getSource('source-selected-dusun').setData(dusunGeoJSON);
+            }
+
+            // Auto fitBounds to filtered features if dusun or specific filter is selected
+            if (filterDusun.length > 0 && features.length > 0) {
+                const fitBoundsObj = new maplibregl.LngLatBounds();
+                features.forEach(f => fitBoundsObj.extend(f.geometry.coordinates));
+                if (!fitBoundsObj.isEmpty()) {
+                    map.fitBounds(fitBoundsObj, { padding: 60, maxZoom: 16, duration: 700 });
+                }
+            }
+
+            renderActiveFilterChips(filterDusun, filterDesil, filterAid, displayedCount, desilTotalPeople);
+            ensureBoundaryOnTop();
+            updateLegend();
         }
+
+        // Monotone Chain Convex Hull Calculator
+        function calculateConvexHull(points) {
+            if (points.length <= 2) return points;
+            const pts = Array.from(new Set(points.map(p => `${p[0]},${p[1]}`))).map(s => s.split(',').map(Number));
+            pts.sort((a, b) => a[0] === b[0] ? a[1] - b[1] : a[0] - b[0]);
+            if (pts.length <= 2) return pts;
+            const cross = (o, a, b) => (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0]);
+            const lower = [];
+            for (const p of pts) {
+                while (lower.length >= 2 && cross(lower[lower.length - 2], lower[lower.length - 1], p) <= 0) lower.pop();
+                lower.push(p);
+            }
+            const upper = [];
+            for (let i = pts.length - 1; i >= 0; i--) {
+                const p = pts[i];
+                while (upper.length >= 2 && cross(upper[upper.length - 2], upper[upper.length - 1], p) <= 0) upper.pop();
+                upper.push(p);
+            }
+            lower.pop();
+            upper.pop();
+            return lower.concat(upper);
+        }
+
+        // Floating Active Filter Chips Renderer
+        function renderActiveFilterChips(filterDusun, filterDesil, filterAid, displayedCount, desilTotalPeople) {
+            const container = document.getElementById('active-filter-chips');
+            if (!container) return;
+            if (filterDusun.length === 0 && filterDesil.length === 0 && filterAid.length === 0) {
+                container.innerHTML = '';
+                return;
+            }
+            let html = `
+                <div class="flex items-center gap-1.5 bg-white/95 backdrop-blur-md px-3 py-1.5 border border-slate-300 shadow-md text-xs">
+                    <span class="font-bold text-slate-700 flex items-center">
+                        <i class="fa fa-filter text-blue-600 mr-1.5"></i> Filter:
+                    </span>
+            `;
+            filterDusun.forEach(d => {
+                html += `
+                    <span class="inline-flex items-center bg-blue-50 text-blue-800 font-semibold px-2 py-0.5 border border-blue-200">
+                        ${d}
+                        <button onclick="removeDusunFilter('${d}')" class="ml-1 text-blue-500 hover:text-blue-800 focus:outline-none">&times;</button>
+                    </span>
+                `;
+            });
+            filterDesil.forEach(ds => {
+                const desilLabels = { 1: 'Desil 1', 2: 'Desil 2', 3: 'Desil 3', 4: 'Desil 4+' };
+                html += `
+                    <span class="inline-flex items-center bg-amber-50 text-amber-800 font-semibold px-2 py-0.5 border border-amber-200">
+                        ${desilLabels[ds] || 'Desil ' + ds}
+                        <button onclick="removeDesilFilter(${ds})" class="ml-1 text-amber-500 hover:text-amber-800 focus:outline-none">&times;</button>
+                    </span>
+                `;
+            });
+            filterAid.forEach(aid => {
+                html += `
+                    <span class="inline-flex items-center bg-green-50 text-green-800 font-semibold px-2 py-0.5 border border-green-200">
+                        ${aid}
+                        <button onclick="removeAidFilter('${aid}')" class="ml-1 text-green-500 hover:text-green-800 focus:outline-none">&times;</button>
+                    </span>
+                `;
+            });
+            html += `
+                    <span class="text-slate-500 font-semibold ml-1">
+                        (${displayedCount} KK &bull; ${desilTotalPeople.toLocaleString('id-ID')} Jiwa)
+                    </span>
+                    <button onclick="resetFilters()" class="text-xs text-red-600 hover:text-red-800 underline font-semibold ml-2">Reset</button>
+                </div>
+            `;
+            container.innerHTML = html;
+        }
+
+        window.removeDusunFilter = function(dusun) {
+            document.querySelectorAll('.filter-dusun').forEach(cb => {
+                if (cb.value === dusun) cb.checked = false;
+            });
+            renderMarkers();
+        };
+
+        window.removeDesilFilter = function(desil) {
+            document.querySelectorAll('.filter-desil').forEach(cb => {
+                if (parseInt(cb.value) === desil) cb.checked = false;
+            });
+            renderMarkers();
+        };
+
+        window.removeAidFilter = function(aid) {
+            document.querySelectorAll('.filter-aid').forEach(cb => {
+                if (cb.value === aid) cb.checked = false;
+            });
+            renderMarkers();
+        };
+
+        window.resetFilters = function() {
+            document.querySelectorAll('#sidebar-filters input[type="checkbox"]').forEach(cb => {
+                cb.checked = false;
+            });
+            const nameInput = document.getElementById('filter-name');
+            if (nameInput) nameInput.value = '';
+            renderMarkers();
+            if (boundaryBounds) {
+                map.fitBounds(boundaryBounds, { padding: 45, maxZoom: 15, duration: 700 });
+            }
+        };
 
         function attachStaticFilterListeners() {
             document.querySelectorAll('.filter-desil, .filter-aid, .filter-job, .filter-business, .filter-vulnerable').forEach(el => {
@@ -1630,45 +1830,96 @@
         function showDetail(hh, color) {
             const detailPanel = document.getElementById('sidebar-detail');
             const filtersPanel = document.getElementById('sidebar-filters');
+            const contentDiv = document.getElementById('detail-content');
+            if (!detailPanel || !filtersPanel || !contentDiv) return;
+
             detailPanel.classList.remove('hidden');
             filtersPanel.classList.add('hidden');
 
-            document.getElementById('detail-head-name').innerText = hh.head_name || '-';
-            document.getElementById('detail-no-kk').innerText = hh.no_kk || '-';
-            document.getElementById('detail-address').innerText = hh.address || '-';
-            document.getElementById('detail-dusun').innerText = hh.dusun || '-';
-
-            const desilBadge = document.getElementById('detail-desil-badge');
             const desil = parseInt(hh.welfare_level) || 4;
-            let dText = `Desil ${desil}`;
-            let dClass = 'bg-green-100 text-green-800 border-green-200';
-            if (desil === 1) { dText = 'Desil 1 (Sangat Miskin)'; dClass = 'bg-red-100 text-red-800 border-red-200'; }
-            else if (desil === 2) { dText = 'Desil 2 (Miskin)'; dClass = 'bg-orange-100 text-orange-800 border-orange-200'; }
-            else if (desil === 3) { dText = 'Desil 3 (Hampir Miskin)'; dClass = 'bg-yellow-100 text-yellow-800 border-yellow-200'; }
-            desilBadge.className = `px-2.5 py-1 text-xs font-bold border ${dClass}`;
-            desilBadge.innerText = dText;
+            let colorClass = 'bg-green-600 text-white';
+            let desilText = `Desil ${desil} (Mampu)`;
+            if (desil === 1) { colorClass = 'bg-red-600 text-white'; desilText = 'Desil 1 (Sangat Miskin)'; }
+            else if (desil === 2) { colorClass = 'bg-orange-500 text-white'; desilText = 'Desil 2 (Miskin)'; }
+            else if (desil === 3) { colorClass = 'bg-yellow-500 text-black'; desilText = 'Desil 3 (Hampir Miskin)'; }
 
-            // Members Table
-            const tbody = document.getElementById('detail-members-body');
-            tbody.innerHTML = '';
-            if (Array.isArray(hh.members)) {
+            let html = `
+                <div class="bg-white p-3.5 border border-slate-200 shadow-sm space-y-2">
+                    <div class="flex items-center justify-between">
+                        <span class="px-2 py-0.5 text-xs font-bold ${colorClass}">
+                            ${desilText}
+                        </span>
+                        <span class="text-xs text-slate-500 font-mono">KK: ${hh.no_kk || '-'}</span>
+                    </div>
+                    <h3 class="font-bold text-base text-slate-800 leading-snug">${hh.head_name || '-'}</h3>
+                    <p class="text-xs text-slate-600">${hh.address || '-'}</p>
+                    <div class="text-[11px] text-slate-500">Padukuhan: <span class="font-semibold text-slate-700">${hh.dusun || '-'}</span></div>
+                </div>
+
+                <div class="bg-white p-3.5 border border-slate-200 shadow-sm space-y-2 text-xs">
+                    <h4 class="font-bold text-slate-700 border-b pb-1">Informasi Rumah Tangga</h4>
+                    <div class="grid grid-cols-2 gap-2 text-[11px]">
+                        <div class="text-slate-500">Luas Lantai:</div>
+                        <div class="font-semibold text-slate-800">${hh.lantai_luas ? hh.lantai_luas + ' m²' : '-'}</div>
+                        <div class="text-slate-500">Penerima PKH:</div>
+                        <div class="font-semibold text-slate-800">${hh.pkh_thn ? 'Ya (sejak ' + hh.pkh_thn + ')' : (hh.is_pkh ? 'Ya' : 'Tidak')}</div>
+                        <div class="text-slate-500">Penerima BPNT:</div>
+                        <div class="font-semibold text-slate-800">${hh.bpnt_thn ? 'Ya (sejak ' + hh.bpnt_thn + ')' : (hh.is_bpnt ? 'Ya' : 'Tidak')}</div>
+                        <div class="text-slate-500">Penerima BLT:</div>
+                        <div class="font-semibold text-slate-800">${hh.is_blt ? 'Ya' : 'Tidak'}</div>
+                    </div>
+                    ${hh.keterangan ? `
+                        <div class="mt-2 pt-2 border-t border-slate-100">
+                            <div class="text-[10px] text-slate-400 uppercase font-semibold">Catatan:</div>
+                            <div class="text-xs bg-amber-50 p-2 text-amber-900 border border-amber-200 mt-1">${hh.keterangan}</div>
+                        </div>
+                    ` : ''}
+                </div>
+
+                <div class="bg-white p-3.5 border border-slate-200 shadow-sm space-y-2">
+                    <h4 class="font-bold text-slate-700 border-b pb-1.5 flex justify-between items-center text-xs">
+                        <span>Anggota Keluarga</span>
+                        <span class="bg-slate-100 px-1.5 py-0.5 rounded text-[11px] font-semibold text-slate-600">${Array.isArray(hh.members) ? hh.members.length : 0} Jiwa</span>
+                    </h4>
+                    <div class="space-y-2.5 max-h-60 overflow-y-auto pr-1">
+            `;
+
+            if (Array.isArray(hh.members) && hh.members.length > 0) {
                 hh.members.forEach(m => {
-                    const tr = document.createElement('tr');
-                    tr.className = 'border-b hover:bg-gray-50';
-                    tr.innerHTML = `
-                        <td class="px-3 py-2 text-xs font-medium text-gray-900">${m.name || '-'}</td>
-                        <td class="px-3 py-2 text-xs text-gray-500">${m.gender === '1' ? 'L' : (m.gender === '2' ? 'P' : '-')}</td>
-                        <td class="px-3 py-2 text-xs text-gray-500">${m.age || '-'}</td>
-                        <td class="px-3 py-2 text-xs text-gray-500">${m.kerja_detail || '-'}</td>
+                    const genderBadge = m.gender === '1' ? '<span class="text-blue-600 font-semibold">L</span>' : (m.gender === '2' ? '<span class="text-pink-600 font-semibold">P</span>' : '-');
+                    html += `
+                        <div class="border-b border-slate-100 pb-2 last:border-0 last:pb-0 text-xs">
+                            <div class="flex justify-between items-start">
+                                <div class="font-semibold text-slate-800">${m.name || '-'} <span class="text-[10px] text-slate-500 font-normal">(${genderBadge}, ${m.age || '-'} thn)</span></div>
+                            </div>
+                            <div class="text-[11px] text-slate-500 font-mono mt-0.5">${m.nik || '-'}</div>
+                            ${m.kerja_detail ? `<div class="text-[11px] text-slate-600 mt-1"><i class="fa fa-briefcase text-slate-400 mr-1"></i>${m.kerja_detail}</div>` : ''}
+                            ${m.ush_detail ? `<div class="text-[11px] text-emerald-700 mt-0.5"><i class="fa fa-store text-emerald-500 mr-1"></i>${m.ush_detail}</div>` : ''}
+                            ${Array.isArray(m.aid_list) && m.aid_list.length > 0 ? `
+                                <div class="flex flex-wrap gap-1 mt-1.5">
+                                    ${m.aid_list.map(a => `<span class="px-1.5 py-0.5 bg-blue-50 text-blue-700 text-[10px] border border-blue-200">${a}</span>`).join('')}
+                                </div>
+                            ` : ''}
+                        </div>
                     `;
-                    tbody.appendChild(tr);
                 });
+            } else {
+                html += `<div class="text-xs text-slate-400 italic">Tidak ada data anggota keluarga.</div>`;
             }
+
+            html += `
+                    </div>
+                </div>
+            `;
+
+            contentDiv.innerHTML = html;
         }
 
         function closeDetail() {
-            document.getElementById('sidebar-detail').classList.add('hidden');
-            document.getElementById('sidebar-filters').classList.remove('hidden');
+            const detailPanel = document.getElementById('sidebar-detail');
+            const filtersPanel = document.getElementById('sidebar-filters');
+            if (detailPanel) detailPanel.classList.add('hidden');
+            if (filtersPanel) filtersPanel.classList.remove('hidden');
         }
 
         function updateLegend() {
