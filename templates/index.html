@@ -286,15 +286,15 @@
             <div id="active-filter-chips" class="absolute top-3 left-3 z-20 flex flex-wrap items-center gap-1.5 max-w-[calc(100%-180px)] pointer-events-auto"></div>
 
             <!-- Layer Switcher Icon Control (Top-Right on Map) -->
-            <div id="basemap-control" class="absolute top-3 right-12 z-20">
-                <button id="btn-toggle-basemap" type="button" class="w-8 h-8 bg-white border border-slate-300 shadow-md flex items-center justify-center hover:bg-slate-50 transition" title="Pilihan Layer Peta">
+            <div id="basemap-control" class="absolute top-3 right-12 z-30">
+                <button id="btn-toggle-basemap" type="button" class="w-8 h-8 bg-white border border-slate-300 shadow-md flex items-center justify-center hover:bg-slate-50 transition active:scale-95" title="Pilihan Layer Peta">
                     <svg class="w-4 h-4 text-slate-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
                         <path d="M2 17l10 5 10-5"></path>
                         <path d="M2 12l10 5 10-5"></path>
                     </svg>
                 </button>
-                <div id="basemap-menu" class="hidden absolute top-9 right-0 bg-white border border-slate-300 shadow-lg p-2.5 min-w-[130px] space-y-2 text-xs">
+                <div id="basemap-menu" class="hidden absolute top-full mt-1 right-0 bg-white border border-slate-300 shadow-xl p-2.5 min-w-[130px] space-y-2 text-xs z-40">
                     <div class="text-[10px] font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 pb-1">Peta Dasar</div>
                     <label class="flex items-center space-x-2 cursor-pointer hover:text-emerald-700">
                         <input type="radio" name="basemap-choice" value="liberty" checked class="form-radio text-emerald-700 focus:ring-0">
@@ -857,35 +857,74 @@
             });
 
             // Re-apply boundary dan seluruh layer tematik segera setelah gaya peta baru selesai dimuat
-            const onStyle = async (e) => {
-                if (e.dataType === 'style') {
-                    map.off('styledata', onStyle);
+            const reapplyAllLayers = async () => {
+                try {
                     await loadBoundary();
                     await reapplyAllThematicLayers();
                     renderMarkers();
                     ensureBoundaryOnTop();
+                } catch (err) {
+                    console.error("Error reapplying layers on basemap switch:", err);
                 }
             };
-            map.on('styledata', onStyle);
+
+            // Pasang listener 'style.load' (Bekerja universal untuk URL & Object di MapLibre)
+            map.once('style.load', reapplyAllLayers);
+
+            // Safety check: jika style langsung ready dalam memori (misal object satelit)
+            setTimeout(() => {
+                if (map.isStyleLoaded() && !map.getSource('source-boundary')) {
+                    reapplyAllLayers();
+                }
+            }, 300);
 
             map.setStyle(STYLES[styleKey]);
         }
 
-        // Setup Basemap Control Events
+        // Setup Basemap Control Events (Bulletproof click & hover handling)
         const basemapCtrl = document.getElementById('basemap-control');
         const basemapBtn = document.getElementById('btn-toggle-basemap');
         const basemapMenu = document.getElementById('basemap-menu');
 
         if (basemapCtrl && basemapBtn && basemapMenu) {
-            basemapCtrl.addEventListener('mouseenter', () => basemapMenu.classList.remove('hidden'));
-            basemapCtrl.addEventListener('mouseleave', () => basemapMenu.classList.add('hidden'));
+            let closeTimer = null;
+
+            const showMenu = () => {
+                if (closeTimer) {
+                    clearTimeout(closeTimer);
+                    closeTimer = null;
+                }
+                basemapMenu.classList.remove('hidden');
+            };
+
+            const hideMenuDelayed = () => {
+                closeTimer = setTimeout(() => {
+                    basemapMenu.classList.add('hidden');
+                }, 350);
+            };
+
+            // Toggle on Click
             basemapBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
+                if (closeTimer) clearTimeout(closeTimer);
                 basemapMenu.classList.toggle('hidden');
             });
+
+            // Hover dengan delay ramah pengguna agar kursor bebas bergerak ke radio tanpa menutup tiba-tiba
+            basemapCtrl.addEventListener('mouseenter', showMenu);
+            basemapCtrl.addEventListener('mouseleave', hideMenuDelayed);
+
+            // Tutup menu jika user klik di luar area basemap
+            document.addEventListener('click', (e) => {
+                if (!basemapCtrl.contains(e.target)) {
+                    basemapMenu.classList.add('hidden');
+                }
+            });
+
             document.querySelectorAll('input[name="basemap-choice"]').forEach(rb => {
                 rb.addEventListener('change', (e) => {
                     setBasemap(e.target.value);
+                    setTimeout(() => basemapMenu.classList.add('hidden'), 250);
                 });
             });
         }
@@ -1742,12 +1781,34 @@
                 map.getSource('source-selected-dusun').setData(dusunGeoJSON);
             }
 
+            // Fokus Layer Visual Padukuhan: Sembunyikan padukuhan lain jika ada padukuhan tertentu yang dipilih
+            const padukuhanFilter = filterDusun.length > 0 ? ['match', ['get', 'nama'], filterDusun, true, false] : null;
+            if (map.getLayer('layer-padukuhan')) {
+                map.setFilter('layer-padukuhan', padukuhanFilter);
+            }
+            if (map.getLayer('layer-padukuhan-line')) {
+                map.setFilter('layer-padukuhan-line', padukuhanFilter);
+            }
+            if (map.getLayer('layer-padukuhan-label')) {
+                map.setFilter('layer-padukuhan-label', padukuhanFilter);
+            }
+
             // Auto fitBounds to filtered features if dusun or specific filter is selected
-            if (filterDusun.length > 0 && features.length > 0) {
+            if (filterDusun.length > 0) {
                 const fitBoundsObj = new maplibregl.LngLatBounds();
-                features.forEach(f => fitBoundsObj.extend(f.geometry.coordinates));
+                if (dusunFeatures.length > 0) {
+                    dusunFeatures.forEach(feat => {
+                        if (feat.geometry && feat.geometry.coordinates) {
+                            const coords = feat.geometry.type === 'Polygon' ? feat.geometry.coordinates[0] : (feat.geometry.type === 'MultiPolygon' ? feat.geometry.coordinates.flat(1) : []);
+                            coords.forEach(pt => fitBoundsObj.extend(pt));
+                        }
+                    });
+                }
+                if (features.length > 0) {
+                    features.forEach(f => fitBoundsObj.extend(f.geometry.coordinates));
+                }
                 if (!fitBoundsObj.isEmpty()) {
-                    map.fitBounds(fitBoundsObj, { padding: 60, maxZoom: 16, duration: 700 });
+                    map.fitBounds(fitBoundsObj, { padding: 60, maxZoom: 16.5, duration: 700 });
                 }
             }
 
