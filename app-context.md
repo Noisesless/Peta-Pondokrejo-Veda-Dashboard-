@@ -17,7 +17,7 @@
 - Boundary Styling: Dual-Tone White Halo Casing (#ffffff, 4.6px) + Line (#1d4ed8, 2.8px) with ensureBoundaryOnTop()
 - Padukuhan Standardization: Normalized 4,026 KK into exactly 9 Official Padukuhans (Watupecah, Jlapan, Plotengan, Ngentak, Glagahombo, Dukuh, Banjarharjo, Jlopo, Karanglo) via parser.go
 - Padukuhan GeoJSON Layer: Clean Planar Partition (layers/padukuhan.geojson) 100% bebas overlap (0 m²), bebas gap (0 m²), single shared boundary edges tanpa garis ganda/silang, dan sinkron dengan editor_state.json. Di-embed ke single binary dan aktif di MapLibre GL JS.
-- Geospasial Filter & Active Layer: Interactive Right Sidebar (Veda) with official boundary highlight, Auto-focus fitBounds, Active Filter Floating Chips, Fontstack Noto Sans Regular (Zero 404), Synchronized Map Legend, and 100% Precision Index-Based Marker-to-Sidebar Click Synchronization (resolving scientific notation NoKK collision)
+- Geospasial Filter & Active Layer: Interactive Right Sidebar (Veda) with official boundary highlight, Auto-focus fitBounds, Active Filter Floating Chips, Fontstack Noto Sans Regular (Zero 404), Synchronized Map Legend, 100% Precision Index-Based Marker-to-Sidebar Click Synchronization, Focused Padukuhan Boundary Isolation (hanya layer padukuhan terpilih yang tampil), Bulletproof Basemap Menu Dropdown, and Full Satellite Basemap Boundary/Data Restoration
 - Precision: 5 decimal places (~1.1m precision across all GeoJSON and residents data)
 - Issues Open: 0
 
