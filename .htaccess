@@ -1,0 +1,35 @@
+# ==============================================================================
+# Keamanan & Proteksi Berkas — SIG Kalurahan Pondokrejo
+# Berlaku untuk Apache / LiteSpeed (Fallback / Local XAMPP Server)
+# ==============================================================================
+
+# 1. Nonaktifkan penjelajahan direktori (Directory Browsing)
+Options -Indexes
+
+# 2. Blokir akses ke semua berkas tersembunyi (dotfiles: .env, .git, .htaccess)
+<FilesMatch "^\.">
+    Require all denied
+</FilesMatch>
+
+# 3. Blokir akses ke berkas sensitif, konfigurasi, backup, log, dan script
+<FilesMatch "(^#.*#|\.(bak|config|dist|fla|inc|ini|log|psd|sh|sql|sw[op]|bat|env.*|md|xlsx))$">
+    Require all denied
+</FilesMatch>
+
+# 4. Proteksi khusus berkas .env
+<Files ".env">
+    Require all denied
+</Files>
+<Files ".env.*">
+    Require all denied
+</Files>
+
+# 5. Header Keamanan Dasar
+<IfModule mod_headers.c>
+    Header set X-Content-Type-Options "nosniff"
+    Header set X-Frame-Options "SAMEORIGIN"
+    Header set X-XSS-Protection "1; mode=block"
+    Header set Referrer-Policy "same-origin"
+    Header set Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+</IfModule>
+

@@ -42,3 +42,4 @@ Dimuat via CDN andal pada template HTML:
 | **OpenFreeMap Dark** | `https://tiles.openfreemap.org/styles/dark` | Vector Tiles | Gaya kontras gelap |
 | **Esri World Imagery** | `https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}` | Raster Tile (256px) | Foto udara satelit resolusi tinggi |
 | **OpenFreeMap Glyphs** | `https://tiles.openfreemap.org/fonts/{fontstack}/{range}.pbf` | PBF Glyphs | Sumber glyphs font untuk rendering teks MapLibre |
+

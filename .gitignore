@@ -1,6 +1,7 @@
 # Binaries
 *.exe
 *.dll
+infopendudkpdrj
 
 # OS
 .DS_Store
@@ -9,6 +10,12 @@ Thumbs.db
 # Editor
 .vscode/
 .idea/
+
+# Environment Variables & Secrets (SP-007)
+.env
+.env.local
+.env.*
+!.env.example
 
 # Sensitive Data
 *.xlsx

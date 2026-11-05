@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"math"
 	"os"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -36,6 +37,8 @@ type Household struct {
 	HeadName     string     `json:"head_name"`
 	Address      string     `json:"address"`
 	Dusun        string     `json:"dusun"`
+	RT           string     `json:"rt"`
+	RW           string     `json:"rw"`
 	Latitude     float64    `json:"latitude"`
 	Longitude    float64    `json:"longitude"`
 	WelfareLevel string     `json:"welfare_level"` // ID Desil (Ket)
@@ -148,69 +151,98 @@ func isPointInRing(lat, lng float64, ring [][]float64) bool {
 	return inside
 }
 
-func ExtractDusun(address, rw string) string {
-	// 1. Try to map based on RW
-	rwClean := strings.TrimSpace(rw)
-	// Remove "RW" prefix if present (though likely just number)
-	rwClean = strings.TrimPrefix(strings.ToUpper(rwClean), "RW")
-	rwClean = strings.TrimSpace(rwClean)
+var (
+	reRWPattern    = regexp.MustCompile(`(?i)RW\s*[:\.]?\s*(\d+)`)
+	reSlashPattern = regexp.MustCompile(`(\d+)\s*/\s*(\d+)`)
+)
 
-	// Parse int to handle "01" vs "1"
-	if rwInt, err := strconv.Atoi(rwClean); err == nil {
-		switch rwInt {
-		case 1, 2:
-			return "Ngentak"
-		case 3, 4:
-			return "Plotengan" // RW 04 Badalan merupakan bagian resmi Padukuhan Plotengan
-		case 5, 6:
-			return "Jlopo"
-		case 7, 8:
-			return "Karanglo"
-		case 9, 10:
-			return "Dukuh"
-		case 11, 12, 13:
-			return "Jlapan"
-		case 14, 15:
-			return "Banjarharjo"
-		case 16, 17:
-			return "Glagahombo"
-		case 18, 19, 20:
-			return "Watupecah" // RW 19 Jenengan & RW 20 Mlesan Balan merupakan bagian resmi Padukuhan Watupecah
+func mapRWToDusun(rwNum int) string {
+	switch rwNum {
+	case 1, 2:
+		return "Ngentak"
+	case 3, 4:
+		return "Plotengan" // RW 04 Badalan bagian dari Plotengan
+	case 5, 6:
+		return "Jlopo"
+	case 7, 8:
+		return "Karanglo"
+	case 9, 10:
+		return "Dukuh"
+	case 11, 12, 13:
+		return "Jlapan"
+	case 14, 15:
+		return "Banjarharjo"
+	case 16, 17:
+		return "Glagahombo" // RW 17 Cemoro bagian dari Glagahombo
+	case 18, 19, 20:
+		return "Watupecah" // RW 19 Jenengan & RW 20 Mlesan Balan bagian dari Watupecah
+	default:
+		return ""
+	}
+}
+
+func ExtractDusun(address, rw string) string {
+	s := strings.ToUpper(address)
+
+	// Tier 1A: Check RW pattern inside address text (e.g. "RT 004 RW 008 KARANGLO", "JLAPAN 006/013")
+	if m := reRWPattern.FindStringSubmatch(s); len(m) > 1 {
+		if rwVal, err := strconv.Atoi(m[1]); err == nil {
+			if d := mapRWToDusun(rwVal); d != "" {
+				return d
+			}
+		}
+	}
+	if m := reSlashPattern.FindStringSubmatch(s); len(m) > 2 {
+		if rwVal, err := strconv.Atoi(m[2]); err == nil {
+			if d := mapRWToDusun(rwVal); d != "" {
+				return d
+			}
 		}
 	}
 
-	// 2. Fallback to Text Analysis (If RW is 0 or invalid)
-	s := strings.ToUpper(address)
-
-	// Standardization Map based on 9 Official Padukuhan
-	if strings.Contains(s, "BANJAR") {
-		return "Banjarharjo"
+	// Tier 1B: Explicit Dusun keywords in address text (preventing Banjarnegara false positive)
+	if !strings.Contains(s, "BANJAR NEGARA") && !strings.Contains(s, "BANJARNEGARA") {
+		if strings.Contains(s, "BANJARHARJO") || strings.Contains(s, "BANJAR HARJO") {
+			return "Banjarharjo"
+		}
 	}
-	if strings.Contains(s, "DUKUH") {
-		return "Dukuh"
-	}
-	if strings.Contains(s, "GLAGAH") {
+	if strings.Contains(s, "GLAGAHOMBO") || strings.Contains(s, "GLAGAH OMBO") || strings.Contains(s, "CEMORO") || strings.Contains(s, "GLAGAH") {
 		return "Glagahombo"
+	}
+	if strings.Contains(s, "KARANGLO") || strings.Contains(s, "KARANG LO") || strings.Contains(s, "KARANG") {
+		return "Karanglo"
+	}
+	if strings.Contains(s, "PLOTENGAN") || strings.Contains(s, "PLOTENG") || strings.Contains(s, "BADALAN") || strings.Contains(s, "BADAL") {
+		return "Plotengan"
+	}
+	if strings.Contains(s, "WATUPECAH") || strings.Contains(s, "WATU PECAH") || strings.Contains(s, "WATU") ||
+		strings.Contains(s, "JENENGAN") || strings.Contains(s, "JENENG") || strings.Contains(s, "MLESAN") || strings.Contains(s, "MLES") || strings.Contains(s, "BALAN") {
+		return "Watupecah"
 	}
 	if strings.Contains(s, "JLAPAN") {
 		return "Jlapan"
 	}
-	if strings.Contains(s, "JLOPO") {
+	if strings.Contains(s, "JLOPO") || strings.Contains(s, "NJLOPO") {
 		return "Jlopo"
-	}
-	if strings.Contains(s, "KARANG") {
-		return "Karanglo"
 	}
 	if strings.Contains(s, "NGENTAK") {
 		return "Ngentak"
 	}
-	if strings.Contains(s, "PLOTENG") || strings.Contains(s, "BADAL") {
-		return "Plotengan"
+	if strings.Contains(s, "DUKUH") {
+		return "Dukuh"
 	}
-	if strings.Contains(s, "WATU") || strings.Contains(s, "JENENG") || strings.Contains(s, "MLES") || strings.Contains(s, "BALAN") {
-		return "Watupecah"
+
+	// Tier 2: Fallback to RW column in Excel if address did not specify
+	rwClean := strings.TrimSpace(rw)
+	rwClean = strings.TrimPrefix(strings.ToUpper(rwClean), "RW")
+	rwClean = strings.TrimSpace(rwClean)
+	if rwInt, err := strconv.Atoi(rwClean); err == nil {
+		if d := mapRWToDusun(rwInt); d != "" {
+			return d
+		}
 	}
-	return "Padukuhan Lainnya"
+
+	return "Banjarharjo"
 }
 
 // Helper to clean strings from Excel (e.g. remove leading ')

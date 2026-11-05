@@ -8,7 +8,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body {
-            background-image: url('/background.jpg');
+            background-image: url('/background.JPG');
             background-size: cover;
             background-position: center;
             position: relative;
@@ -70,27 +70,45 @@
     </div>
 
     <script>
-        // Check if already logged in
-        if (sessionStorage.getItem('isLoggedIn') === 'true') {
-            window.location.href = '/';
-        }
+        // Bersihkan sesi client saat berada di halaman login untuk mencegah looping redirect
+        sessionStorage.removeItem('isLoggedIn');
 
-        document.getElementById('loginForm').addEventListener('submit', function(e) {
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-            const user = document.getElementById('username').value;
+            const user = document.getElementById('username').value.trim();
             const pass = document.getElementById('password').value;
             const errorMsg = document.getElementById('errorMsg');
+            const submitBtn = this.querySelector('button[type="submit"]');
 
-            // Simple hardcoded credentials
-            if (user === 'admin' && pass === 'pondokrejo') {
-                sessionStorage.setItem('isLoggedIn', 'true');
-                window.location.href = '/';
-            } else {
+            errorMsg.classList.add('hidden');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Memverifikasi...';
+
+            try {
+                const res = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: user, password: pass })
+                });
+
+                const data = await res.json();
+                if (res.ok && data.ok) {
+                    sessionStorage.setItem('isLoggedIn', 'true');
+                    window.location.replace('/');
+                } else {
+                    errorMsg.textContent = data.error || 'Username atau Password salah.';
+                    errorMsg.classList.remove('hidden');
+                    const card = document.querySelector('.bg-white');
+                    card.classList.add('animate-pulse');
+                    setTimeout(() => card.classList.remove('animate-pulse'), 500);
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Masuk';
+                }
+            } catch (err) {
+                errorMsg.textContent = 'Gagal terhubung ke server autentikasi.';
                 errorMsg.classList.remove('hidden');
-                // Shake animation
-                const card = document.querySelector('.bg-white');
-                card.classList.add('animate-pulse');
-                setTimeout(() => card.classList.remove('animate-pulse'), 500);
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Masuk';
             }
         });
     </script>

@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Peta Sebaran Penduduk</title>
+    <link rel="icon" type="image/png" href="logo.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background-image: url('/login.jpg');
+            background-size: cover;
+            background-position: center;
+            position: relative;
+        }
+        body::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.4); /* Overlay tipis */
+            z-index: -1;
+        }
+        .backdrop {
+            /* Removed since body::before handles it better for full coverage */
+        }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen items-center justify-center p-4">
+
+    <div class="bg-white p-8 rounded-lg shadow-2xl w-full max-w-md flex flex-col items-center relative">
+        <!-- Pondokrejo Logo -->
+        <img src="logo.png" alt="Logo Pondokrejo" class="h-28 w-auto mb-4 drop-shadow-md">
+        
+        <!-- Veda Logo -->
+        <img src="veda-logo.png" alt="Veda Logo" class="h-16 object-contain mb-6 opacity-80">
+        
+        <form id="loginForm" class="w-full space-y-4">
+            <div>
+                <label class="block text-gray-700 text-sm font-bold mb-2" for="username">
+                    Username
+                </label>
+                <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline focus:border-blue-500" id="username" type="text" placeholder="Username" required>
+            </div>
+            <div>
+                <label class="block text-gray-700 text-sm font-bold mb-2" for="password">
+                    Password
+                </label>
+                <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline focus:border-blue-500" id="password" type="password" placeholder="******************" required>
+            </div>
+            
+            <div id="errorMsg" class="text-red-500 text-xs italic mb-4 hidden">Username atau Password salah.</div>
+
+            <div class="flex items-center justify-between">
+                <button class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-full transition duration-200" type="submit">
+                    Masuk
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Footer Clasnet -->
+    <div class="mt-8 text-center">
+        <p class="text-white text-xs mb-2 opacity-90">Supported by</p>
+        <a href="https://clasnet.co.id" target="_blank" class="inline-block hover:opacity-90 transition">
+            <img src="clasnet-logo.png" alt="Clasnet Logo" class="h-16 object-contain bg-white/40 p-2 rounded backdrop-blur-md shadow-lg">
+        </a>
+    </div>
+
+    <script>
+        // Check if already logged in
+        if (sessionStorage.getItem('isLoggedIn') === 'true') {
+            window.location.href = '/';
+        }
+
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const user = document.getElementById('username').value;
+            const pass = document.getElementById('password').value;
+            const errorMsg = document.getElementById('errorMsg');
+
+            // Simple hardcoded credentials
+            if (user === 'admin' && pass === 'pondokrejo') {
+                sessionStorage.setItem('isLoggedIn', 'true');
+                window.location.href = '/';
+            } else {
+                errorMsg.classList.remove('hidden');
+                // Shake animation
+                const card = document.querySelector('.bg-white');
+                card.classList.add('animate-pulse');
+                setTimeout(() => card.classList.remove('animate-pulse'), 500);
+            }
+        });
+    </script>
+</body>
+</html>

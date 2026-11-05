@@ -42,3 +42,4 @@ Aplikasi mengadopsi gaya **Non-Rounded Administrative Enterprise** yang bersih, 
 - **Laptop-First Optimization (1366×768):** Layout peta 2-kolom dengan sidebar kanan Veda selebar 380px dan area kanvas peta maksimal.
 - **Non-Rounded Geometry:** Dropdown, panel detail, legenda floating, dan kartu filter menggunakan radius presisi (`rounded-none` / `rounded-sm`) yang mencerminkan ketegasan sistem informasi pemerintahan.
 - **Peta Dasar 4 Mode:** Standar (Liberty), Satelit (Esri), Terang (Positron), dan Gelap (Dark) yang dapat dialihkan secara instan melalui kontrol di pojok kanan atas kanvas.
+

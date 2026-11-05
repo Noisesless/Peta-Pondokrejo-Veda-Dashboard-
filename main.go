@@ -20,7 +20,7 @@ var templateFS embed.FS
 //go:embed layers/*
 var layersFS embed.FS
 
-//go:embed *.png *.JPG PONDOKREJO.geojson *.md residents.json
+//go:embed *.png *.JPG *.jpg PONDOKREJO.geojson *.md residents.json
 var assetsFS embed.FS
 
 func main() {
@@ -43,21 +43,35 @@ func main() {
 	var households []Household
 	var err error
 
+	jsonFile := "residents.json"
 	excelFile := "1 KK_ART Pondokrejo.xlsx"
 
-	if _, statErr := os.Stat(excelFile); statErr == nil {
-		fmt.Println("Loading from Excel...")
-		households, err = ParseExcel(excelFile)
-		if err != nil {
-			log.Fatalf("Error parsing excel: %v", err)
+	// 1. Prioritize pre-normalized residents.json if exists
+	if _, statErr := os.Stat(jsonFile); statErr == nil {
+		fmt.Println("Loading from normalized residents.json...")
+		if data, readErr := os.ReadFile(jsonFile); readErr == nil {
+			if jsonErr := json.Unmarshal(data, &households); jsonErr == nil && len(households) > 0 {
+				fmt.Printf("Loaded %d households from %s\n", len(households), jsonFile)
+			}
 		}
-	} else if len(EmbeddedResidentsData) > 0 {
-		fmt.Println("Excel not found. Loading from embedded residents.json...")
-		if err := json.Unmarshal(EmbeddedResidentsData, &households); err != nil {
-			log.Fatalf("Error unmarshaling embedded residents.json: %v", err)
+	}
+
+	// 2. Fallback to Excel parsing if residents.json not found
+	if len(households) == 0 {
+		if _, statErr := os.Stat(excelFile); statErr == nil {
+			fmt.Println("Loading from Excel...")
+			households, err = ParseExcel(excelFile)
+			if err != nil {
+				log.Fatalf("Error parsing excel: %v", err)
+			}
+		} else if len(EmbeddedResidentsData) > 0 {
+			fmt.Println("Excel not found. Loading from embedded residents.json...")
+			if err := json.Unmarshal(EmbeddedResidentsData, &households); err != nil {
+				log.Fatalf("Error unmarshaling embedded residents.json: %v", err)
+			}
+		} else {
+			log.Fatalf("Error: No data file found")
 		}
-	} else {
-		log.Fatalf("Error: Excel file not found and embedded data is empty")
 	}
 
 	editorStore := NewEditorStore("editor_state.json")
@@ -101,24 +115,74 @@ func main() {
 	templ := template.Must(template.New("").ParseFS(templateFS, "templates/*.html"))
 	r.SetHTMLTemplate(templ)
 
-	// Routes
-	r.GET("/", func(c *gin.Context) {
+	// Routes (LOGIN REQUIRED - Proteksi Penuh)
+	r.GET("/", RequireAdmin(), func(c *gin.Context) {
 		c.HTML(http.StatusOK, "index.html", nil)
 	})
 
 	r.GET("/login", func(c *gin.Context) {
+		if IsAdmin(c) {
+			c.Redirect(http.StatusFound, "/")
+			return
+		}
 		c.HTML(http.StatusOK, "login.html", nil)
 	})
 
-	r.GET("/editor", func(c *gin.Context) {
+	// Authentication API
+	type LoginRequest struct {
+		Username string `json:"username" form:"username"`
+		Password string `json:"password" form:"password"`
+	}
+
+	r.POST("/api/login", func(c *gin.Context) {
+		var req LoginRequest
+		if err := c.ShouldBind(&req); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"ok": false, "error": "Format permintaan tidak valid"})
+			return
+		}
+		if req.Username == AdminUser && req.Password == AdminPassword {
+			SetSessionCookie(c, req.Username)
+			c.JSON(http.StatusOK, gin.H{
+				"ok":      true,
+				"message": "Login berhasil",
+				"user":    req.Username,
+			})
+			return
+		}
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"ok":    false,
+			"error": "Username atau password salah",
+		})
+	})
+
+	r.GET("/logout", func(c *gin.Context) {
+		ClearSessionCookie(c)
+		c.Redirect(http.StatusFound, "/login")
+	})
+
+	r.POST("/api/logout", func(c *gin.Context) {
+		ClearSessionCookie(c)
+		c.JSON(http.StatusOK, gin.H{"ok": true})
+	})
+
+	r.GET("/api/auth/status", func(c *gin.Context) {
+		user, ok := GetSessionUser(c)
+		c.JSON(http.StatusOK, gin.H{
+			"is_authenticated": ok,
+			"username":         user,
+		})
+	})
+
+	// Protected Editor Routes (RequireAdmin middleware)
+	r.GET("/editor", RequireAdmin(), func(c *gin.Context) {
 		c.HTML(http.StatusOK, "editor.html", nil)
 	})
 
-	r.GET("/editor/layers", func(c *gin.Context) {
+	r.GET("/editor/layers", RequireAdmin(), func(c *gin.Context) {
 		c.JSON(http.StatusOK, editorStore.GeoLayersSnapshot())
 	})
 
-	r.GET("/editor/layers/:name", func(c *gin.Context) {
+	r.GET("/editor/layers/:name", RequireAdmin(), func(c *gin.Context) {
 		name := c.Param("name")
 		if name == "" {
 			c.Data(http.StatusOK, "application/json", []byte(`{"type":"FeatureCollection","features":[]}`))
@@ -131,12 +195,13 @@ func main() {
 		c.Data(http.StatusOK, "application/json", []byte(`{"type":"FeatureCollection","features":[]}`))
 	})
 
-	// Serve residents.json dynamically (matching static filename)
-	r.GET("/residents.json", func(c *gin.Context) {
+	// Serve residents.json (RequireAdmin: Hanya untuk Petugas Terautentikasi)
+	r.GET("/residents.json", RequireAdmin(), func(c *gin.Context) {
 		c.JSON(http.StatusOK, editorStore.Apply(households))
 	})
 
-	r.POST("/editor/save", func(c *gin.Context) {
+	// Protected Editor Mutation Endpoint
+	r.POST("/editor/save", RequireAdmin(), func(c *gin.Context) {
 		var req EditorSaveRequest
 		if err := c.ShouldBindJSON(&req); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"ok": false, "error": err.Error()})
@@ -196,9 +261,25 @@ func main() {
 		}
 		c.Data(http.StatusOK, "image/jpeg", data)
 	})
+	r.GET("/background.JPG", func(c *gin.Context) {
+		data, err := assetsFS.ReadFile("background.JPG")
+		if err != nil {
+			c.String(http.StatusNotFound, "File not found")
+			return
+		}
+		c.Data(http.StatusOK, "image/jpeg", data)
+	})
+	r.GET("/login.jpg", func(c *gin.Context) {
+		data, err := assetsFS.ReadFile("login.jpg")
+		if err != nil {
+			c.String(http.StatusNotFound, "File not found")
+			return
+		}
+		c.Data(http.StatusOK, "image/jpeg", data)
+	})
 
 	// Recommendations Page
-	r.GET("/recommendations", func(c *gin.Context) {
+	r.GET("/recommendations", RequireAdmin(), func(c *gin.Context) {
 		rek, err1 := assetsFS.ReadFile("rekomendasi-hasil-analitik.md")
 		if err1 != nil {
 			rek = []byte("# Error loading recommendation file")
@@ -222,7 +303,7 @@ func main() {
 	})
 
 	// Analytics Dashboard Page
-	r.GET("/analytics", func(c *gin.Context) {
+	r.GET("/analytics", RequireAdmin(), func(c *gin.Context) {
 		// Calculate on the fly (or cache it)
 		data := CalculateAnalytics(households)
 
@@ -239,7 +320,7 @@ func main() {
 	})
 
 	// Bansos Dashboard Page
-	r.GET("/bansos", func(c *gin.Context) {
+	r.GET("/bansos", RequireAdmin(), func(c *gin.Context) {
 		data := CalculateBansos(households)
 		jsonData, err := json.Marshal(data)
 		if err != nil {
@@ -252,7 +333,7 @@ func main() {
 	})
 
 	// Bansos JSON API
-	r.GET("/bansos/data", func(c *gin.Context) {
+	r.GET("/bansos/data", RequireAdmin(), func(c *gin.Context) {
 		data := CalculateBansos(households)
 		c.JSON(http.StatusOK, data)
 	})
