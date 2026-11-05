@@ -15,7 +15,9 @@
 - On-Map Layer Switcher: Top-Right on map with 4 options (Standar, Satelit, Terang, Gelap)
 - Boundary Decision: Official BIG / Pemkab Sleman 2023 (layers/boundary.geojson), protecting 3,959 KK (98.34%)
 - Boundary Styling: Dual-Tone White Halo Casing (#ffffff, 4.6px) + Line (#1d4ed8, 2.8px) with ensureBoundaryOnTop()
-- Geospasial Filter & Active Layer: Interactive Right Sidebar (Veda) with Dynamic Dusun Convex Hull Polygon (#2563eb fill / #1d4ed8 line), Auto-focus fitBounds, Active Filter Floating Chips, Fontstack Noto Sans Regular (Zero 404), and Synchronized Map Legend
+- Padukuhan Standardization: Normalized 4,026 KK into exactly 9 Official Padukuhans (Watupecah, Jlapan, Plotengan, Ngentak, Glagahombo, Dukuh, Banjarharjo, Jlopo, Karanglo) via parser.go
+- Padukuhan GeoJSON Layer: Official 9-Polygon layer (layers/padukuhan.geojson) compiled from GPX data with uppercase halo toponymy labels and live active layer highlight
+- Geospasial Filter & Active Layer: Interactive Right Sidebar (Veda) with official boundary highlight, Auto-focus fitBounds, Active Filter Floating Chips, Fontstack Noto Sans Regular (Zero 404), and Synchronized Map Legend
 - Precision: 5 decimal places (~1.1m precision across all GeoJSON and residents data)
 - Issues Open: 0
 
