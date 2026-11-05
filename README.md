@@ -2,21 +2,25 @@
 
 Aplikasi Sistem Informasi Geografis (SIG) dan Dasbor Analitik Kependudukan berbasis web untuk Kalurahan Pondokrejo, Kapanewon Tempel, Kabupaten Sleman, D.I. Yogyakarta. 
 
-Aplikasi ini mengintegrasikan data sosial ekonomi penduduk (desil kesejahteraan, kepesertaan bansos, stunting, kelompok rentan) dengan data geospasial kalurahan (batas wilayah resmi, padukuhan, RW, RT, fasilitas umum, serta zona risiko bencana Merapi).
+Aplikasi ini mengintegrasikan data sosial ekonomi penduduk (desil kesejahteraan, kepesertaan bansos, stunting, kelompok rentan) dengan data geospasial kalurahan (batas wilayah resmi, 9 padukuhan resmi, RW, RT, fasilitas umum, serta zona risiko bencana Merapi).
+
+Domain Produksi: **[https://peta.pondokrejo.id](https://peta.pondokrejo.id)**
 
 ---
 
 ## 1. Arsitektur & Mesin Peta (MapLibre GL 2D)
 
-Aplikasi telah dimigrasikan dari Leaflet raster menuju **MapLibre GL JS v4.7.1 (Engine Vektor 2D)**.
+Aplikasi menggunakan engine peta vektor **MapLibre GL JS v4.7.1 (2D Strict Mode)** dengan arsitektur single-binary Golang:
 
 - **Bebas Error 403 & Tanpa API Key:** Seluruh basemap menggunakan sumber terbuka legal dari OpenFreeMap dan Esri World Imagery tanpa kuota atau blokir referrer.
-- **Pilihan Layer Peta On-Map:** Tombol kontrol layer di pojok kanan atas peta menyediakan 4 pilihan gaya peta dasar:
+- **Pilihan Layer Peta On-Map:** Kontrol layer di pojok kanan atas peta menyediakan 4 pilihan gaya peta dasar:
   - **Standar**: OpenFreeMap Liberty (vektor jalan, toponimi, dan kontur halus)
   - **Satelit**: Esri World Imagery (resolusi tinggi dengan *glyph font stack* otomatis)
   - **Terang**: OpenFreeMap Positron (minimalis abu-abu terang)
   - **Gelap**: OpenFreeMap Dark (kontras tinggi untuk presentasi malam/analisis tematik)
 - **Batas Kalurahan Dual-Tone Casing:** Batas luar Kalurahan Pondokrejo menggunakan *white halo casing* (`#ffffff`, 4.6px) dan garis solid biru pekat (`#1d4ed8`, 2.8px) yang selalu terkunci di layer teratas (`ensureBoundaryOnTop`), sehingga tidak pernah tertutup oleh poligon sawah, pemukiman, atau KRB.
+- **Normalisasi 9 Padukuhan Resmi (Clean Planar Tessellation):** Lapisan batas padukuhan (`layers/padukuhan.geojson`) bebas 100% dari overlap (0 m²) dan gap (0 m²), dengan garis batas bersama tunggal (*shared edges*) yang rapi dan bebas dari tampilan garis ganda/bergerigi.
+- **Focused Padukuhan Isolation:** Ketika padukuhan tertentu dipilih di navbar, garis batas dan label padukuhan lain otomatis disembunyikan sehingga pengguna fokus penuh pada padukuhan aktif beserta warganya.
 
 ---
 
@@ -29,6 +33,7 @@ Aplikasi telah dimigrasikan dari Leaflet raster menuju **MapLibre GL JS v4.7.1 (
   - 🟡 **Desil 3**: Hampir Miskin
   - 🟢 **Desil 4+**: Menengah ke Atas / Mampu
 - **Marker Clustering & Heatmap:** Pengelompokan titik dinamis berbasis zoom dengan popup detail Kepala Keluarga, No KK, Dusun, dan daftar bantuan sosial (BPNT, PKH, BLT, dll).
+- **Sinkronisasi Data Presisi 100%:** Penanganan klik titik marker menggunakan *Direct Unique Index Binding* (`_id`) untuk memastikan data di popup peta selalu identik dan sinkron dengan panel samping kanan.
 - **Mode Pemilihan Layer Ganda:**
   - **Mode Sederhana (Preset Tematik):** Pintasan cepat untuk Padukuhan, RW/RT, Pemukiman, Sebaran Warga, dan Mitigasi Bencana.
   - **Mode Detail (23 Layer Spasial):** Kontrol penuh atas seluruh layer spasial (pemukiman, sawah, sungai, irigasi, jalan, kontur, tambang, toponimi, KRB 1–3, jalur evakuasi, barak pengungsian, titik kumpul, dan EWS).
@@ -55,10 +60,24 @@ Aplikasi telah dimigrasikan dari Leaflet raster menuju **MapLibre GL JS v4.7.1 (
 
 ---
 
-## 3. Data Spasial & Optimasi
+## 3. Data Spasial & Rekapitulasi 9 Padukuhan
 
-- **Batas Resmi Wilayah:** Menggunakan data batas resmi Badan Informasi Geospasial (BIG) dan Pemerintah Kabupaten Sleman 2023 (`layers/boundary.geojson`), melindungi 3.959 KK (98,34%) termasuk 38 KK di bantaran sungai batas utara-barat.
-- **Presisi Koordinat 5 Desimal:** Seluruh layer GeoJSON dan koordinat penduduk telah dipotong menjadi presisi 5 angka di belakang koma (~1,1 meter). Hal ini mengurangi beban unduh data browser secara signifikan tanpa mengorbankan akurasi pemetaan.
+Total populasi terdata: **2.021 KK unik** (bebas duplikasi data dan 0 KK outlier di luar desa):
+
+| No | Padukuhan | Jumlah KK | Titik Centroid Resmi |
+|---|---|---|---|
+| 1 | **Jlapan** | 292 KK | `[110.30131, -7.66259]` |
+| 2 | **Watupecah** | 295 KK | `[110.30146, -7.66725]` |
+| 3 | **Plotengan** | 270 KK | `[110.31029, -7.65922]` |
+| 4 | **Ngentak** | 247 KK | `[110.31169, -7.65448]` |
+| 5 | **Glagahombo** | 226 KK | `[110.30810, -7.67037]` |
+| 6 | **Dukuh** | 213 KK | `[110.31497, -7.66730]` |
+| 7 | **Banjarharjo** | 185 KK | `[110.30579, -7.66443]` |
+| 8 | **Jlopo** | 164 KK | `[110.30538, -7.65750]` |
+| 9 | **Karanglo** | 129 KK | `[110.31072, -7.66543]` |
+
+- **Batas Resmi Wilayah:** Menggunakan batas resmi BIG / Pemkab Sleman 2023 (`layers/boundary.geojson`).
+- **Presisi Koordinat 5 Desimal:** Seluruh layer GeoJSON dan koordinat penduduk terstandarisasi presisi 5 desimal (~1,1 meter).
 
 ---
 
@@ -66,32 +85,42 @@ Aplikasi telah dimigrasikan dari Leaflet raster menuju **MapLibre GL JS v4.7.1 (
 
 ```
 peta_pondokrejo_main/
-├── main.go                     # Entry point server Gin & routing
+├── .docs/                      # Dokumentasi teknis terpusat (9 berkas standar)
+│   ├── architecture.md         # Arsitektur sistem & aliran data
+│   ├── api-spec.md             # Spesifikasi rute API & payload
+│   ├── database.md             # Skema kependudukan & model spasial
+│   ├── routes.md               # Pemetaan route & middleware
+│   ├── dependency-graph.md     # Daftar dependensi Go & frontend
+│   ├── quality_review.md       # Audit kualitas kode & evidence faktual
+│   ├── issues.md               # Pelacak isu & riwayat penyelesaian bug
+│   ├── security-audit.md       # Audit keamanan & hardening Nginx
+│   └── design-system.md        # Desain UI/UX & standar kartografi
+├── main.go                     # Entry point server Gin & embedded assets
 ├── analytics.go                # Logika pemrosesan analitik kependudukan
-├── bansos_analytics.go         # Logika analitik perlindungan sosial & bansos
-├── parser.go                   # Parser berkas Excel data keluarga (KK & ART)
-├── editor_storage.go           # Penyimpanan state revisi koordinat & layer editor
-├── geo_clip.go                 # Utilitas spasial clipping GeoJSON
-├── editor_state.json           # State persistensi pergeseran marker & batas editor
-├── residents.json              # Cache data kependudukan teroptimasi 5 desimal
+├── bansos_analytics.go         # Logika analitik perlindungan sosial
+├── parser.go                   # Parser Excel BPS (deduplikasi & jitter)
+├── editor_storage.go           # Penyimpanan state revisi koordinat editor
+├── geo_clip.go                 # Utilitas clipping GeoJSON
+├── editor_state.json           # State persistensi pergeseran marker
+├── residents.json              # Data kependudukan 2.021 KK teroptimasi
 ├── PONDOKREJO.geojson          # Berkas batas wilayah kalurahan baku
 ├── layers/                     # Direktori berkas GeoJSON tematik (23 layer)
 │   ├── boundary.geojson        # Batas kalurahan resmi BIG/Sleman 2023
+│   ├── padukuhan.geojson       # Batas 9 Padukuhan (Clean Planar Tessellation)
 │   ├── pemukiman-area.geojson  # Poligon pemukiman warga
 │   ├── sawah-area.geojson      # Poligon area persawahan
 │   ├── sungai-line.geojson     # Garis aliran sungai
-│   ├── krb_1.geojson           # Kawasan Rawan Bencana I Merapi
-│   ├── krb_2.geojson           # Kawasan Rawan Bencana II Merapi
-│   ├── krb_3.geojson           # Kawasan Rawan Bencana III Merapi
-│   ├── evacuation_route.geojson# Jalur evakuasi bencana
+│   ├── jalan-line.geojson      # Jaringan jalan
 │   └── ...                     # Layer tematik lainnya
 ├── templates/                  # Template antarmuka web (Go embed)
 │   ├── index.html              # Peta sebaran interaktif utama
 │   ├── editor.html             # Editor spasial marker & batas wilayah
 │   ├── login.html              # Halaman login petugas admin
 │   ├── analytics.html          # Dasbor grafik analitik kependudukan
-│   ├── bansos.html             # Dasbor perlindungan sosial & verifikasi bansos
+│   ├── bansos.html             # Dasbor perlindungan sosial & bansos
 │   └── recommendations.html    # Dokumen rekomendasi kebijakan
+├── app-context.md              # Snapshot state aktif proyek
+├── handover.md                 # Dokumen serah terima sesi & status teknis
 └── run.sh                      # Skrip manajemen proses produksi (Linux)
 ```
 
@@ -100,56 +129,26 @@ peta_pondokrejo_main/
 ## 5. Menjalankan Aplikasi Secara Lokal
 
 ### Prasyarat
-- Go 1.22 atau lebih baru.
-- Berkas data `1 KK_ART Pondokrejo.xlsx` atau `residents.json`.
+- Go versi 1.22 atau lebih baru
+- Browser modern dengan dukungan WebGL (Chrome, Firefox, Edge, Safari)
 
 ### Langkah Menjalankan
+1. Clone atau buka direktori proyek:
+   ```bash
+   cd D:\Project\peta_pondokrejo_main
+   ```
+2. Jalankan aplikasi via Go:
+   ```bash
+   go run .
+   ```
+3. Buka browser pada alamat:
+   ```
+   http://localhost:8080/
+   ```
+
+### Kompilasi untuk Lingkungan Produksi (Linux amd64)
 ```bash
-# 1. Unduh dependensi
-go mod tidy
-
-# 2. Jalankan aplikasi (port default: 5092 atau dari env PORT)
-go run .
+# Windows PowerShell
+$env:GOOS="linux"; $env:GOARCH="amd64"; go build -o pondokrejo-app-linux .
 ```
-Buka peramban di: `http://localhost:5092`
-
----
-
-## 6. Kompilasi & Deployment Produksi (Linux)
-
-Aplikasi dikemas dalam *single static binary* menggunakan fitur `//go:embed` bawaan Go, sehingga template dan aset GeoJSON terbungkus langsung di dalam berkas binary tanpa dependensi eksternal.
-
-### Kompilasi untuk Linux amd64
-```bash
-# Windows PowerShell:
-$env:GOOS="linux"; $env:GOARCH="amd64"; $env:CGO_ENABLED="0"; go build -ldflags="-s -w" -o pondokrejo-app-linux
-
-# Linux / macOS:
-GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -ldflags="-s -w" -o pondokrejo-app-linux
-```
-
-### Konfigurasi & Menjalankan Service
-Aplikasi membaca port dari environment variable `PORT` (default: `5092`):
-
-```bash
-# Menjalankan di background (Linux)
-PORT=5092 nohup ./pondokrejo-app-linux > app.log 2>&1 &
-```
-
-Contoh konfigurasi Nginx Reverse Proxy standar:
-```nginx
-server {
-    server_name your-domain.id;
-
-    location / {
-        proxy_pass http://127.0.0.1:5092;
-        proxy_http_version 1.1;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-    }
-}
-```
-
-
+Lalu unggah binary ke server dan jalankan melalui skrip `./run.sh`.

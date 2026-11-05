@@ -12,13 +12,17 @@
 ## [STATE]
 - Map Engine: MapLibre GL JS v4.7.1 (2D Strict Mode, DragRotate disabled, MaxPitch 0)
 - Basemap Provider: OpenFreeMap (Liberty, Positron, Dark) + Esri World Imagery (Satelit with glyphs)
-- On-Map Layer Switcher: Top-Right on map with 4 options (Standar, Satelit, Terang, Gelap)
-- Boundary Decision: Official BIG / Pemkab Sleman 2023 (layers/boundary.geojson), protecting 3,959 KK (98.34%)
+- On-Map Layer Switcher: Top-Right on map with 4 options (Standar, Satelit, Terang, Gelap) with bulletproof hover buffer delay (350ms)
+- Satellite Restoration: Universal map.once('style.load') handler that restores boundary, padukuhan, and household data on satellite basemap
+- Boundary Decision: Official BIG / Pemkab Sleman 2023 (layers/boundary.geojson), protecting 100% KK (2,021 KK in-boundary)
 - Boundary Styling: Dual-Tone White Halo Casing (#ffffff, 4.6px) + Line (#1d4ed8, 2.8px) with ensureBoundaryOnTop()
-- Padukuhan Standardization: Normalized 4,026 KK into exactly 9 Official Padukuhans (Watupecah, Jlapan, Plotengan, Ngentak, Glagahombo, Dukuh, Banjarharjo, Jlopo, Karanglo) via parser.go
-- Padukuhan GeoJSON Layer: Clean Planar Partition (layers/padukuhan.geojson) 100% bebas overlap (0 m²), bebas gap (0 m²), single shared boundary edges tanpa garis ganda/silang, dan sinkron dengan editor_state.json. Di-embed ke single binary dan aktif di MapLibre GL JS.
-- Geospasial Filter & Active Layer: Interactive Right Sidebar (Veda) with official boundary highlight, Auto-focus fitBounds, Active Filter Floating Chips, Fontstack Noto Sans Regular (Zero 404), Synchronized Map Legend, 100% Precision Index-Based Marker-to-Sidebar Click Synchronization, Focused Padukuhan Boundary Isolation (hanya layer padukuhan terpilih yang tampil), Bulletproof Basemap Menu Dropdown, and Full Satellite Basemap Boundary/Data Restoration
+- Padukuhan Standardization: Normalized to exactly 9 Official Padukuhans (Watupecah, Jlapan, Plotengan, Ngentak, Glagahombo, Dukuh, Banjarharjo, Jlopo, Karanglo) with 2,021 unique households (zero duplicate, zero outlier)
+- Padukuhan GeoJSON Layer: Clean Planar Tessellation (layers/padukuhan.geojson) with 0 m² overlap, 0 m² gap, single shared boundary edges, uppercase halo toponymy labels, and live active layer highlight
+- Focused Padukuhan Isolation: Interactive boundary filter that automatically isolates and displays only the selected padukuhan layer and its households, hiding inactive padukuhans for laser-sharp focus
+- Click Data Synchronization: Direct unique index binding (_id) ensuring 100% exact match between map point popup and right sidebar detail panel (eliminating scientific notation NoKK collision)
+- Geospasial Filter & Active Layer: Interactive Right Sidebar (Veda) with official boundary highlight, Auto-focus fitBounds, Active Filter Floating Chips, Fontstack Noto Sans Regular (Zero 404), and Synchronized Map Legend
 - Precision: 5 decimal places (~1.1m precision across all GeoJSON and residents data)
+- Documentation: Complete 9 standardized files in /.docs/ (architecture, api-spec, database, routes, dependency-graph, quality_review, issues, security-audit, design-system)
 - Issues Open: 0
 
 ## [ROUTES]
@@ -28,7 +32,7 @@
 - GET  /editor/layers        -> Metadata layer editor
 - GET  /editor/layers/:name  -> GeoJSON layer editor aktif (padukuhan, rw, rt, fasilitas)
 - POST /editor/save          -> Simpan perubahan koordinat marker & layer editor
-- GET  /residents.json       -> Data seluruh penduduk/KK teroptimasi
+- GET  /residents.json       -> Data seluruh penduduk/KK teroptimasi (2.021 KK)
 - GET  /boundary.geojson     -> Batas resmi kalurahan
 - GET  /layers/*             -> Berkas statis GeoJSON tematik (23 layer)
 - GET  /analytics            -> Dashboard Analitik Kependudukan (analytics.html)
@@ -39,4 +43,3 @@
 ## [NEXT]
 - Pemeliharaan data KK berkala sesuai pembaruan dari Kalurahan
 - Penambahan layer tematik baru jika tersedia data spasial tambahan dari Kapanewon/Pemkab Sleman
-
