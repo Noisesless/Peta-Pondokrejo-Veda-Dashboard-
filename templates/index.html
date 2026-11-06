@@ -142,47 +142,50 @@
             <div class="p-3 overflow-y-auto flex-1 space-y-3">
                 <!-- SIMPLE MODE CONTAINER -->
                 <div id="simple-mode-container" class="space-y-2">
-                    <div class="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">Preset Tema Layer (1-Klik)</div>
+                    <div class="flex justify-between items-center mb-1">
+                        <div class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Preset Tema Layer (1-Klik)</div>
+                        <button type="button" onclick="resetAllThematicLayers()" class="text-[10px] text-emerald-700 hover:underline font-semibold cursor-pointer">Reset Layer</button>
+                    </div>
                     
-                    <label class="simple-preset-card flex items-start p-2.5 border-l-4 border-l-emerald-600 border-y border-r border-slate-300 bg-emerald-50/70 cursor-pointer transition">
-                        <input type="radio" name="layer-preset" value="default" checked onchange="applySimplePreset('default')" class="mt-0.5 text-emerald-600 focus:ring-emerald-500">
-                        <div class="ml-2.5">
+                    <button type="button" id="preset-btn-default" onclick="applySimplePreset('default')" class="simple-preset-card w-full text-left flex items-start p-2.5 border-l-4 border-l-emerald-600 border-y border-r border-slate-300 bg-emerald-50/70 cursor-pointer transition">
+                        <div class="preset-dot w-2 h-2 rounded-full bg-emerald-600 mt-1.5 mr-2 flex-shrink-0"></div>
+                        <div>
                             <div class="text-xs font-bold text-slate-800">Peta Standar Wilayah</div>
-                            <div class="text-[11px] text-slate-600 mt-0.5">Batas Desa, Padukuhan, RW/RT, dan Persebaran Warga</div>
+                            <div class="text-[11px] text-slate-600 mt-0.5">Batas Kalurahan, 9 Padukuhan, Batas RW/RT, & Warga</div>
                         </div>
-                    </label>
+                    </button>
 
-                    <label class="simple-preset-card flex items-start p-2.5 border border-slate-200 bg-white hover:bg-slate-50 cursor-pointer transition">
-                        <input type="radio" name="layer-preset" value="mitigasi" onchange="applySimplePreset('mitigasi')" class="mt-0.5 text-emerald-600 focus:ring-emerald-500">
-                        <div class="ml-2.5">
-                            <div class="text-xs font-bold text-slate-800">Mitigasi Bencana Merapi</div>
-                            <div class="text-[11px] text-slate-500 mt-0.5">KRB (I, II, III), Jalur Evakuasi, Barak Pengungsi, EWS, Titik Kumpul</div>
+                    <button type="button" id="preset-btn-lingkungan" onclick="applySimplePreset('lingkungan')" class="simple-preset-card w-full text-left flex items-start p-2.5 border border-slate-200 bg-white hover:bg-slate-50 cursor-pointer transition">
+                        <div class="preset-dot w-2 h-2 rounded-full bg-slate-300 mt-1.5 mr-2 flex-shrink-0"></div>
+                        <div>
+                            <div class="text-xs font-bold text-slate-800">Tata Ruang & Pemukiman</div>
+                            <div class="text-[11px] text-slate-500 mt-0.5">Area Pemukiman, Persawahan, & Sungai</div>
                         </div>
-                    </label>
+                    </button>
 
-                    <label class="simple-preset-card flex items-start p-2.5 border border-slate-200 bg-white hover:bg-slate-50 cursor-pointer transition">
-                        <input type="radio" name="layer-preset" value="lingkungan" onchange="applySimplePreset('lingkungan')" class="mt-0.5 text-emerald-600 focus:ring-emerald-500">
-                        <div class="ml-2.5">
-                            <div class="text-xs font-bold text-slate-800">Tata Ruang & Lingkungan</div>
-                            <div class="text-[11px] text-slate-500 mt-0.5">Pemukiman, Sawah, Sungai, Irigasi, TPS & Bank Sampah</div>
+                    <button type="button" id="preset-btn-infrastruktur" onclick="applySimplePreset('infrastruktur')" class="simple-preset-card w-full text-left flex items-start p-2.5 border border-slate-200 bg-white hover:bg-slate-50 cursor-pointer transition">
+                        <div class="preset-dot w-2 h-2 rounded-full bg-slate-300 mt-1.5 mr-2 flex-shrink-0"></div>
+                        <div>
+                            <div class="text-xs font-bold text-slate-800">Infrastruktur & Bangunan</div>
+                            <div class="text-[11px] text-slate-500 mt-0.5">Jaringan Jalan, 2.399 Bangunan, & Pendidikan</div>
                         </div>
-                    </label>
+                    </button>
 
-                    <label class="simple-preset-card flex items-start p-2.5 border border-slate-200 bg-white hover:bg-slate-50 cursor-pointer transition">
-                        <input type="radio" name="layer-preset" value="infrastruktur" onchange="applySimplePreset('infrastruktur')" class="mt-0.5 text-emerald-600 focus:ring-emerald-500">
-                        <div class="ml-2.5">
-                            <div class="text-xs font-bold text-slate-800">Infrastruktur & Fasilitas</div>
-                            <div class="text-[11px] text-slate-500 mt-0.5">Jaringan Jalan, Kontur, Pendidikan, Toponimi, Bangunan</div>
+                    <button type="button" id="preset-btn-mitigasi" onclick="applySimplePreset('mitigasi')" class="simple-preset-card w-full text-left flex items-start p-2.5 border border-slate-200 bg-white hover:bg-slate-50 cursor-pointer transition">
+                        <div class="preset-dot w-2 h-2 rounded-full bg-slate-300 mt-1.5 mr-2 flex-shrink-0"></div>
+                        <div>
+                            <div class="text-xs font-bold text-slate-800">Mitigasi Kebencanaan</div>
+                            <div class="text-[11px] text-slate-500 mt-0.5">Jalur Evakuasi, Barak Pengungsian, & Jarak Merapi</div>
                         </div>
-                    </label>
+                    </button>
 
-                    <label class="simple-preset-card flex items-start p-2.5 border border-slate-200 bg-white hover:bg-slate-50 cursor-pointer transition">
-                        <input type="radio" name="layer-preset" value="all" onchange="applySimplePreset('all')" class="mt-0.5 text-emerald-600 focus:ring-emerald-500">
-                        <div class="ml-2.5">
+                    <button type="button" id="preset-btn-all" onclick="applySimplePreset('all')" class="simple-preset-card w-full text-left flex items-start p-2.5 border border-slate-200 bg-white hover:bg-slate-50 cursor-pointer transition">
+                        <div class="preset-dot w-2 h-2 rounded-full bg-slate-300 mt-1.5 mr-2 flex-shrink-0"></div>
+                        <div>
                             <div class="text-xs font-bold text-slate-800">Semua Layer Aktif</div>
-                            <div class="text-[11px] text-slate-500 mt-0.5">Menampilkan seluruh data tematik secara bersamaan</div>
+                            <div class="text-[11px] text-slate-500 mt-0.5">Menampilkan seluruh data spasial Kalurahan Pondokrejo</div>
                         </div>
-                    </label>
+                    </button>
 
                     <!-- Quick Toggles -->
                     <div class="pt-3 border-t border-slate-200 mt-3">
@@ -201,11 +204,15 @@
                                 <input id="quick-pemukiman" type="checkbox" onchange="toggleQuickLayer('pemukiman', this.checked)" class="text-emerald-600 focus:ring-emerald-500">
                             </label>
                             <label class="flex items-center justify-between p-2 hover:bg-slate-100 cursor-pointer border-b border-slate-100">
+                                <span class="text-slate-700 font-medium">Jaringan Jalan</span>
+                                <input id="quick-jalan" type="checkbox" onchange="toggleQuickLayer('jalan', this.checked)" class="text-emerald-600 focus:ring-emerald-500">
+                            </label>
+                            <label class="flex items-center justify-between p-2 hover:bg-slate-100 cursor-pointer border-b border-slate-100">
                                 <span class="text-slate-700 font-medium">Titik Persebaran Warga</span>
                                 <input id="quick-warga" type="checkbox" checked onchange="toggleQuickLayer('warga', this.checked)" class="text-emerald-600 focus:ring-emerald-500">
                             </label>
                             <label class="flex items-center justify-between p-2 hover:bg-slate-100 cursor-pointer">
-                                <span class="text-slate-700 font-medium">Mitigasi Bencana Merapi</span>
+                                <span class="text-slate-700 font-medium">Mitigasi Bencana</span>
                                 <input id="quick-mitigasi" type="checkbox" onchange="toggleQuickLayer('mitigasi', this.checked)" class="text-emerald-600 focus:ring-emerald-500">
                             </label>
                         </div>
@@ -217,66 +224,59 @@
                     <div class="flex justify-between items-center mb-1">
                         <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Pilih Layer Mandiri</span>
                         <div class="space-x-1">
-                            <button type="button" onclick="setAllDetailLayers(true)" class="text-[10px] text-emerald-700 hover:underline font-semibold">Semua</button>
+                            <button type="button" onclick="setAllDetailLayers(true)" class="text-[10px] text-emerald-700 hover:underline font-semibold cursor-pointer">Semua</button>
                             <span class="text-slate-300">|</span>
-                            <button type="button" onclick="setAllDetailLayers(false)" class="text-[10px] text-slate-500 hover:underline">Reset</button>
+                            <button type="button" onclick="setAllDetailLayers(false)" class="text-[10px] text-slate-500 hover:underline cursor-pointer">Reset</button>
                         </div>
                     </div>
 
-                    <!-- Kategori 1: Wilayah Administrasi -->
+                    <!-- Kategori 1: Wilayah Administrasi & Fasilitas -->
                     <div class="border border-slate-200 bg-white shadow-sm">
                         <div class="bg-slate-100 px-3 py-2 text-xs font-bold text-slate-700 flex justify-between items-center border-b">
-                            <span>1. Wilayah Administrasi</span>
+                            <span>1. Administrasi & Fasilitas Desa</span>
                         </div>
                         <div class="p-2.5 space-y-1.5 text-xs">
-                            <label class="flex items-center space-x-2"><input id="layer-pemukiman" type="checkbox" class="form-checkbox text-amber-700"><span>Pemukiman (Area)</span></label>
-                            <label class="flex items-center space-x-2"><input id="layer-padukuhan" type="checkbox" checked class="form-checkbox text-blue-600"><span>Batas Padukuhan (Garis)</span></label>
+                            <label class="flex items-center space-x-2"><input id="layer-padukuhan" type="checkbox" checked class="form-checkbox text-blue-600"><span>Batas Padukuhan (9 Dusun)</span></label>
                             <label class="flex items-center space-x-2 ml-4"><input id="layer-rw" type="checkbox" class="form-checkbox text-sky-600"><span>Batas RW (Garis)</span></label>
                             <label class="flex items-center space-x-2 ml-4"><input id="layer-rt" type="checkbox" class="form-checkbox text-violet-600"><span>Batas RT (Garis)</span></label>
                             <label class="flex items-center space-x-2"><input id="layer-fasilitas-editor" type="checkbox" class="form-checkbox text-blue-600"><span>Fasilitas Desa (Titik)</span></label>
-                            <label class="flex items-center space-x-2"><input id="layer-bangunan" type="checkbox" class="form-checkbox text-purple-600"><span>Bangunan (Titik)</span></label>
-                            <label class="flex items-center space-x-2"><input id="layer-jalan" type="checkbox" class="form-checkbox text-amber-600"><span>Jalan (Garis)</span></label>
-                            <label class="flex items-center space-x-2"><input id="layer-kontur" type="checkbox" class="form-checkbox text-stone-500"><span>Kontur (Garis)</span></label>
-                            <label class="flex items-center space-x-2"><input id="layer-pendidikan" type="checkbox" class="form-checkbox text-pink-600"><span>Pendidikan (Titik)</span></label>
-                            <label class="flex items-center space-x-2"><input id="layer-toponimi" type="checkbox" class="form-checkbox text-emerald-600"><span>Toponimi (Titik)</span></label>
-                            <label class="flex items-center space-x-2"><input id="layer-tonggak" type="checkbox" class="form-checkbox text-slate-500"><span>Tonggak KM (Titik)</span></label>
-                            <label class="flex items-center space-x-2"><input id="layer-tambang" type="checkbox" class="form-checkbox text-gray-800"><span>Pertambangan (Titik)</span></label>
-                            <label class="flex items-center space-x-2"><input id="layer-batas-kecamatan" type="checkbox" class="form-checkbox text-black"><span>Batas Kecamatan (Garis)</span></label>
+                            <label class="flex items-center space-x-2"><input id="layer-bangunan" type="checkbox" class="form-checkbox text-purple-600"><span>Bangunan (2.399 Unit)</span></label>
+                            <label class="flex items-center space-x-2"><input id="layer-jalan" type="checkbox" class="form-checkbox text-amber-600"><span>Jalan (124 Ruas)</span></label>
+                            <label class="flex items-center space-x-2"><input id="layer-kontur" type="checkbox" class="form-checkbox text-stone-500"><span>Kontur Ketinggian</span></label>
+                            <label class="flex items-center space-x-2"><input id="layer-pendidikan" type="checkbox" class="form-checkbox text-pink-600"><span>Sarana Pendidikan</span></label>
+                            <label class="flex items-center space-x-2"><input id="layer-toponimi" type="checkbox" class="form-checkbox text-emerald-600"><span>Toponimi Wilayah</span></label>
+                            <label class="flex items-center space-x-2"><input id="layer-tambang" type="checkbox" class="form-checkbox text-gray-800"><span>Pertambangan</span></label>
+                            <label class="flex items-center space-x-2"><input id="layer-batas-kecamatan" type="checkbox" class="form-checkbox text-black"><span>Batas Kecamatan</span></label>
                         </div>
                     </div>
 
-                    <!-- Kategori 2: Lingkungan & Sanitasi -->
+                    <!-- Kategori 2: Tata Ruang & Lingkungan -->
                     <div class="border border-slate-200 bg-white shadow-sm">
                         <div class="bg-slate-100 px-3 py-2 text-xs font-bold text-slate-700 flex justify-between items-center border-b">
-                            <span>2. Lingkungan & Kebersihan</span>
+                            <span>2. Tata Ruang & Lingkungan</span>
                         </div>
                         <div class="p-2.5 space-y-1.5 text-xs">
-                            <label class="flex items-center space-x-2"><input id="layer-sungai" type="checkbox" class="form-checkbox text-blue-500"><span>Sungai (Garis)</span></label>
-                            <label class="flex items-center space-x-2"><input id="layer-sawah" type="checkbox" class="form-checkbox text-lime-600"><span>Sawah (Area)</span></label>
-                            <label class="flex items-center space-x-2"><input id="layer-irigasi" type="checkbox" class="form-checkbox text-cyan-600"><span>Irigasi (Garis)</span></label>
-                            <label class="flex items-center space-x-2"><input id="layer-tps" type="checkbox" class="form-checkbox text-orange-600"><span>Titik TPS (Titik)</span></label>
-                            <label class="flex items-center space-x-2"><input id="layer-bank-sampah" type="checkbox" class="form-checkbox text-green-600"><span>Bank Sampah (Titik)</span></label>
-                            <label class="flex items-center space-x-2"><input id="layer-rute-sampah" type="checkbox" class="form-checkbox text-red-600"><span>Rute Sampah (Garis)</span></label>
+                            <label class="flex items-center space-x-2"><input id="layer-pemukiman" type="checkbox" class="form-checkbox text-amber-700"><span>Area Pemukiman</span></label>
+                            <label class="flex items-center space-x-2"><input id="layer-sawah" type="checkbox" class="form-checkbox text-lime-600"><span>Persawahan</span></label>
+                            <label class="flex items-center space-x-2"><input id="layer-sungai" type="checkbox" class="form-checkbox text-blue-500"><span>Sungai & Saluran Air</span></label>
                         </div>
                     </div>
 
-                    <!-- Kategori 3: Mitigasi Bencana Merapi -->
+                    <!-- Kategori 3: Mitigasi Kebencanaan -->
                     <div class="border border-slate-200 bg-white shadow-sm">
                         <div class="bg-slate-100 px-3 py-2 text-xs font-bold text-slate-700 flex justify-between items-center border-b">
-                            <span>3. Mitigasi Bencana Merapi</span>
+                            <span>3. Mitigasi Kebencanaan</span>
                         </div>
                         <div class="p-2.5 space-y-1.5 text-xs">
-                            <label class="flex items-center space-x-2"><input id="layer-krb" type="checkbox" class="form-checkbox text-red-500"><span>KRB I, II, III (Area)</span></label>
-                            <label class="flex items-center space-x-2"><input id="layer-jalur-evakuasi" type="checkbox" class="form-checkbox text-yellow-600"><span>Jalur Evakuasi (Garis)</span></label>
-                            <label class="flex items-center space-x-2"><input id="layer-barak" type="checkbox" class="form-checkbox text-blue-800"><span>Barak Pengungsian (Titik)</span></label>
-                            <label class="flex items-center space-x-2"><input id="layer-titik-kumpul" type="checkbox" class="form-checkbox text-green-700"><span>Titik Kumpul (Titik)</span></label>
-                            <label class="flex items-center space-x-2"><input id="layer-ews" type="checkbox" class="form-checkbox text-orange-500"><span>EWS Sirine (Titik)</span></label>
-                            <label class="flex items-center space-x-2"><input id="layer-jarak-merapi" type="checkbox" class="form-checkbox text-gray-500"><span>Jarak Merapi (Garis)</span></label>
+                            <label class="flex items-center space-x-2"><input id="layer-jalur-evakuasi" type="checkbox" class="form-checkbox text-yellow-600"><span>Jalur Evakuasi</span></label>
+                            <label class="flex items-center space-x-2"><input id="layer-barak" type="checkbox" class="form-checkbox text-blue-800"><span>Barak Pengungsian</span></label>
+                            <label class="flex items-center space-x-2"><input id="layer-jarak-merapi" type="checkbox" class="form-checkbox text-gray-500"><span>Jarak Aman Merapi</span></label>
                         </div>
                     </div>
                 </div>
             </div>
-        </div><!-- Map Container -->
+        </div>
+<!-- Map Container -->
         <div class="flex-1 relative z-10 h-full">
             <div id="map" class="h-full w-full"></div>
 
@@ -817,14 +817,8 @@
             'sungai': false,
             'sawah': false,
             'irigasi': false,
-            'tps': false,
-            'bank-sampah': false,
-            'rute-sampah': false,
-            'krb': false,
             'jalur-evakuasi': false,
             'barak': false,
-            'titik-kumpul': false,
-            'ews': false,
             'jarak-merapi': false,
             'warga': true
         };
@@ -846,14 +840,8 @@
             { id: 'sungai', file: '/layers/sungai-line.geojson', type: 'line', color: '#0284c7', width: 2.5 },
             { id: 'sawah', file: '/layers/sawah-area.geojson', type: 'fill', color: '#65a30d', opacity: 0.35, outline: '#4d7c0f' },
             { id: 'irigasi', file: '/layers/irigasi-line.geojson', type: 'line', color: '#06b6d4', width: 2 },
-            { id: 'tps', file: '/layers/tps_locations.geojson', type: 'circle', color: '#ea580c', radius: 6 },
-            { id: 'bank-sampah', file: '/layers/waste_banks.geojson', type: 'circle', color: '#16a34a', radius: 6 },
-            { id: 'rute-sampah', file: '/layers/waste_routes.geojson', type: 'line', color: '#dc2626', width: 2.5, dash: [3, 2] },
-            { id: 'krb', files: ['/layers/krb_1.geojson', '/layers/krb_2.geojson', '/layers/krb_3.geojson'], type: 'krb' },
             { id: 'jalur-evakuasi', file: '/layers/evacuation_route.geojson', type: 'line', color: '#ca8a04', width: 3 },
             { id: 'barak', file: '/layers/barracks.geojson', type: 'circle', color: '#1e40af', radius: 7 },
-            { id: 'titik-kumpul', file: '/layers/assembly_points.geojson', type: 'circle', color: '#15803d', radius: 7 },
-            { id: 'ews', file: '/layers/ews_location.geojson', type: 'circle', color: '#c2410c', radius: 7 },
             { id: 'jarak-merapi', file: '/layers/merapi_distance.geojson', type: 'line', color: '#64748b', width: 1.5, dash: [3, 2] }
         ];
 
@@ -946,56 +934,70 @@
             }
         }
 
-        // Helper untuk menandai preset card yang aktif
+        let activePreset = 'default';
+
         function highlightActivePresetCard(presetName) {
-            document.querySelectorAll('.simple-preset-card').forEach(card => {
-                const radio = card.querySelector('input[name="layer-preset"]');
-                if (radio && radio.value === presetName) {
-                    card.className = 'simple-preset-card flex items-start p-2.5 border-l-4 border-l-emerald-600 border-y border-r border-slate-300 bg-emerald-50/70 cursor-pointer transition';
+            const presets = ['default', 'lingkungan', 'infrastruktur', 'mitigasi', 'all'];
+            presets.forEach(p => {
+                const btn = document.getElementById('preset-btn-' + p);
+                if (!btn) return;
+                const dot = btn.querySelector('.preset-dot');
+                if (p === presetName) {
+                    btn.className = 'simple-preset-card w-full text-left flex items-start p-2.5 border-l-4 border-l-emerald-600 border-y border-r border-slate-300 bg-emerald-50/70 cursor-pointer transition';
+                    if (dot) dot.className = 'preset-dot w-2 h-2 rounded-full bg-emerald-600 mt-1.5 mr-2 flex-shrink-0';
                 } else {
-                    card.className = 'simple-preset-card flex items-start p-2.5 border border-slate-200 bg-white hover:bg-slate-50 cursor-pointer transition';
+                    btn.className = 'simple-preset-card w-full text-left flex items-start p-2.5 border border-slate-200 bg-white hover:bg-slate-50 cursor-pointer transition';
+                    if (dot) dot.className = 'preset-dot w-2 h-2 rounded-full bg-slate-300 mt-1.5 mr-2 flex-shrink-0';
                 }
             });
         }
 
-        // Apply Simple Preset (1-Klik)
+        // Apply Simple Preset (1-Klik Tanpa Mematikan Padukuhan / Warga)
         function applySimplePreset(presetName) {
-            // Reset all layers to false
-            Object.keys(layerState).forEach(k => { if (k !== 'warga') layerState[k] = false; });
+            activePreset = presetName;
+
+            // Preserve padukuhan dan warga
+            layerState['padukuhan'] = true;
+            layerState['warga'] = true;
 
             if (presetName === 'default') {
-                layerState['padukuhan'] = true;
-                layerState['warga'] = true;
-            } else if (presetName === 'mitigasi') {
-                layerState['krb'] = true;
-                layerState['jalur-evakuasi'] = true;
-                layerState['barak'] = true;
-                layerState['titik-kumpul'] = true;
-                layerState['ews'] = true;
-                layerState['jarak-merapi'] = true;
-                layerState['warga'] = true;
+                Object.keys(layerState).forEach(k => {
+                    if (k !== 'padukuhan' && k !== 'warga') layerState[k] = false;
+                });
+                layerState['rw'] = true;
+                layerState['rt'] = true;
             } else if (presetName === 'lingkungan') {
                 layerState['pemukiman'] = true;
                 layerState['sawah'] = true;
                 layerState['sungai'] = true;
-                layerState['irigasi'] = true;
-                layerState['tps'] = true;
-                layerState['bank-sampah'] = true;
-                layerState['rute-sampah'] = true;
-                layerState['warga'] = true;
             } else if (presetName === 'infrastruktur') {
                 layerState['jalan'] = true;
-                layerState['kontur'] = true;
                 layerState['bangunan'] = true;
                 layerState['pendidikan'] = true;
                 layerState['toponimi'] = true;
-                layerState['fasilitas-editor'] = true;
-                layerState['warga'] = true;
+                layerState['kontur'] = true;
+            } else if (presetName === 'mitigasi') {
+                layerState['barak'] = true;
+                layerState['jalur-evakuasi'] = true;
+                layerState['jarak-merapi'] = true;
             } else if (presetName === 'all') {
                 Object.keys(layerState).forEach(k => { layerState[k] = true; });
             }
 
             highlightActivePresetCard(presetName);
+            syncUIWithLayerState();
+            reapplyAllThematicLayers();
+            renderMarkers();
+            updateLegend();
+        }
+
+        // Reset Seluruh Layer Tematik ke Default Bersih
+        function resetAllThematicLayers() {
+            activePreset = 'default';
+            Object.keys(layerState).forEach(k => {
+                layerState[k] = (k === 'padukuhan' || k === 'warga');
+            });
+            highlightActivePresetCard('default');
             syncUIWithLayerState();
             reapplyAllThematicLayers();
             renderMarkers();
@@ -1014,12 +1016,11 @@
             } else if (quickType === 'warga') {
                 layerState['warga'] = isChecked;
                 renderMarkers();
+            } else if (quickType === 'jalan') {
+                layerState['jalan'] = isChecked;
             } else if (quickType === 'mitigasi') {
-                layerState['krb'] = isChecked;
-                layerState['jalur-evakuasi'] = isChecked;
                 layerState['barak'] = isChecked;
-                layerState['titik-kumpul'] = isChecked;
-                layerState['ews'] = isChecked;
+                layerState['jalur-evakuasi'] = isChecked;
                 layerState['jarak-merapi'] = isChecked;
             }
 
@@ -1043,6 +1044,20 @@
                 const cb = document.getElementById('layer-' + k);
                 if (cb) cb.checked = !!layerState[k];
             });
+            // Sync Quick Toggles
+            const qPad = document.getElementById('quick-padukuhan');
+            if (qPad) qPad.checked = !!layerState['padukuhan'];
+            const qRwRt = document.getElementById('quick-rw-rt');
+            if (qRwRt) qRwRt.checked = !!(layerState['rw'] && layerState['rt']);
+            const qPem = document.getElementById('quick-pemukiman');
+            if (qPem) qPem.checked = !!layerState['pemukiman'];
+            const qWar = document.getElementById('quick-warga');
+            if (qWar) qWar.checked = !!layerState['warga'];
+            const qJalan = document.getElementById('quick-jalan');
+            if (qJalan) qJalan.checked = !!layerState['jalan'];
+            const qMit = document.getElementById('quick-mitigasi');
+            if (qMit) qMit.checked = !!(layerState['barak'] && layerState['jalur-evakuasi']);
+        });
             // Sync Quick Toggles
             const qPad = document.getElementById('quick-padukuhan');
             if (qPad) qPad.checked = !!layerState['padukuhan'];
@@ -1090,12 +1105,69 @@
             }
         }
 
-        // Memastikan Garis Batas Kalurahan dan Marker Selalu di Atas Layer Poligon Lain
+        // Memastikan Hirarki Z-Index WebGL 4-Tier: Fills -> Lines -> Points -> Labels
         function ensureBoundaryOnTop() {
             try {
-                if (map.getLayer('layer-selected-dusun-fill')) {
-                    map.moveLayer('layer-selected-dusun-fill');
-                }
+                // Tier 1: Area / Fills (Lapisan dasar)
+                const fills = [
+                    'layer-sawah',
+                    'layer-pemukiman',
+                    'layer-boundary-fill',
+                    'layer-selected-dusun-fill'
+                ];
+                fills.forEach(id => {
+                    if (map.getLayer(id)) map.moveLayer(id);
+                });
+
+                // Tier 2: Lines (Garis di atas area)
+                const lines = [
+                    'layer-sungai',
+                    'layer-irigasi',
+                    'layer-kontur',
+                    'layer-jalan',
+                    'layer-jalur-evakuasi',
+                    'layer-jarak-merapi',
+                    'layer-batas-kecamatan',
+                    'layer-rt',
+                    'layer-rw',
+                    'layer-padukuhan',
+                    'layer-selected-dusun-line',
+                    'layer-boundary-casing',
+                    'layer-boundary-line'
+                ];
+                lines.forEach(id => {
+                    if (map.getLayer(id)) map.moveLayer(id);
+                });
+
+                // Tier 3: Points / Circles (Titik di atas garis)
+                const points = [
+                    'layer-bangunan',
+                    'layer-fasilitas-editor',
+                    'layer-pendidikan',
+                    'layer-barak',
+                    'layer-tambang',
+                    'layer-tonggak',
+                    'household-heatmap',
+                    'household-clusters',
+                    'household-points'
+                ];
+                points.forEach(id => {
+                    if (map.getLayer(id)) map.moveLayer(id);
+                });
+
+                // Tier 4: Labels & Symbols (Paling atas, tidak tertutup)
+                const labels = [
+                    'layer-padukuhan-label',
+                    'layer-toponimi',
+                    'household-cluster-count'
+                ];
+                labels.forEach(id => {
+                    if (map.getLayer(id)) map.moveLayer(id);
+                });
+            } catch (e) {
+                // Ignore if layers not yet mounted
+            }
+        }
                 if (map.getLayer('layer-selected-dusun-line')) {
                     map.moveLayer('layer-selected-dusun-line');
                 }
@@ -1215,6 +1287,47 @@
             if (map.getLayer(layerConfig.id)) return;
             const beforeId = map.getLayer('layer-boundary-casing') ? 'layer-boundary-casing' : undefined;
             map.addLayer(layerConfig, beforeId);
+        }
+
+        function getActiveFilterDusuns() {
+            return Array.from(document.querySelectorAll('.filter-dusun:checked')).map(cb => cb.value);
+        }
+
+        // Harmonisasi Spasial Dinamis: Saring layer tematik sesuai padukuhan terpilih
+        function syncThematicLayersWithDusunFilter(filterDusun) {
+            if (!map || !map.isStyleLoaded()) return;
+
+            const layersToFilter = [
+                'layer-bangunan',
+                'layer-jalan',
+                'layer-pemukiman',
+                'layer-toponimi',
+                'layer-sungai',
+                'layer-sawah',
+                'layer-pendidikan',
+                'layer-barak',
+                'layer-kontur'
+            ];
+
+            let filterExpr = null;
+            if (filterDusun && filterDusun.length > 0) {
+                const matches = [];
+                filterDusun.forEach(d => {
+                    matches.push(['==', ['get', 'dusun'], d]);
+                    matches.push(['in', d, ['coalesce', ['get', 'dusuns'], '']]);
+                });
+                filterExpr = ['any', ...matches];
+            }
+
+            layersToFilter.forEach(lyrId => {
+                if (map.getLayer(lyrId)) {
+                    try {
+                        map.setFilter(lyrId, filterExpr);
+                    } catch (err) {
+                        // Ignore if layer doesn't support filter
+                    }
+                }
+            });
         }
 
         async function reapplyAllThematicLayers() {
@@ -1345,6 +1458,7 @@
                     }
                 }
             }
+            syncThematicLayersWithDusunFilter(getActiveFilterDusuns());
             ensureBoundaryOnTop();
         }
 
@@ -1828,6 +1942,7 @@
                 if (map.getLayer('layer-padukuhan-label')) {
                     map.setFilter('layer-padukuhan-label', padukuhanFilter);
                 }
+                syncThematicLayersWithDusunFilter(filterDusun);
             } catch (e) {
                 console.warn('Batas padukuhan filter warning:', e);
             }
@@ -2114,11 +2229,14 @@
             if (layerState['padukuhan']) {
                 html += `<div class="flex items-center text-[11px] mb-1"><span class="w-3.5 h-0.5 bg-blue-600 mr-1.5 inline-block"></span> Batas Padukuhan</div>`;
             }
+            if (layerState['rw'] || layerState['rt']) {
+                html += `<div class="flex items-center text-[11px] mb-1"><span class="w-3.5 h-0.5 bg-sky-600 mr-1.5 inline-block"></span> Batas RW & RT</div>`;
+            }
             if (layerState['pemukiman']) {
-                html += `<div class="flex items-center text-[11px] mb-1"><span class="w-3 h-3 bg-amber-700/40 border border-amber-700 mr-1.5 inline-block"></span> Pemukiman</div>`;
+                html += `<div class="flex items-center text-[11px] mb-1"><span class="w-3 h-3 bg-amber-700/40 border border-amber-700 mr-1.5 inline-block"></span> Area Pemukiman</div>`;
             }
             if (layerState['sawah']) {
-                html += `<div class="flex items-center text-[11px] mb-1"><span class="w-3 h-3 bg-lime-600/40 border border-lime-600 mr-1.5 inline-block"></span> Sawah</div>`;
+                html += `<div class="flex items-center text-[11px] mb-1"><span class="w-3 h-3 bg-lime-600/40 border border-lime-600 mr-1.5 inline-block"></span> Persawahan</div>`;
             }
             if (layerState['sungai']) {
                 html += `<div class="flex items-center text-[11px] mb-1"><span class="w-3.5 h-0.5 bg-blue-500 mr-1.5 inline-block"></span> Sungai</div>`;
@@ -2126,15 +2244,11 @@
             if (layerState['jalan']) {
                 html += `<div class="flex items-center text-[11px] mb-1"><span class="w-3.5 h-0.5 bg-amber-600 mr-1.5 inline-block"></span> Jaringan Jalan</div>`;
             }
-            if (layerState['krb']) {
-                html += `
-                    <div class="my-1 pt-1 border-t">
-                        <div class="text-[11px] font-semibold text-red-700 mb-1">Kawasan Bencana Merapi</div>
-                        <div class="flex items-center text-[11px] mb-0.5"><span class="w-3 h-3 bg-red-500/40 border border-red-500 mr-1.5 inline-block"></span> KRB III (Tinggi)</div>
-                        <div class="flex items-center text-[11px] mb-0.5"><span class="w-3 h-3 bg-orange-500/40 border border-orange-500 mr-1.5 inline-block"></span> KRB II (Sedang)</div>
-                        <div class="flex items-center text-[11px]"><span class="w-3 h-3 bg-yellow-400/40 border border-yellow-400 mr-1.5 inline-block"></span> KRB I (Rendah)</div>
-                    </div>
-                `;
+            if (layerState['bangunan']) {
+                html += `<div class="flex items-center text-[11px] mb-1"><span class="w-2.5 h-2.5 rounded-full bg-purple-600 mr-1.5 inline-block"></span> Bangunan Desa</div>`;
+            }
+            if (layerState['pendidikan']) {
+                html += `<div class="flex items-center text-[11px] mb-1"><span class="w-2.5 h-2.5 rounded-full bg-pink-600 mr-1.5 inline-block"></span> Sarana Pendidikan</div>`;
             }
             if (layerState['jalur-evakuasi']) {
                 html += `<div class="flex items-center text-[11px] mb-1"><span class="w-3.5 h-0.5 bg-yellow-600 mr-1.5 inline-block"></span> Jalur Evakuasi</div>`;
@@ -2142,20 +2256,12 @@
             if (layerState['barak']) {
                 html += `<div class="flex items-center text-[11px] mb-1"><span class="w-2.5 h-2.5 rounded-full bg-blue-800 mr-1.5 inline-block"></span> Barak Pengungsian</div>`;
             }
-            if (layerState['titik-kumpul']) {
-                html += `<div class="flex items-center text-[11px] mb-1"><span class="w-2.5 h-2.5 rounded-full bg-green-700 mr-1.5 inline-block"></span> Titik Kumpul</div>`;
-            }
-            if (layerState['ews']) {
-                html += `<div class="flex items-center text-[11px] mb-1"><span class="w-2.5 h-2.5 rounded-full bg-orange-500 mr-1.5 inline-block"></span> EWS Sirine</div>`;
-            }
-            if (layerState['jarak-merapi']) {
-                html += `<div class="flex items-center text-[11px] mb-1"><span class="w-3.5 h-0.5 bg-slate-500 mr-1.5 inline-block"></span> Radius Merapi</div>`;
-            }
 
             container.innerHTML = html;
             container.style.display = 'block';
         }
-function switchTab(tab) {
+
+        function switchTab(tab) {
             const tabMap = document.getElementById('tab-map');
             const tabAnalysis = document.getElementById('tab-analysis');
             const contentMap = document.getElementById('content-map');

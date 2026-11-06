@@ -182,7 +182,7 @@ func main() {
 		c.JSON(http.StatusOK, editorStore.GeoLayersSnapshot())
 	})
 
-	r.GET("/editor/layers/:name", RequireAdmin(), func(c *gin.Context) {
+	r.GET("/editor/layers/:name", func(c *gin.Context) {
 		name := c.Param("name")
 		if name == "" {
 			c.Data(http.StatusOK, "application/json", []byte(`{"type":"FeatureCollection","features":[]}`))

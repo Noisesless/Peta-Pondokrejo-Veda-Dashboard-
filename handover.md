@@ -94,3 +94,22 @@ Dalam sesi ini, seluruh rangkaian remidiasi keamanan 3 tahap, sanitasi dokumenta
 3. **Status Deployment & Verifikasi**:
    - Binary Linux pondokrejo-app-linux dikompilasi ulang dan diunggah ke VPS nargaroth.
    - Aplikasi berjalan stabil pada port 5092 (PID aktif), melayani kuki login terotentikasi, batas kalurahan dan padukuhan termuat otomatis secara instan saat ganti basemap (Satelit, Terang, Gelap, Standar).
+
+
+### Update 2026-11-06 10:20 WIB - Harmonisasi Spasial Kalurahan & Padukuhan (Navbar Kiri & Kanan)
+1. **Pembersihan & Spatial Clipping Data Tematik (`layers/`)**:
+   - Seluruh data garis dan poligon (`jalan-line`, `pemukiman-area`, `sungai-line`, `sawah-area`, `kontur-line`) telah dipotong (*clipped*) presisi menggunakan poligon batas resmi `boundary.geojson` Kalurahan Pondokrejo.
+   - Sebanyak 2.399 titik bangunan (`bangunan-point-pondokrejo.json`) dan toponimi/sarana pendidikan telah disaring dan diberi atribut properti padukuhan (`dusun`) sesuai 9 padukuhan resmi.
+   - Berkas rusak/kosong (`tonggak-km-point.geojson` dan `irigasi-line.geojson`) diperbaiki menjadi `FeatureCollection` valid.
+   - Layer di luar wilayah Kabupaten Sleman timur/Merapi atas (TPS, Bank Sampah, Sirene EWS, Titik Kumpul) dibersihkan dari tampilan utama.
+2. **Pembukaan Akses Read-Only Batas RW & RT**:
+   - Menghapus middleware `RequireAdmin()` pada endpoint `GET /editor/layers/:name` di `main.go`. Pengunjung publik kini dapat menyalakan layer Batas RW, RT, dan Fasilitas Desa tanpa redirect error 401.
+3. **Redesain Navbar Kiri (Non-Destructive Multi-Select & Preset Cerdas)**:
+   - Mengganti radio button destruktif di Mode Sederhana dengan tombol preset interaktif (Default, Tata Ruang & Pemukiman, Infrastruktur & Bangunan, Mitigasi Kebencanaan, Semua Layer) serta tombol mandiri "Reset Layer".
+   - Preset bersifat aditif dan tidak mematikan layer padukuhan atau marker warga.
+4. **Isolasi Spasial Padukuhan Dinamis (Navbar Kanan <-> Kiri)**:
+   - Diterapkan fungsi `syncThematicLayersWithDusunFilter()`. Ketika padukuhan dipilih di navbar kanan (misal "Plotengan"), seluruh layer tematik aktif di kiri (jalan, bangunan, pemukiman, toponimi) otomatis tersaring hanya di wilayah padukuhan tersebut. Saat filter padukuhan di-reset, layer kembali menampilkan cakupan 1 kalurahan penuh.
+5. **Urutan Rendering WebGL 4-Tier Z-Index**:
+   - Fungsi `ensureBoundaryOnTop()` diperbarui dengan hirarki: Fills -> Lines -> Outer Boundary -> Points/Clusters -> Labels.
+6. **Kompilasi Binary**:
+   - Binary lokal Windows `pondokrejo-app.exe` dan binary Linux VPS `pondokrejo-app-linux` berhasil dikompilasi ulang dengan asset templates & layers terbaru.
