@@ -19,6 +19,7 @@ Dokumen ini mencatat riwayat isu, investigasi akar masalah, perbaikan teknis, da
 | **ISSUE-009** | Frontend / Analitik | Tab Analisa Wilayah: Piramida penduduk rusak (Laki-laki 0), kode survei mentah, dan NIK berformat notasi ilmiah E+15 | CLOSED | Memulihkan NIK & NoKK ke 16-digit murni, mapping kode gender ('1'/'2'), kamus fasilitas/pendidikan, integrasi RT/RW dan filter peta real-time |
 | **ISSUE-010** | Data / Wilayah | Tabel Sebaran Wilayah memunculkan RW anomali (misal Banjarharjo muncul RW 01/04, Dukuh muncul RW 00/01) | CLOSED | Normalisasi aturan alokasi resmi RT & RW per padukuhan ke 100% dari 2.021 KK (Banjarharjo 14-15, Dukuh 09-10, dll) |
 | **ISSUE-011** | Keamanan / Privasi | Ketiadaan masking NIK/No KK publik (UU PDP), auth bypass `/editor/save`, dan ketiadaan rate limit | CLOSED | Menerapkan 3 tahapan remidiasi: Masking PII pada `/residents.json`, backend session middleware di Gin, dan Nginx rate limiting + HSTS |
+| **ISSUE-012** | Frontend / Scripting | Layar peta blank dan panel filter kanan tertahan "Memuat data..." | CLOSED | Pembersihan duplikasi blok sintaks JavaScript di `templates/index.html` yang memicu SyntaxError |
 
 ---
 
@@ -45,3 +46,16 @@ Dokumen ini mencatat riwayat isu, investigasi akar masalah, perbaikan teknis, da
   - `curl -X POST /editor/save` publik: `401 Unauthorized`.
   - Akses admin setelah login: `200 OK` dengan NIK/KK lengkap tanpa masking.
   - Scraping massal cepat: Memicu respons `429 Too Many Requests`.
+
+---
+
+### ISSUE-012: Layar Peta Blank & Navbar Kanan Tertahan "Memuat data..." Akibat SyntaxError
+- **Akar Masalah:**
+  1. Pada `templates/index.html`, fungsi `syncUIWithLayerState()` memuat blok duplikasi quick toggles yang ditutup dengan `});` tanpa pembuka yang sesuai.
+  2. Fungsi `ensureBoundaryOnTop()` meninggalkan potongan kode lama di luarnya yang memuat blok `} catch (e) { } }` tersendiri.
+  3. Kedua syntax error ini memicu `SyntaxError: Unexpected token ')'` dan `SyntaxError: Unexpected token '}'` pada parser JavaScript browser.
+  4. Akibatnya eksekusi seluruh tag `<script>` terhenti seketika: MapLibre tidak diinisialisasi (layar peta blank) dan pemanggilan `fetch('/residents.json')` serta `populateFilters()` tidak pernah berjalan (navbar kanan tertahan di "Memuat data...").
+- **Rencana Solusi:**
+  1. Bersihkan kedua blok duplikat sintaks yang rusak dari `templates/index.html`.
+  2. Lakukan syntax validation via Node.js (`node -c`) untuk memastikan nol error.
+  3. Rebuild aplikasi Golang dan restart server.
