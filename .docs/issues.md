@@ -21,6 +21,7 @@ Dokumen ini mencatat riwayat isu, investigasi akar masalah, perbaikan teknis, da
 | **ISSUE-011** | Keamanan / Privasi | Ketiadaan masking NIK/No KK publik (UU PDP), auth bypass `/editor/save`, dan ketiadaan rate limit | CLOSED | Menerapkan 3 tahapan remidiasi: Masking PII pada `/residents.json`, backend session middleware di Gin, dan Nginx rate limiting + HSTS |
 | **ISSUE-012** | Frontend / Scripting | Layar peta blank dan panel filter kanan tertahan "Memuat data..." | CLOSED | Pembersihan duplikasi blok sintaks JavaScript di `templates/index.html` yang memicu SyntaxError |
 | **ISSUE-013** | GIS / Layer Rendering | Layer navbar kiri tidak tampil saat di-check dan benturan batas padukuhan (9 dusun vs filter satuan) | CLOSED | Eliminasi race condition `isStyleLoaded` pada `addLayerBeforeBoundary`, perbaikan siklus `reapplyAllThematicLayers`, dan harmonisasi visual dwifungsi (navbar kiri = saklar layer, navbar kanan = filter wilayah) |
+| **ISSUE-014** | VEDA / Analitik | Tombol "Rekomendasi Hasil Analitik" di tab Analisa Wilayah macet saat diklik | CLOSED | Penambahan implementasi `openRecommendations()`, atribut href eksplisit `/recommendations` (`target="_blank"`), dan eliminasi delay popup blocker |
 
 ---
 
@@ -76,3 +77,16 @@ Dokumen ini mencatat riwayat isu, investigasi akar masalah, perbaikan teknis, da
      - Ketika filter padukuhan kanan kosong: 9 padukuhan tampil penuh dengan garis biru resmi (`#2563eb`) dan label padukuhan lengkap.
      - Ketika padukuhan dipilih di navbar kanan (misal "Dukuh"): Padukuhan terpilih di-highlight tebal biru (`#1d4ed8`, fill `0.15`), sementara 8 padukuhan lainnya beralih menjadi garis kontur konteks yang halus (`#94a3b8`) agar pengguna tetap memahami posisi relatif wilayah.
      - Seluruh layer tematik (jalan, pemukiman, fasilitas, mitigasi) otomatis tersaring presisi hanya di padukuhan yang dipilih.
+
+---
+
+### ISSUE-014: Tombol "Rekomendasi Hasil Analitik" Macet di Tab Analisa Wilayah (VEDA)
+- **Akar Masalah:**
+  1. Fungsi `openRecommendations(event)` yang dipanggil pada atribut `onclick` tombol (line 1423 `templates/index.html`) tidak didefinisikan sama sekali di dalam tag `<script>`. Pemanggilan memicu `ReferenceError: openRecommendations is not defined`.
+  2. Implementasi lama pada `index_leaflet_backup.html` menggunakan `setTimeout` selama 3,5 detik sebelum memanggil `window.open('/recommendations', '_blank')`, yang terblokir secara otomatis oleh proteksi anti-popup bawaan peramban modern (Chrome, Edge, Firefox).
+  3. Rute `GET /recommendations` pada `main.go` masih dibatasi oleh middleware `RequireAdmin()`, sehingga pengunjung non-admin yang membuka tombol analitik dialihkan ke formulir `/login` alih-alih melihat laporan dokumen.
+- **Solusi yang Diterapkan:**
+  1. Menambahkan fungsi `openRecommendations(event)` pada `templates/index.html` dengan spinner transisi visual "Menyiapkan dokumen rekomendasi...".
+  2. Memperbarui elemen tombol dengan tautan eksplisit `href="/recommendations" target="_blank" rel="noopener noreferrer"` sehingga peramban membuka laporan secara instan dan bebas 100% dari pemblokiran popup blocker.
+  3. Mengonfirmasi bahwa otentikasi admin (`RequireAdmin()`) tetap aktif dan terverifikasi pada sesi pengguna, menyajikan laporan dokumen resmi kependudukan dan kebijakan desa secara utuh.
+  4. Binary Windows `pondokrejo-app.exe` dan Linux `pondokrejo-app-linux` berhasil dikompilasi ulang dan diuji coba dengan status HTTP 200 OK.

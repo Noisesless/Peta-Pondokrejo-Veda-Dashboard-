@@ -31,7 +31,7 @@
 - Padukuhan Standardization: Normalized to exactly 9 Official Padukuhans with 2,021 unique households (zero outlier, zero leak)
 - Official RT & RW Harmonization: 100% dari 2.021 KK dipetakan tepat ke 47 kombinasi alokasi resmi RT & RW 9 padukuhan
 - Documentation: Complete 9 standardized files in /.docs/
-- Issues Open: 0 (ISSUE-013: Closed - Pemulihan layer tematik navbar kiri & harmonisasi dwifungsi batas 9 padukuhan vs filter satuan)
+- Issues Open: 0 (ISSUE-014: Closed - Rekomendasi Hasil Analitik VEDA tombol aktif, rel target _blank, & popup blocker bypass)
 
 ## [ROUTES]
 - GET  /                     -> Peta Sebaran Interaktif Utama (index.html, adaptif Mode Publik vs Mode Petugas)
