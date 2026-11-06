@@ -54,3 +54,17 @@ Aplikasi mengadopsi gaya **Non-Rounded Administrative Enterprise** yang bersih, 
   - Area Kanvas Peta: Fleksibel dan responsif memanfaatkan seluruh sisa ruang viewport.
 - **Non-Rounded Geometry:** Dropdown, panel detail, legenda floating, dan kartu filter menggunakan radius presisi (`rounded-none` / `rounded-sm`) yang mencerminkan ketegasan sistem informasi pemerintahan.
 - **Peta Dasar 4 Mode:** Standar (Liberty), Satelit (Esri), Terang (Positron), dan Gelap (Dark) yang dapat dialihkan secara instan melalui kontrol di pojok kanan atas kanvas.
+
+---
+
+## 4. Standar Desain Laporan Resmi Tata Naskah Dinas (A4)
+
+Laporan rekomendasi kebijakan (`templates/recommendations.html`) menerapkan standar **Tata Naskah Dinas Pemerintah Daerah**:
+- **Format Kertas:** Standar ISO A4 (`210mm × 297mm`), margin formal (Kiri 25mm, Kanan 20mm, Atas 22mm, Bawah 20mm).
+- **Kop Surat Resmi:** Lambang Kabupaten Sleman di kiri, teks instansi bertingkat tengah (*Pemerintah Kabupaten Sleman - Kapanewon Tempel - Pemerintah Kalurahan Pondokrejo*), alamat lengkap & kontak resmi, logo VEDA di kanan, serta **garis pembatas ganda** (garis tebal 3px + garis tipis 1px).
+- **Tipografi Resmi:** Font sans-serif modern (`Plus Jakarta Sans`) untuk ketajaman angka dan tabel, dipadukan dengan font serif formal (`Merriweather`) pada judul laporan.
+- **Kartu Metrik Eksekutif (Snapshot):** 4 kotak metrik kompak dengan border halus `#cbd5e1` penanda data kunci.
+- **Tabel Resmi Naskah Dinas:** Header abu-abu `#f8fafc` dengan teks kapital, border solid `#334155`, dan baris zebra tipis.
+- **Styling Cetak (`@media print`):** Navigasi layar disembunyikan otomatis (`.no-print`), pemutusan halaman diatur ketat via `page-break-after: always` antar-lembar dan `page-break-inside: avoid` pada setiap bab dan tabel sehingga bebas dari pemotongan acak.
+- **Pengesahan Resmi:** Format tanda tangan Lurah Kalurahan Pondokrejo: **R. WIDAYATMA, SE**.
+

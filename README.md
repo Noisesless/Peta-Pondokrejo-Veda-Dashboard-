@@ -61,7 +61,8 @@ Aplikasi dibangun menggunakan arsitektur single-binary Golang performa tinggi de
 - Pemantauan keluarga berisiko stunting dan ibu hamil.
 
 ### E. Rekomendasi Kebijakan Berbasis Data (`/recommendations`)
-- Laporan rekomendasi kebijakan berbasis data spasial dan sosial-ekonomi yang siap dicetak untuk pimpinan dan pengambil keputusan Kalurahan Pondokrejo.
+- Laporan rekomendasi kebijakan berbasis data spasial dan sosial-ekonomi standar Tata Naskah Dinas resmi (A4 print-ready) dengan kop surat resmi Pemerintah Kalurahan Pondokrejo, matriks rencana aksi KPI, dan pengesahan resmi Lurah Pondokrejo (**R. WIDAYATMA, SE**).
+
 
 ---
 
