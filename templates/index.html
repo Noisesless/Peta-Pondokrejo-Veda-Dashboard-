@@ -2013,52 +2013,32 @@
         // Quick Toggles in Simple Mode
 
         function toggleQuickLayer(quickType, isChecked) {
-
             if (quickType === 'padukuhan') {
-
                 layerState['padukuhan'] = isChecked;
-
             } else if (quickType === 'rw-rt') {
-
                 layerState['rw'] = isChecked;
-
                 layerState['rt'] = isChecked;
-
             } else if (quickType === 'pemukiman') {
-
                 layerState['pemukiman'] = isChecked;
-
             } else if (quickType === 'warga') {
-
                 layerState['warga'] = isChecked;
-
-                renderMarkers();
-
             } else if (quickType === 'jalan') {
-
                 layerState['jalan'] = isChecked;
-
             } else if (quickType === 'mitigasi') {
-
                 layerState['barak'] = isChecked;
-
                 layerState['jalur-evakuasi'] = isChecked;
-
                 layerState['jarak-merapi'] = isChecked;
-
+                layerState['krb'] = isChecked;
             }
 
-
-
             syncUIWithLayerState();
-
-            reapplyAllThematicLayers();
-
-            updateLegend();
-
+            reapplyAllThematicLayers().then(() => {
+                if (isResidentsLoaded) {
+                    renderMarkers();
+                }
+                updateLegend();
+            });
         }
-
-
 
         function setAllDetailLayers(enableAll) {
 
@@ -2388,364 +2368,198 @@
 
 
         function addLayerBeforeBoundary(layerConfig) {
-
-            if (!map || !map.isStyleLoaded() || !layerConfig || !layerConfig.id) return;
-
+            if (!map || !layerConfig || !layerConfig.id) return;
             if (map.getLayer(layerConfig.id)) return;
-
             const beforeId = map.getLayer('layer-boundary-casing') ? 'layer-boundary-casing' : undefined;
-
-            map.addLayer(layerConfig, beforeId);
-
+            try {
+                map.addLayer(layerConfig, beforeId);
+            } catch (err) {
+                console.warn('Gagal menambahkan layer:', layerConfig.id, err);
+            }
         }
-
-
 
         function getActiveFilterDusuns() {
-
             return Array.from(document.querySelectorAll('.filter-dusun:checked')).map(cb => cb.value);
-
         }
-
-
 
         // Harmonisasi Spasial Dinamis: Saring layer tematik sesuai padukuhan terpilih
-
         function syncThematicLayersWithDusunFilter(filterDusun) {
-
             if (!map || !map.isStyleLoaded()) return;
 
-
-
             const layersToFilter = [
-
                 'layer-bangunan',
-
                 'layer-jalan',
-
                 'layer-pemukiman',
-
                 'layer-toponimi',
-
                 'layer-sungai',
-
                 'layer-sawah',
-
                 'layer-pendidikan',
-
                 'layer-barak',
-
-                'layer-kontur'
-
+                'layer-kontur',
+                'layer-irigasi',
+                'layer-jalur-evakuasi'
             ];
 
-
-
             let filterExpr = null;
-
             if (filterDusun && filterDusun.length > 0) {
-
                 const matches = [];
-
                 filterDusun.forEach(d => {
-
                     matches.push(['==', ['get', 'dusun'], d]);
-
                     matches.push(['in', d, ['coalesce', ['get', 'dusuns'], '']]);
-
                 });
-
                 filterExpr = ['any', ...matches];
-
             }
 
-
-
             layersToFilter.forEach(lyrId => {
-
                 if (map.getLayer(lyrId)) {
-
                     try {
-
                         map.setFilter(lyrId, filterExpr);
-
                     } catch (err) {
-
                         // Ignore if layer doesn't support filter
-
                     }
-
                 }
-
             });
-
         }
 
-
-
         async function reapplyAllThematicLayers() {
-
             for (const def of LAYER_DEFS) {
-
                 const isVisible = !!layerState[def.id];
 
-
-
                 if (def.type === 'krb') {
-
                     // KRB is multi-file (KRB 1, 2, 3)
-
                     const krbFiles = [
-
                         { id: 'krb1', file: '/layers/krb_1.geojson', color: '#facc15', opacity: 0.25 },
-
                         { id: 'krb2', file: '/layers/krb_2.geojson', color: '#f97316', opacity: 0.35 },
-
                         { id: 'krb3', file: '/layers/krb_3.geojson', color: '#ef4444', opacity: 0.45 }
-
                     ];
-
                     for (const k of krbFiles) {
-
                         const sourceId = 'source-layer-' + k.id;
-
                         const fillId = 'layer-' + k.id + '-fill';
-
                         const lineId = 'layer-' + k.id + '-line';
 
-
-
                         if (!map.getSource(sourceId)) {
-
                             if (!isVisible) continue;
-
                             const data = await fetchGeoJSON(k.file);
-
                             if (!data) continue;
-
                             if (!map.getSource(sourceId)) {
-
                                 map.addSource(sourceId, { type: 'geojson', data });
-
-                                addLayerBeforeBoundary({ id: fillId, type: 'fill', source: sourceId, paint: { 'fill-color': k.color, 'fill-opacity': k.opacity } });
-
-                                addLayerBeforeBoundary({ id: lineId, type: 'line', source: sourceId, paint: { 'line-color': k.color, 'line-width': 1.5 } });
-
                             }
-
-                        } else {
-
-                            const vis = isVisible ? 'visible' : 'none';
-
-                            if (map.getLayer(fillId)) map.setLayoutProperty(fillId, 'visibility', vis);
-
-                            if (map.getLayer(lineId)) map.setLayoutProperty(lineId, 'visibility', vis);
-
                         }
 
+                        if (!map.getLayer(fillId) && isVisible && map.getSource(sourceId)) {
+                            addLayerBeforeBoundary({ id: fillId, type: 'fill', source: sourceId, paint: { 'fill-color': k.color, 'fill-opacity': k.opacity } });
+                            addLayerBeforeBoundary({ id: lineId, type: 'line', source: sourceId, paint: { 'line-color': k.color, 'line-width': 1.5 } });
+                        }
+
+                        const vis = isVisible ? 'visible' : 'none';
+                        if (map.getLayer(fillId)) map.setLayoutProperty(fillId, 'visibility', vis);
+                        if (map.getLayer(lineId)) map.setLayoutProperty(lineId, 'visibility', vis);
                     }
-
                     continue;
-
                 }
-
-
 
                 const sourceId = 'source-layer-' + def.id;
-
                 const layerId = 'layer-' + def.id;
 
-
-
+                // 1. Pastikan Source Terpasang
                 if (!map.getSource(sourceId)) {
-
                     if (!isVisible) continue;
-
                     const data = await fetchGeoJSON(def.file);
-
                     if (!data) continue;
-
-
-
                     if (!map.getSource(sourceId)) {
-
                         map.addSource(sourceId, { type: 'geojson', data });
-
-
-
-                        if (def.type === 'fill') {
-
-                            addLayerBeforeBoundary({
-
-                                id: layerId,
-
-                                type: 'fill',
-
-                                source: sourceId,
-
-                                paint: {
-
-                                    'fill-color': def.color,
-
-                                    'fill-opacity': def.opacity || 0.4,
-
-                                    'fill-outline-color': def.outline || def.color
-
-                                }
-
-                            });
-
-                        } else if (def.type === 'line') {
-
-                            const paint = {
-
-                                'line-color': def.color,
-
-                                'line-width': def.width || 2
-
-                            };
-
-                            if (def.dash) paint['line-dasharray'] = def.dash;
-
-                            addLayerBeforeBoundary({
-
-                                id: layerId,
-
-                                type: 'line',
-
-                                source: sourceId,
-
-                                paint: paint
-
-                            });
-
-
-
-                            if (def.id === 'padukuhan') {
-
-                                addLayerBeforeBoundary({
-
-                                    id: 'layer-padukuhan-label',
-
-                                    type: 'symbol',
-
-                                    source: sourceId,
-
-                                    layout: {
-
-                                        'text-field': ['get', 'nama'],
-
-                                        'text-font': ['Noto Sans Regular'],
-
-                                        'text-size': 11.5,
-
-                                        'text-transform': 'uppercase',
-
-                                        'text-letter-spacing': 0.08
-
-                                    },
-
-                                    paint: {
-
-                                        'text-color': '#1d4ed8',
-
-                                        'text-halo-color': '#ffffff',
-
-                                        'text-halo-width': 2.5
-
-                                    }
-
-                                });
-
-                            }
-
-                        } else if (def.type === 'circle') {
-
-                            addLayerBeforeBoundary({
-
-                                id: layerId,
-
-                                type: 'circle',
-
-                                source: sourceId,
-
-                                paint: {
-
-                                    'circle-color': def.color,
-
-                                    'circle-radius': def.radius || 5,
-
-                                    'circle-stroke-width': 1.5,
-
-                                    'circle-stroke-color': '#ffffff'
-
-                                }
-
-                            });
-
-                        }
-
-
-
-                        // Hover popup for features with properties
-
-                        map.on('mouseenter', layerId, (e) => {
-
-                            if (!e.features || !e.features[0]) return;
-
-                            const p = e.features[0].properties;
-
-                            const title = p.nama || p.Name || p.REMARK || p.NAMOBJ || p.kategori || p.nama_dusun || p.name || def.id;
-
-                            map.getCanvas().style.cursor = 'pointer';
-
-                            hoverPopup.setLngLat(e.lngLat)
-
-                                .setHTML(`<div class="text-xs p-1"><b>${title}</b></div>`)
-
-                                .addTo(map);
-
-                        });
-
-
-
-                        map.on('mouseleave', layerId, () => {
-
-                            map.getCanvas().style.cursor = '';
-
-                            hoverPopup.remove();
-
-                        });
-
                     }
-
-                } else {
-
-                    const vis = isVisible ? 'visible' : 'none';
-
-                    if (map.getLayer(layerId)) {
-
-                        map.setLayoutProperty(layerId, 'visibility', vis);
-
-                    }
-
-                    if (def.id === 'padukuhan' && map.getLayer('layer-padukuhan-label')) {
-
-                        map.setLayoutProperty('layer-padukuhan-label', 'visibility', vis);
-
-                    }
-
                 }
 
+                // 2. Pastikan Layer Terpasang Jika Aktif
+                if (!map.getLayer(layerId) && isVisible && map.getSource(sourceId)) {
+                    if (def.type === 'fill') {
+                        addLayerBeforeBoundary({
+                            id: layerId,
+                            type: 'fill',
+                            source: sourceId,
+                            paint: {
+                                'fill-color': def.color,
+                                'fill-opacity': def.opacity || 0.4,
+                                'fill-outline-color': def.outline || def.color
+                            }
+                        });
+                    } else if (def.type === 'line') {
+                        const paint = {
+                            'line-color': def.color,
+                            'line-width': def.width || 2
+                        };
+                        if (def.dash) paint['line-dasharray'] = def.dash;
+                        addLayerBeforeBoundary({
+                            id: layerId,
+                            type: 'line',
+                            source: sourceId,
+                            paint: paint
+                        });
+
+                        if (def.id === 'padukuhan') {
+                            addLayerBeforeBoundary({
+                                id: 'layer-padukuhan-label',
+                                type: 'symbol',
+                                source: sourceId,
+                                layout: {
+                                    'text-field': ['get', 'nama'],
+                                    'text-font': ['Noto Sans Regular'],
+                                    'text-size': 11.5,
+                                    'text-transform': 'uppercase',
+                                    'text-letter-spacing': 0.08
+                                },
+                                paint: {
+                                    'text-color': '#1d4ed8',
+                                    'text-halo-color': '#ffffff',
+                                    'text-halo-width': 2.5
+                                }
+                            });
+                        }
+                    } else if (def.type === 'circle') {
+                        addLayerBeforeBoundary({
+                            id: layerId,
+                            type: 'circle',
+                            source: sourceId,
+                            paint: {
+                                'circle-color': def.color,
+                                'circle-radius': def.radius || 5,
+                                'circle-stroke-width': 1.5,
+                                'circle-stroke-color': '#ffffff'
+                            }
+                        });
+                    }
+
+                    // Hover popup untuk fitur dengan properti
+                    map.on('mouseenter', layerId, (e) => {
+                        if (!e.features || !e.features[0]) return;
+                        const p = e.features[0].properties;
+                        const title = p.nama || p.Name || p.REMARK || p.NAMOBJ || p.kategori || p.nama_dusun || p.name || def.id;
+                        map.getCanvas().style.cursor = 'pointer';
+                        hoverPopup.setLngLat(e.lngLat)
+                            .setHTML(`<div class="text-xs p-1"><b>${title}</b></div>`)
+                            .addTo(map);
+                    });
+
+                    map.on('mouseleave', layerId, () => {
+                        map.getCanvas().style.cursor = '';
+                        hoverPopup.remove();
+                    });
+                }
+
+                // 3. Sinkronkan Visibilitas Layer
+                const vis = isVisible ? 'visible' : 'none';
+                if (map.getLayer(layerId)) {
+                    map.setLayoutProperty(layerId, 'visibility', vis);
+                }
+                if (def.id === 'padukuhan' && map.getLayer('layer-padukuhan-label')) {
+                    map.setLayoutProperty('layer-padukuhan-label', 'visibility', vis);
+                }
             }
 
             syncThematicLayersWithDusunFilter(getActiveFilterDusuns());
-
             ensureBoundaryOnTop();
-
         }
-
-
 
         let isRestoringLayers = false;
 
@@ -3669,53 +3483,43 @@
 
 
 
-            // Fokus Layer Visual Padukuhan: Saring padukuhan jika ada padukuhan tertentu yang dipilih
-
+            // Harmonisasi Spasial Batas Padukuhan: Navbar Kiri (9 Padukuhan) vs Navbar Kanan (Padukuhan Terpilih)
             try {
-
-                let padukuhanFilter = null;
+                const isPadukuhanActive = !!layerState['padukuhan'];
 
                 if (filterDusun.length > 0) {
-
-                    padukuhanFilter = ['any',
-
-                        ['in', 'nama', ...filterDusun],
-
-                        ['in', 'nama_dusun', ...filterDusun],
-
-                        ['in', 'dusun', ...filterDusun]
-
-                    ];
-
-                }
-
-                if (map.getLayer('layer-padukuhan')) {
-
-                    map.setFilter('layer-padukuhan', padukuhanFilter);
-
-                }
-
-                if (map.getLayer('layer-padukuhan-line')) {
-
-                    map.setFilter('layer-padukuhan-line', padukuhanFilter);
-
-                }
-
-                if (map.getLayer('layer-padukuhan-label')) {
-
-                    map.setFilter('layer-padukuhan-label', padukuhanFilter);
-
+                    // Ada padukuhan yang dipilih di navbar kanan:
+                    // 1. Padukuhan terpilih sudah di-highlight tebal via layer-selected-dusun-fill & line
+                    // 2. Jika Batas Padukuhan di navbar kiri aktif, tampilkan 8 padukuhan lainnya sebagai garis konteks lembut
+                    if (map.getLayer('layer-padukuhan')) {
+                        map.setLayoutProperty('layer-padukuhan', 'visibility', isPadukuhanActive ? 'visible' : 'none');
+                        map.setPaintProperty('layer-padukuhan', 'line-color', '#94a3b8');
+                        map.setPaintProperty('layer-padukuhan', 'line-width', 1.2);
+                        map.setFilter('layer-padukuhan', null);
+                    }
+                    if (map.getLayer('layer-padukuhan-label')) {
+                        map.setLayoutProperty('layer-padukuhan-label', 'visibility', isPadukuhanActive ? 'visible' : 'none');
+                        const labelMatches = filterDusun.map(d => ['==', ['get', 'nama'], d]);
+                        map.setFilter('layer-padukuhan-label', ['any', ...labelMatches]);
+                    }
+                } else {
+                    // Tidak ada padukuhan yang difilter (mode default kalurahan penuh):
+                    if (map.getLayer('layer-padukuhan')) {
+                        map.setLayoutProperty('layer-padukuhan', 'visibility', isPadukuhanActive ? 'visible' : 'none');
+                        map.setPaintProperty('layer-padukuhan', 'line-color', '#2563eb');
+                        map.setPaintProperty('layer-padukuhan', 'line-width', 2.0);
+                        map.setFilter('layer-padukuhan', null);
+                    }
+                    if (map.getLayer('layer-padukuhan-label')) {
+                        map.setLayoutProperty('layer-padukuhan-label', 'visibility', isPadukuhanActive ? 'visible' : 'none');
+                        map.setFilter('layer-padukuhan-label', null);
+                    }
                 }
 
                 syncThematicLayersWithDusunFilter(filterDusun);
-
             } catch (e) {
-
-                console.warn('Batas padukuhan filter warning:', e);
-
+                console.warn('Harmonisasi padukuhan warning:', e);
             }
-
-
 
             // Auto fitBounds to filtered features if dusun or specific filter is selected
 

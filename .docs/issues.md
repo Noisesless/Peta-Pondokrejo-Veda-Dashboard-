@@ -20,6 +20,7 @@ Dokumen ini mencatat riwayat isu, investigasi akar masalah, perbaikan teknis, da
 | **ISSUE-010** | Data / Wilayah | Tabel Sebaran Wilayah memunculkan RW anomali (misal Banjarharjo muncul RW 01/04, Dukuh muncul RW 00/01) | CLOSED | Normalisasi aturan alokasi resmi RT & RW per padukuhan ke 100% dari 2.021 KK (Banjarharjo 14-15, Dukuh 09-10, dll) |
 | **ISSUE-011** | Keamanan / Privasi | Ketiadaan masking NIK/No KK publik (UU PDP), auth bypass `/editor/save`, dan ketiadaan rate limit | CLOSED | Menerapkan 3 tahapan remidiasi: Masking PII pada `/residents.json`, backend session middleware di Gin, dan Nginx rate limiting + HSTS |
 | **ISSUE-012** | Frontend / Scripting | Layar peta blank dan panel filter kanan tertahan "Memuat data..." | CLOSED | Pembersihan duplikasi blok sintaks JavaScript di `templates/index.html` yang memicu SyntaxError |
+| **ISSUE-013** | GIS / Layer Rendering | Layer navbar kiri tidak tampil saat di-check dan benturan batas padukuhan (9 dusun vs filter satuan) | CLOSED | Eliminasi race condition `isStyleLoaded` pada `addLayerBeforeBoundary`, perbaikan siklus `reapplyAllThematicLayers`, dan harmonisasi visual dwifungsi (navbar kiri = saklar layer, navbar kanan = filter wilayah) |
 
 ---
 
@@ -59,3 +60,19 @@ Dokumen ini mencatat riwayat isu, investigasi akar masalah, perbaikan teknis, da
   1. Bersihkan kedua blok duplikat sintaks yang rusak dari `templates/index.html`.
   2. Lakukan syntax validation via Node.js (`node -c`) untuk memastikan nol error.
   3. Rebuild aplikasi Golang dan restart server.
+
+---
+
+### ISSUE-013: Pemulihan Layer Tematik Navbar Kiri & Harmonisasi Spasial Batas 9 Padukuhan
+- **Akar Masalah:**
+  1. Pada `addLayerBeforeBoundary()`, terdapat pengecekan prematur `!map.isStyleLoaded()`. Ketika MapLibre masih memuat tiles dari OpenFreeMap, fungsi tersebut langsung me-*return* tanpa menambahkan layer, padahal source geospasial (`map.addSource`) sudah terlanjur dibuat.
+  2. Akibatnya, `reapplyAllThematicLayers()` mengasumsikan layer sudah ada karena sourcenya ada (`map.getSource()` bernilai true), sehingga `map.addLayer()` tidak pernah dipanggil kembali untuk layer jalan, pemukiman, mitigasi, dan padukuhan.
+  3. Benturan visual antara Batas Padukuhan penuh (9 dusun di navbar kiri) dengan filter padukuhan satuan (navbar kanan) yang sebelumnya mematikan poligon batas padukuhan utama secara destruktif via ekspresi MapLibre yang tidak valid.
+- **Solusi yang Diterapkan:**
+  1. **Layer Mounting Independen:** `reapplyAllThematicLayers()` kini memisahkan verifikasi source dan verifikasi layer. Layer yang belum terpasang akan otomatis dibuat dan disisipkan dengan hirarki Z-index 4-tier.
+  2. **Harmonisasi Spasial Dwifungsi:**
+     - **Navbar Kiri (Saklar Layer):** Mengontrol *apa* yang ingin dilihat (Batas Padukuhan, Jalan, Pemukiman, Mitigasi, Warga).
+     - **Navbar Kanan (Filter Wilayah):** Mengontrol *di mana* fokus wilayahnya (Seluruh Kalurahan vs Padukuhan Tertentu).
+     - Ketika filter padukuhan kanan kosong: 9 padukuhan tampil penuh dengan garis biru resmi (`#2563eb`) dan label padukuhan lengkap.
+     - Ketika padukuhan dipilih di navbar kanan (misal "Dukuh"): Padukuhan terpilih di-highlight tebal biru (`#1d4ed8`, fill `0.15`), sementara 8 padukuhan lainnya beralih menjadi garis kontur konteks yang halus (`#94a3b8`) agar pengguna tetap memahami posisi relatif wilayah.
+     - Seluruh layer tematik (jalan, pemukiman, fasilitas, mitigasi) otomatis tersaring presisi hanya di padukuhan yang dipilih.
