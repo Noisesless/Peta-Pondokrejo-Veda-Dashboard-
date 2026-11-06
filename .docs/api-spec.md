@@ -1,25 +1,85 @@
 # Spesifikasi API — SIG Kalurahan Pondokrejo
 
-Dokumen ini mendokumentasikan antarmuka pemrograman aplikasi (API) dan spesifikasi endpoint yang disediakan oleh server backend Golang.
+Dokumen ini mendokumentasikan seluruh antarmuka pemrograman aplikasi (API), format request/response, dan spesifikasi endpoint yang disediakan oleh server backend Golang aplikasi Sistem Informasi Geografis Kalurahan Pondokrejo.
 
 ---
 
-## 1. Daftar Endpoint Publik
+## 1. Daftar Endpoint Publik & Autentikasi
 
 ### `GET /`
-- **Deskripsi:** Halaman utama Peta Sebaran Penduduk & Analitik Spasial.
+- **Deskripsi:** Halaman utama Peta Sebaran Penduduk & Analitik Spasial (`templates/index.html`).
 - **Content-Type:** `text/html; charset=utf-8`
-- **Response:** Template HTML terkompilasi (`templates/index.html`).
-- **Catatan Keamanan:** Di browser terdapat pengecekan `sessionStorage` ke `/login`.
+- **Response:** Template HTML terkompilasi (Go embed).
+- **Hak Akses:** Publik (dengan opsi navigasi login administrator).
+
+### `GET /login`
+- **Deskripsi:** Halaman login administrator Kalurahan Pondokrejo (`templates/login.html`).
+- **Content-Type:** `text/html; charset=utf-8`
+- **Response:** Formulir login terproteksi CSRF & visual branding resmi Kalurahan.
+
+### `POST /api/login`
+- **Deskripsi:** Endpoint otentikasi kredensial administrator.
+- **Content-Type:** `application/json`
+- **Request Body:**
+```json
+{
+  "username": "admin",
+  "password": "secret_password"
+}
+```
+- **Response `200 OK`:**
+```json
+{
+  "ok": true,
+  "message": "Login berhasil."
+}
+```
+- **Kuki Diterbitkan:** `pondokrejo_session` (Signed HMAC-SHA256, `HttpOnly`, `SameSite=Lax`, `Secure`, kedaluwarsa 7 hari).
+- **Response `401 Unauthorized`:**
+```json
+{
+  "ok": false,
+  "error": "Kredensial tidak valid."
+}
+```
+
+### `POST /api/logout` / `GET /logout`
+- **Deskripsi:** Menghapus kuki sesi administrator dan mengakhiri sesi aktif.
+- **Content-Type:** `application/json` (POST) / `302 Found` redirect ke `/login` (GET).
+- **Response `200 OK`:**
+```json
+{
+  "ok": true,
+  "message": "Sesi telah ditutup."
+}
+```
+
+### `GET /api/auth/status`
+- **Deskripsi:** Memeriksa status autentikasi kuki sesi aktif pengguna.
+- **Content-Type:** `application/json`
+- **Response:**
+```json
+{
+  "is_authenticated": true,
+  "username": "admin"
+}
+```
+
+---
+
+## 2. Endpoint Data Kependudukan & Geospasial
 
 ### `GET /residents.json`
-- **Deskripsi:** Mengambil seluruh data kependudukan (2.021 KK, 6.353 jiwa) yang telah dinormalisasi dan digabungkan dengan state revisi editor.
+- **Deskripsi:** Mengambil data kependudukan (2.021 KK, 6.353 jiwa) yang dinormalisasi dan digabungkan dengan state revisi editor.
 - **Content-Type:** `application/json`
+- **Perlindungan Data Pribadi (UU PDP No. 27/2022 & SP-025):**
+  - **Akses Publik (Non-Admin):** NIK dan No KK disamarkan (*masked*) dengan format `340414******0007`, atribut medis sensitif dikosongkan.
+  - **Akses Administrator:** Disajikan utuh 16 digit murni untuk kebutuhan verifikasi resmi desa.
 - **Response Format:** Array of Household Objects:
 ```json
 [
   {
-    "no_kk": "3404141811140007",
+    "no_kk": "340414******0007",
     "head_name": "BIDAYAH",
     "address": "NGENTAK 001/001 PONDOKREJO TEMPEL",
     "dusun": "Ngentak",
@@ -31,7 +91,7 @@ Dokumen ini mendokumentasikan antarmuka pemrograman aplikasi (API) dan spesifika
     "members": [
       {
         "name": "BIDAYAH",
-        "nik": "3404147112560069",
+        "nik": "340414******0069",
         "gender": "2",
         "age": "57",
         "education": "1",
@@ -52,37 +112,40 @@ Dokumen ini mendokumentasikan antarmuka pemrograman aplikasi (API) dan spesifika
   }
 ]
 ```
-- **Catatan Keamanan (SP-025):** Saat ini menyajikan data NIK 16 digit dan No KK utuh tanpa masking ke publik internet. Direkomendasikan segera dipasang masking untuk akses non-admin.
+- **Anti-Scraping Rate Limit:** Nginx menerapkan `limit_req_zone` (rate=3r/s burst=5) yang memicu status `429 Too Many Requests` saat terjadi pembacaan massal tak wajar.
 
 ### `GET /boundary.geojson`
 - **Deskripsi:** Batas resmi Kalurahan Pondokrejo (Badan Informasi Geospasial / Pemkab Sleman 2023).
 - **Content-Type:** `application/json`
-- **Format:** `GeoJSON FeatureCollection` (Polygon tunggal).
+- **Format:** `GeoJSON FeatureCollection` (Single boundary Polygon).
 
 ### `GET /layers/:filename`
-- **Deskripsi:** Mengambil berkas layer GeoJSON tematik (misal `padukuhan.geojson`, `pemukiman-area.geojson`, `jalan-line.geojson`, dll).
+- **Deskripsi:** Mengambil 19 berkas GeoJSON tematik yang telah terpotong rapi (*spatially clipped*) sesuai batas Kalurahan Pondokrejo (`layers/padukuhan.geojson`, `layers/pemukiman-area.geojson`, `layers/jalan-line.geojson`, dll).
 - **Content-Type:** `application/json`
 
 ---
 
-## 2. Endpoint Editor Spasial & Administrasi
+## 3. Endpoint Editor Spasial & Administrasi
 
 ### `GET /editor`
-- **Deskripsi:** Halaman editor penyesuaian titik koordinat dan digitasi batas wilayah.
+- **Deskripsi:** Halaman web visual editor penyesuaian titik koordinat dan digitasi batas wilayah (`templates/editor.html`).
 - **Content-Type:** `text/html; charset=utf-8`
-- **Catatan Keamanan:** Belum dilindungi middleware autentikasi server (hanya redirect JavaScript client-side).
+- **Status Proteksi:** 🔒 `RequireAdmin()` (Redirect `302 Found` ke `/login?redirect=/editor` jika belum login).
 
 ### `GET /editor/layers`
-- **Deskripsi:** Snapshot seluruh layer editor yang tersimpan di `editor_state.json`.
+- **Deskripsi:** Snapshot seluruh metadata layer editor yang tersimpan di `editor_state.json`.
 - **Content-Type:** `application/json`
+- **Status Proteksi:** 🔒 `RequireAdmin()`
 
 ### `GET /editor/layers/:name`
-- **Deskripsi:** Mengambil data GeoJSON layer tertentu di editor (`padukuhan`, `rw`, `rt`).
+- **Deskripsi:** Menyajikan data GeoJSON layer aktif (`padukuhan`, `rw`, `rt`, `fasilitas`).
 - **Content-Type:** `application/json`
+- **Status Proteksi:** 🌐 `Public Read-Only` (Dapat diakses oleh peta publik tanpa login).
 
 ### `POST /editor/save`
 - **Deskripsi:** Menyimpan revisi koordinat marker KK atau pembaruan poligon layer editor.
 - **Content-Type:** `application/json`
+- **Status Proteksi:** 🔒 `RequireAdmin()` (Menolak akses non-admin dengan `401 Unauthorized`).
 - **Request Body:**
 ```json
 {
@@ -95,24 +158,27 @@ Dokumen ini mendokumentasikan antarmuka pemrograman aplikasi (API) dan spesifika
 }
 ```
 - **Response:** `200 OK` dengan format `{ "ok": true }`.
-- **Catatan Keamanan (SP-006):** Saat ini menerima POST publik tanpa autentikasi server. Perlu segera dipasang middleware otentikasi.
 
 ---
 
-## 3. Endpoint Analitik & Bantuan Sosial
+## 4. Endpoint Analitik & Bantuan Sosial
 
 ### `GET /analytics`
-- **Deskripsi:** Dasbor grafis analitik kependudukan (Piramida penduduk, rasio ketergantungan, demografi).
+- **Deskripsi:** Dasbor grafis analitik kependudukan makro (Piramida penduduk, rasio ketergantungan, demografi).
 - **Content-Type:** `text/html; charset=utf-8`
+- **Status Proteksi:** 🔒 `RequireAdmin()`
 
 ### `GET /bansos`
 - **Deskripsi:** Dasbor perlindungan sosial, verifikasi inclusion/exclusion error bantuan sosial.
 - **Content-Type:** `text/html; charset=utf-8`
+- **Status Proteksi:** 🔒 `RequireAdmin()`
 
 ### `GET /bansos/data`
 - **Deskripsi:** Ringkasan metrik statistik agregasi bansos dalam format JSON.
 - **Content-Type:** `application/json`
+- **Status Proteksi:** 🔒 `RequireAdmin()`
 
 ### `GET /recommendations`
-- **Deskripsi:** Dokumen rekomendasi kebijakan desa berbasis data spasial dan sosial-ekonomi.
+- **Deskripsi:** Dokumen rekomendasi kebijakan desa berbasis data spasial dan sosial-ekonomi siap cetak.
 - **Content-Type:** `text/html; charset=utf-8`
+- **Status Proteksi:** 🔒 `RequireAdmin()`

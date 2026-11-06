@@ -1,6 +1,6 @@
 # Graf Ketergantungan & Dependensi — SIG Kalurahan Pondokrejo
 
-Dokumen ini mendokumentasikan seluruh pustaka (*libraries*), dependensi Go module, pustaka antarmuka frontend, dan layanan pihak ketiga yang digunakan.
+Dokumen ini mendokumentasikan seluruh pustaka (*libraries*), dependensi Go module, berkas aset ter-embed (*embedded assets*), pustaka antarmuka frontend, dan layanan pihak ketiga yang digunakan.
 
 ---
 
@@ -19,7 +19,24 @@ Didefinisikan dalam `go.mod`:
 
 ---
 
-## 2. Dependensi Frontend (Client-side Libraries)
+## 2. Berkas Ter-Embed & Target Build Binary
+
+Semua aset frontend, template, dan lapisan geospasial di-embed langsung ke dalam binary Go (`//go:embed`):
+
+| Direktori / File Embed | Target File | Fungsi |
+|---|---|---|
+| `templates/*` | `index.html`, `editor.html`, `login.html`, dll | Template HTML antarmuka pengguna |
+| `layers/*` | 19 Berkas GeoJSON Terpotong Batas | Lapisan spasial resmi kalurahan |
+| `residents.json` | Embedded Data Cache | Basis data 2.021 KK teroptimasi |
+| `*.png`, `*.jpg` | Logo Kalurahan, VEDA, ClasNet, background | Aset grafis statis |
+
+### Target Kompilasi
+- **Linux amd64:** `pondokrejo-app-linux` (Deploy target untuk VPS Ubuntu/Debian)
+- **Windows amd64:** `pondokrejo-app.exe` (Local development & demonstration)
+
+---
+
+## 3. Dependensi Frontend (Client-side CDN Libraries)
 
 Dimuat via CDN andal pada template HTML:
 
@@ -33,7 +50,7 @@ Dimuat via CDN andal pada template HTML:
 
 ---
 
-## 3. Layanan Peta Eksternal (Basemap & Tiles)
+## 4. Layanan Peta Eksternal (Basemap & Tiles)
 
 | Provider | URL Endpoint | Format | Keterangan |
 |---|---|---|---|
@@ -42,4 +59,3 @@ Dimuat via CDN andal pada template HTML:
 | **OpenFreeMap Dark** | `https://tiles.openfreemap.org/styles/dark` | Vector Tiles | Gaya kontras gelap |
 | **Esri World Imagery** | `https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}` | Raster Tile (256px) | Foto udara satelit resolusi tinggi |
 | **OpenFreeMap Glyphs** | `https://tiles.openfreemap.org/fonts/{fontstack}/{range}.pbf` | PBF Glyphs | Sumber glyphs font untuk rendering teks MapLibre |
-

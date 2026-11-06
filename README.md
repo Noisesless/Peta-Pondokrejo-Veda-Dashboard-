@@ -2,7 +2,7 @@
 
 Aplikasi Sistem Informasi Geografis (SIG) dan Dasbor Analitik Kependudukan berbasis web untuk Kalurahan Pondokrejo, Kapanewon Tempel, Kabupaten Sleman, D.I. Yogyakarta. 
 
-Aplikasi ini mengintegrasikan data sosial ekonomi kependudukan (desil kesejahteraan, kepesertaan bansos, stunting, kelompok rentan, demografi usia) dengan data geospasial kalurahan (batas wilayah resmi, 9 padukuhan resmi, alokasi RW/RT, fasilitas umum, serta zona risiko bencana Merapi).
+Aplikasi ini mengintegrasikan data sosial ekonomi kependudukan (desil kesejahteraan, kepesertaan bansos, stunting, kelompok rentan, demografi usia) dengan data geospasial kalurahan (batas wilayah resmi, 9 padukuhan resmi, alokasi RW/RT, fasilitas umum, jaringan jalan, pemukiman terpotong batas yurisdiksi, serta zona risiko bencana Merapi).
 
 Domain Produksi: **[https://peta.pondokrejo.id](https://peta.pondokrejo.id)**
 
@@ -20,7 +20,11 @@ Aplikasi dibangun menggunakan arsitektur single-binary Golang performa tinggi de
   - **Gelap**: OpenFreeMap Dark (kontras tinggi untuk presentasi malam/analisis tematik)
 - **Batas Kalurahan Dual-Tone Casing:** Batas luar Kalurahan Pondokrejo menggunakan *white halo casing* (`#ffffff`, 4.6px) dan garis solid biru pekat (`#1d4ed8`, 2.8px) yang selalu terkunci di layer teratas (`ensureBoundaryOnTop`), sehingga tidak pernah tertutup oleh poligon sawah, pemukiman, atau KRB.
 - **Normalisasi 9 Padukuhan Resmi (Clean Planar Tessellation):** Lapisan batas padukuhan (`layers/padukuhan.geojson`) bebas 100% dari tumpang tindih (*overlap* 0 m²) dan celah (*gap* 0 m²), dengan garis batas bersama tunggal (*shared edges*) yang rapi dan bebas dari tampilan garis ganda/bergerigi.
-- **Focused Padukuhan Isolation:** Ketika padukuhan tertentu dipilih di bilah navigasi, garis batas dan label padukuhan lain otomatis disembunyikan sehingga pengguna fokus penuh pada padukuhan aktif beserta warganya.
+- **WebGL 4-Tier Z-Index Stacking:** Pengorganisasian visual yang tertib mencegah layer area (pemukiman/sawah) menutupi jaringan jalan, titik fasilitas, atau garis batas administratif desa.
+- **Dual-Sidebar Spatial Harmonization:**
+  - **Bilah Navigasi Kiri (Saklar Layer):** Mengontrol visibilitas layer (Batas Padukuhan, Batas RW/RT, Pemukiman, Jaringan Jalan, Warga, Mitigasi Bencana).
+  - **Bilah Navigasi Kanan (Filter Wilayah & Analitik):** Mengontrol fokus wilayah (9 Padukuhan) dan atribut kependudukan.
+  - Saat padukuhan dipilih (misal: "Dukuh"), padukuhan aktif di-highlight dengan garis tebal biru (`#1d4ed8`) dan arsiran halus, sementara 8 padukuhan lainnya bertransformasi menjadi garis kontur konteks yang halus (`#94a3b8`) agar pengguna tetap memiliki orientasi batas wilayah desa.
 
 ---
 
@@ -35,8 +39,8 @@ Aplikasi dibangun menggunakan arsitektur single-binary Golang performa tinggi de
 - **Marker Clustering & Heatmap:** Pengelompokan titik dinamis berbasis zoom dengan popup detail Kepala Keluarga, No KK, Dusun, RT/RW, dan daftar bantuan sosial (BPNT, PKH, BLT, dll).
 - **Sinkronisasi Data Presisi 100%:** Penanganan klik titik marker menggunakan *Direct Unique Index Binding* (`_id`) untuk memastikan data di popup peta selalu identik dan sinkron dengan panel samping kanan.
 - **Mode Pemilihan Layer Ganda:**
-  - **Mode Sederhana (Preset Tematik):** Pintasan cepat untuk Padukuhan, RW/RT, Pemukiman, Sebaran Warga, dan Mitigasi Bencana.
-  - **Mode Detail (23 Layer Spasial):** Kontrol penuh atas seluruh layer spasial (pemukiman, sawah, sungai, irigasi, jalan, kontur, tambang, toponimi, KRB 1–3, jalur evakuasi, barak pengungsian, titik kumpul, dan EWS).
+  - **Mode Sederhana (Preset Tematik & Tombol Cepat):** Pintasan cepat untuk Padukuhan, RW/RT, Pemukiman, Jaringan Jalan, Titik Persebaran Warga, dan Mitigasi Bencana.
+  - **Mode Detail (Layer Spasial Lengkap):** Kontrol granular atas seluruh layer spasial (pemukiman, sawah, sungai, irigasi, jalan, kontur, toponimi, jalur evakuasi, barak pengungsian, dan fasilitas umum).
 
 ### B. Dasbor Analisa Wilayah & Demografi (Tab Interaktif di Sidebar)
 - **Sinkronisasi Filter Real-Time:** Statistik otomatis menyesuaikan dengan filter padukuhan, status desil, dan bansos yang aktif di peta.
@@ -48,22 +52,22 @@ Aplikasi dibangun menggunakan arsitektur single-binary Golang performa tinggi de
 ### C. Editor Marker & Spasial (`/editor`)
 - **Pergeseran Marker KK:** Drag-and-drop marker keluarga langsung di peta untuk memperbarui koordinat lintang/bujur secara presisi.
 - **Digitasi Batas Wilayah:** Pembuatan dan penyuntingan garis atau poligon batas Padukuhan, RW, dan RT secara visual.
-- **Manajemen Titik Fasilitas:** Penambahan dan penandaan titik fasilitas umum desa (masjid, sekolah, kantor, posyandu).
-- **Simpan Status:** Sinkronisasi langsung ke penyimpanan state editor (`editor_state.json`).
+- **Manajemen Titik Fasilitas:** Penambahan dan penandaan titik fasilitas umum desa (masjid, sekolah, kantor desa, posyandu).
+- **Simpan Status:** Sinkronisasi langsung ke penyimpanan state editor (`editor_state.json`) dengan proteksi otentikasi administrator.
 
 ### D. Dashboard Analitik Kependudukan & Bansos (`/analytics` & `/bansos`)
 - Piramida penduduk makro, distribusi usia kerja, dan rasio ketergantungan desa.
 - Analisis *inclusion* dan *exclusion error* bantuan sosial berdasarkan desil kesejahteraan riil.
 - Pemantauan keluarga berisiko stunting dan ibu hamil.
 
-### E. Rekomendasi Hasil Analitik (`/recommendations`)
-- Laporan rekomendasi kebijakan berbasis data spasial dan sosial-ekonomi yang siap dicetak untuk pengambil keputusan di Kalurahan.
+### E. Rekomendasi Kebijakan Berbasis Data (`/recommendations`)
+- Laporan rekomendasi kebijakan berbasis data spasial dan sosial-ekonomi yang siap dicetak untuk pimpinan dan pengambil keputusan Kalurahan Pondokrejo.
 
 ---
 
 ## 3. Data Kependudukan & Rekapitulasi 9 Padukuhan
 
-Total populasi terdata: **2.021 KK unik** (6.353 jiwa) bebas duplikasi data dan 0 KK outlier di luar desa:
+Total populasi terdata: **2.021 KK unik** (6.353 jiwa) bebas duplikasi data dan 0 KK outlier di luar batas desa:
 
 | No | Padukuhan Resmi | Alokasi RW Resmi | Alokasi RT Resmi | Jumlah KK | Titik Centroid Resmi |
 |---|---|---|---|---|---|
@@ -83,52 +87,61 @@ Total populasi terdata: **2.021 KK unik** (6.353 jiwa) bebas duplikasi data dan 
 
 ---
 
-## 4. Struktur Repositori
+## 4. Keamanan & Kepatuhan Perlindungan Data Pribadi (UU PDP No. 27/2022)
+
+Sistem telah diaudit dan memenuhi 15 Security Patterns (SP) serta undang-undang perlindungan data pribadi:
+- **Sensor Data Pribadi Publik (Dynamic PII Masking):** 100% dari 6.353 NIK dan 2.021 No KK publik disamarkan menjadi `340414******0007` pada endpoint `/residents.json`. Data unmasked 16 digit murni hanya dapat diakses oleh administrator terotentikasi.
+- **Server-Side Authentication & Session Signing:** Endpoint mutasi koordinat `POST /editor/save` dan antarmuka `/editor` dikunci ketat dengan middleware `RequireAdmin()` berbasis kuki sesi terenkripsi HMAC-SHA256 (`pondokrejo_session`).
+- **Anti-Scraping Rate Limiting:** Konfigurasi Nginx membatasi frekuensi request download massal kependudukan (`limit_req_zone` rate=3r/s burst=5) yang memicu status `429 Too Many Requests`.
+- **Keamanan Transport:** Header `Strict-Transport-Security` (HSTS), `X-Frame-Options`, dan `X-Content-Type-Options` aktif penuh.
+
+---
+
+## 5. Struktur Repositori
 
 ```
 peta_pondokrejo_main/
 ├── .docs/                      # Dokumentasi teknis terpusat (9 berkas standar)
-│   ├── architecture.md         # Arsitektur sistem & aliran data
-│   ├── api-spec.md             # Spesifikasi rute API & payload
-│   ├── database.md             # Skema kependudukan & model spasial
-│   ├── routes.md               # Pemetaan route & middleware
-│   ├── dependency-graph.md     # Daftar dependensi Go & frontend
+│   ├── architecture.md         # Arsitektur sistem, WebGL 4-tier & dual-sidebar
+│   ├── api-spec.md             # Spesifikasi rute API & payload otentikasi
+│   ├── database.md             # Skema kependudukan & katalog layer terpotong
+│   ├── routes.md               # Pemetaan route & middleware backend
+│   ├── dependency-graph.md     # Graf dependensi Go, embed & frontend
 │   ├── quality_review.md       # Audit kualitas kode & evidence faktual
-│   ├── issues.md               # Pelacak isu & riwayat penyelesaian bug
-│   ├── security-audit.md       # Audit keamanan, SP compliance & hardening
+│   ├── issues.md               # Pelacak isu & riwayat bug (ISSUE-001 s/d ISSUE-013)
+│   ├── security-audit.md       # Audit keamanan & matriks kepatuhan 15 SP
 │   └── design-system.md        # Desain UI/UX & standar kartografi
 ├── main.go                     # Entry point server Gin & embedded assets
 ├── analytics.go                # Logika pemrosesan analitik kependudukan
 ├── bansos_analytics.go         # Logika analitik perlindungan sosial
-├── parser.go                   # Parser Excel BPS (deduplikasi & jitter)
+├── parser.go                   # Parser Excel BPS (deduplikasi & normalisasi)
 ├── editor_storage.go           # Penyimpanan state revisi koordinat editor
 ├── geo_clip.go                 # Utilitas clipping GeoJSON
 ├── editor_state.json           # State persistensi pergeseran marker
 ├── residents.json              # Data kependudukan 2.021 KK teroptimasi
-├── PONDOKREJO.geojson          # Berkas batas wilayah kalurahan baku
-├── layers/                     # Direktori berkas GeoJSON tematik (23 layer)
+├── layers/                     # Direktori berkas GeoJSON tematik terpotong batas
 │   ├── boundary.geojson        # Batas kalurahan resmi BIG/Sleman 2023
 │   ├── padukuhan.geojson       # Batas 9 Padukuhan (Clean Planar Tessellation)
-│   ├── pemukiman-area.geojson  # Poligon pemukiman warga
-│   ├── sawah-area.geojson      # Poligon area persawahan
-│   ├── sungai-line.geojson     # Garis aliran sungai
-│   ├── jalan-line.geojson      # Jaringan jalan
+│   ├── pemukiman-area.geojson  # Poligon pemukiman warga dalam yurisdiksi desa
+│   ├── sawah-area.geojson      # Poligon area persawahan desa
+│   ├── sungai-line.geojson     # Jaringan sungai terpotong batas desa
+│   ├── jalan-line.geojson      # Jaringan jalan terpotong batas desa
 │   └── ...                     # Layer tematik lainnya
 ├── templates/                  # Template antarmuka web (Go embed)
 │   ├── index.html              # Peta sebaran interaktif utama
 │   ├── editor.html             # Editor spasial marker & batas wilayah
-│   ├── login.html              # Halaman login petugas admin
+│   ├── login.html              # Halaman login administrator
 │   ├── analytics.html          # Dasbor grafik analitik kependudukan
 │   ├── bansos.html             # Dasbor perlindungan sosial & bansos
 │   └── recommendations.html    # Dokumen rekomendasi kebijakan
 ├── app-context.md              # Snapshot state aktif proyek
 ├── handover.md                 # Dokumen serah terima sesi & status teknis
-└── run.sh                      # Contoh skrip proses runner (Linux)
+└── run.sh                      # Skrip proses runner produksi (Linux)
 ```
 
 ---
 
-## 5. Menjalankan Aplikasi Secara Lokal
+## 6. Menjalankan Aplikasi Secara Lokal
 
 ### Prasyarat
 - Go versi 1.22 atau lebih baru
@@ -148,19 +161,11 @@ peta_pondokrejo_main/
    http://localhost:8080/
    ```
 
-### Kompilasi Binary Produksi (Linux amd64)
+### Kompilasi Binary Produksi (Linux amd64 & Windows)
 ```bash
-# Windows PowerShell
-$env:GOOS="linux"; $env:GOARCH="amd64"; go build -o pondokrejo-app-linux .
-
-# Linux / macOS Bash
+# Kompilasi untuk Server Linux VPS
 GOOS=linux GOARCH=amd64 go build -o pondokrejo-app-linux .
+
+# Kompilasi untuk Windows
+go build -o pondokrejo-app.exe .
 ```
-
----
-
-## 6. Tata Kelola & Perlindungan Data Pribadi (UU PDP No. 27/2022)
-
-Aplikasi ini mengelola data kependudukan By Name By Address. Seluruh pengembang dan pengelola sistem wajib mematuhi ketentuan perundang-undangan:
-- **Prinsip Kerahasiaan Identitas:** Dokumen repositori, berkas commit Git, dan issue tracker dilarang keras mempublikasikan kredensial server, IP host, kunci akses privat, maupun nomor identitas kependudukan tanpa izin resmi.
-- **Rekomendasi Lingkungan Produksi:** Penggunaan di lingkungan publik disarankan menerapkan enkripsi transit SSL/TLS, pembatasan akses (*role-based access control*), penyamaran/masking nomor NIK/KK untuk pengunjung non-terautentikasi, serta pembatasan laju permintaan (*rate limiting*).

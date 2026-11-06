@@ -113,3 +113,20 @@ Dalam sesi ini, seluruh rangkaian remidiasi keamanan 3 tahap, sanitasi dokumenta
    - Fungsi `ensureBoundaryOnTop()` diperbarui dengan hirarki: Fills -> Lines -> Outer Boundary -> Points/Clusters -> Labels.
 6. **Kompilasi Binary**:
    - Binary lokal Windows `pondokrejo-app.exe` dan binary Linux VPS `pondokrejo-app-linux` berhasil dikompilasi ulang dengan asset templates & layers terbaru.
+
+### Update 2026-11-06 11:05 WIB - Resolusi ISSUE-012 (SyntaxError) & ISSUE-013 (Layer Mounting & Harmonisasi Visual)
+1. **Resolusi ISSUE-012 (Layar Blank & Navbar Kanan Macet)**:
+   - Ditemukan duplikasi penutup event listener `});` dan blok `catch` yatim piatu di `templates/index.html`.
+   - Kode dibersihkan dan diverifikasi nol SyntaxError via parser V8 Node.js (`node -c templates/index.html`).
+2. **Resolusi ISSUE-013 (Mounting Layer Tematik & Harmonisasi Padukuhan)**:
+   - Dihapus guard prematur `!map.isStyleLoaded()` pada `addLayerBeforeBoundary()` yang memicu race condition saat streaming vektor tile.
+   - `reapplyAllThematicLayers()` memisahkan verifikasi source dan layer, menjamin layer selalu dipasang ulang bahkan jika source sudah ada di memori cache.
+   - Harmonisasi visual dwifungsi:
+     - Navbar Kiri mengontrol visibilitas layer (*what to see*).
+     - Navbar Kanan mengontrol filter wilayah padukuhan (*where to focus*).
+     - Saat tanpa filter padukuhan: 9 padukuhan tampil penuh dengan garis biru resmi (`#2563eb`) dan label kapital.
+     - Saat 1 padukuhan dipilih: Padukuhan terpilih di-highlight tebal biru (`#1d4ed8`), sedangkan 8 padukuhan lainnya beralih menjadi garis kontur konteks yang halus (`#94a3b8`) agar pengguna tetap memahami posisi relatif wilayah.
+   - Pengujian live otomatis via Headless Chrome CDP (`scratch/diagnose_live_app.js`) mencatat 100% layer terpasang stabil.
+3. **Pembaruan Dokumentasi Inti**:
+   - Seluruh 9 berkas di `.docs/` (`routes.md`, `api-spec.md`, `architecture.md`, `database.md`, `quality_review.md`, `design-system.md`, `dependency-graph.md`, `issues.md`, `security-audit.md`) serta `README.md` dan `app-context.md` telah disinkronkan secara menyeluruh.
+

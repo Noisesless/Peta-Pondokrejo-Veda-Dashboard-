@@ -1,38 +1,50 @@
 # Pemetaan Rute & Handler — SIG Kalurahan Pondokrejo
 
-Dokumen ini mencatat pemetaan rute HTTP lengkap, metode akses, handler fungsi Golang, dan status proteksi akses pada aplikasi.
+Dokumen ini mencatat pemetaan rute HTTP lengkap, metode akses, handler fungsi Golang, dan status proteksi akses pada aplikasi Sistem Informasi Geografis Kalurahan Pondokrejo.
 
 ---
 
-## Tabel Rute Sistem & Status Proteksi Keamanan
+## 1. Tabel Rute Sistem & Status Proteksi Keamanan
 
-| Method | Path | Handler Backend | Status Proteksi | Deskripsi & Catatan Keamanan |
+| Method | Path | Handler Backend | Status Proteksi | Deskripsi & Hak Akses |
 |---|---|---|---|---|
-| `GET` | `/` | `main.func1` | Publik (Client Redirect) | Halaman peta sebaran utama (Catatan: dilindungi redirect client-side JS di browser) |
-| `GET` | `/login` | `main.func2` | Publik | Halaman login administrator (Kredensial hardcoded JS) |
-| `GET` | `/editor` | `main.func3` | ⚠️ Publik (No Server Auth) | Halaman visual editor marker & batas wilayah (Hanya dilindungi JS sessionStorage) |
-| `GET` | `/editor/layers` | `main.func4` | Publik | Endpoint metadata layer spasial yang aktif di editor |
-| `GET` | `/editor/layers/:name` | `main.func5` | Publik | Endpoint data GeoJSON spesifik (`padukuhan`, `rw`, `rt`) |
-| `POST` | `/editor/save` | `main.func7` | 🔴 Vulnerable (Unauthenticated) | Endpoint penyimpanan revisi titik koordinat & GeoJSON (Siapa saja bisa POST tanpa auth) |
-| `GET` | `/residents.json` | `main.func6` | 🔴 Vulnerable (Unmasked PII) | Menyajikan seluruh 2.021 KK dan 6.353 NIK 16-digit tanpa masking ke publik |
-| `GET` | `/boundary.geojson` | `main.func8` | Publik | Berkas GeoJSON batas resmi Kalurahan Pondokrejo |
-| `GET` | `/layers/*filepath` | `StaticFileHandler` | Publik | Serving statis 23 layer geospasial tematik dari embedded FS |
-| `GET` | `/analytics` | `main.func14` | Publik | Dasbor analitik demografi & grafik kependudukan |
-| `GET` | `/bansos` | `main.func15` | Publik | Dasbor analisis perlindungan sosial & bansos |
-| `GET` | `/bansos/data` | `main.func16` | Publik | API statistik data penerima bantuan sosial |
-| `GET` | `/recommendations` | `main.func13` | Publik | Halaman dokumen rekomendasi kebijakan kalurahan |
-| `GET` | `/logo.png` | `main.func9` | Publik | Logo resmi Kalurahan Pondokrejo (embedded asset) |
-| `GET` | `/veda-logo.png` | `main.func10` | Publik | Logo Visual Economic Data Analytics (VEDA) |
-| `GET` | `/clasnet-logo.png` | `main.func11` | Publik | Logo pengembang ClasNet |
-| `GET` | `/background.jpg` | `main.func12` | Publik | Foto latar belakang visual Pondokrejo |
+| `GET` | `/` | `main.func1` | 🔒 RequireAdmin | Halaman peta sebaran utama (`templates/index.html`). Memerlukan kuki sesi admin valid. |
+| `GET` | `/login` | `main.func2` | 🌐 Publik | Halaman login administrator (`templates/login.html`). Otomatis redirect ke `/` jika sudah login. |
+| `POST` | `/api/login` | `main.func3` | 🌐 Publik | Endpoint otentikasi kredensial administrator. Menerbitkan kuki sesi `pondokrejo_session` (Signed HMAC-SHA256, HttpOnly, Secure). |
+| `GET` | `/logout` | `main.func4` | 🔒 Authenticated | Menghapus kuki sesi admin dan mengarahkan kembali ke `/login`. |
+| `POST` | `/api/logout` | `main.func5` | 🔒 Authenticated | Menghapus kuki sesi admin via API JSON (`{"ok": true}`). |
+| `GET` | `/api/auth/status` | `main.func6` | 🌐 Publik | Memeriksa status autentikasi kuki sesi aktif (`{"is_authenticated": bool, "username": string}`). |
+| `GET` | `/editor` | `main.func7` | 🔒 RequireAdmin | Halaman visual editor koordinat marker KK & batas wilayah (`templates/editor.html`). |
+| `GET` | `/editor/layers` | `main.func8` | 🔒 RequireAdmin | Metadata seluruh layer editor aktif yang tersimpan di `editor_state.json`. |
+| `GET` | `/editor/layers/:name` | `main.func9` | 🌐 Public Read-Only | Menyajikan GeoJSON layer editor aktif (`rw`, `rt`, `fasilitas`) untuk publik tanpa autentikasi. |
+| `POST` | `/editor/save` | `main.func10` | 🔒 RequireAdmin | Endpoint mutasi koordinat KK dan geometri layer editor. Menolak akses non-admin dengan `401 Unauthorized`. |
+| `GET` | `/residents.json` | `main.func11` | 🔒 RequireAdmin / Masked | Data kependudukan 2.021 KK. Disajikan lengkap 16-digit untuk Admin; tersensor `******` (UU PDP) jika publik. |
+| `GET` | `/boundary.geojson` | `main.func12` | 🌐 Publik | Berkas GeoJSON batas resmi Kalurahan Pondokrejo (BIG / Sleman 2023). |
+| `GET` | `/layers/*filepath` | `StaticFS` | 🌐 Publik | Serving statis 19 berkas GeoJSON tematik terpotong batas kalurahan (`//go:embed layers/*`). |
+| `GET` | `/analytics` | `main.func20` | 🔒 RequireAdmin | Dasbor analitik kependudukan makro, piramida penduduk, dan indikator sosial (`analytics.html`). |
+| `GET` | `/bansos` | `main.func21` | 🔒 RequireAdmin | Dasbor analitik perlindungan sosial dan inclusion/exclusion error bansos (`bansos.html`). |
+| `GET` | `/bansos/data` | `main.func22` | 🔒 RequireAdmin | API agregasi statistik data penerima bantuan sosial. |
+| `GET` | `/recommendations` | `main.func19` | 🔒 RequireAdmin | Halaman dokumen rekomendasi kebijakan kependudukan berbasis data spasial (`recommendations.html`). |
+| `GET` | `/logo.png` | `main.func13` | 🌐 Publik | Logo resmi Kalurahan Pondokrejo (embedded asset). |
+| `GET` | `/veda-logo.png` | `main.func14` | 🌐 Publik | Logo Visual Economic Data Analytics (VEDA). |
+| `GET` | `/clasnet-logo.png` | `main.func15` | 🌐 Publik | Logo pengembang ClasNet. |
+| `GET` | `/background.jpg` | `main.func16` | 🌐 Publik | Foto latar belakang visual Pondokrejo (JPEG). |
+| `GET` | `/background.JPG` | `main.func17` | 🌐 Publik | Fallback foto latar belakang huruf kapital. |
+| `GET` | `/login.jpg` | `main.func18` | 🌐 Publik | Foto kartu login administrator. |
 
 ---
 
-## Rekomendasi Pengamanan Rute Backend (Action Plan)
+## 2. Arsitektur Keamanan & Middleware
 
-1. **Rute Terlindungi (Admin Only):**
-   - Rute `GET /editor` dan `POST /editor/save` wajib dibungkus middleware otentikasi Gin (`gin.BasicAuth` atau session cookie bertanda tangan HMAC).
-2. **Rute Sanitasi PII (Public Safe):**
-   - Rute `GET /residents.json` wajib menerapkan penyaringan (*data masking*): NIK dan No KK disamarkan dengan tanda bintang (`340414******XXXX`) jika diakses oleh pengguna umum non-admin.
-3. **Endpoint Login API:**
-   - Menyediakan rute `POST /api/login` yang melakukan verifikasi username dan password hash Bcrypt di sisi backend.
+1. **Middleware `RequireAdmin()`:**
+   - Memvalidasi keberadaan kuki sesi `pondokrejo_session`.
+   - Melakukan verifikasi kriptografis tanda tangan digital HMAC-SHA256 menggunakan secret server (`SESSION_SECRET`).
+   - Jika kuki tidak ada atau tidak valid:
+     - Untuk request HTML: Mengalihkan pengguna ke `/login?redirect=[path]`.
+     - Untuk request API/JSON: Mengembalikan status `401 Unauthorized` dengan pesan error terstandarisasi.
+2. **Public Read-Only Layer Serving:**
+   - Endpoint `GET /editor/layers/:name` dibuka untuk umum (`Public Read-Only`) sehingga data batas RW, RT, dan Fasilitas Desa dapat ditampilkan pada dasbor peta tanpa menuntut login.
+   - Endpoint mutasi `POST /editor/save` tetap terkunci ketat di bawah proteksi `RequireAdmin()`.
+3. **Hardening Reverse Proxy Nginx VPS:**
+   - Rate limiting `limit_req_zone` (rate=3r/s burst=5) memicu status `429 Too Many Requests` saat terjadi scraping otomatis massal.
+   - Header keamanan HSTS (`Strict-Transport-Security: max-age=31536000`), `X-Frame-Options: SAMEORIGIN`, dan `X-Content-Type-Options: nosniff` aktif penuh.
