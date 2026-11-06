@@ -1,24 +1,32 @@
-**Matriks Rencana Aksi (Action Plan)** yang disusun secara sistematis. Matriks ini dirancang agar Pemerintah Kalurahan Pondokrejo memiliki indikator keberhasilan yang terukur (KPI) dan pembagian tanggung jawab yang jelas.
+# MATRIKS RENCANA AKSI (ACTION PLAN) PEMERINTAH KALURAHAN PONDOKREJO
+## PROGRAM KERJA STRATEGIS BERBASIS DATA ANALITIK SPASIAL (VEDA)
+### TAHUN ANGGARAN 2026/2027
 
 ---
 
-### **MATRIKS RENCANA AKSI (ACTION PLAN) PEMERINTAH KALURAHAN PONDOKREJO**
-
-| Sektor Prioritas | Program / Kegiatan Utama | Target Sasaran | Indikator Keberhasilan (KPI) | Jangka Waktu | Pelaksana (Pihak Terkait) |
-| --- | --- | --- | --- | --- | --- |
-| **Perlindungan Sosial** | **Pemutakhiran Data Mandiri (PDM) & Sinkronisasi DTKS** | Keluarga ekonomi rendah (berdasarkan pengeluaran) | Terwujudnya 100% data bantuan sosial yang akurat dan tepat sasaran. | Triwulan I | Kamituwa (Kasi Pelayanan), Puskesos, Para Dukuh |
-| **Ekonomi Produktif** | **Pelatihan Keterampilan Kerja Terapan (Up-skilling)** | Pemuda & Pengangguran usia produktif | Minimal 30% peserta pelatihan mendapatkan pekerjaan atau membuka usaha mandiri. | Triwulan II & III | Ulu-Ulu (Kasi Ekonomi), BUMKal, Karang Taruna |
-| **Kesehatan & Lansia** | **Revitalisasi Posyandu Lansia & Pemeriksaan *Door-to-Door*** | Penduduk usia 65+ (Lansia) | Terlaksananya pemeriksaan kesehatan rutin bagi seluruh lansia di tiap RW. | Berkelanjutan (Bulanan) | Kamituwa, Kader Kesehatan, Puskesmas |
-| **Infrastruktur & Sanitasi** | **Program Stimulan Jamban Sehat & Air Bersih** | Rumah tangga dengan sanitasi rendah (r314) | Nol persen (*Zero*) kasus Buang Air Besar Sembarangan (BABS). | Triwulan III | Jagabaya (Kasi Tata Pemerintahan), Danarta |
-| **Digitalisasi Desa** | **Pembangunan Dasbor Visualisasi Data Spasial (GIS)** | Perangkat Desa & Masyarakat | Tersedianya peta digital tematik yang dapat diakses untuk perencanaan wilayah. | Triwulan IV | Carik (Sekretaris), Operator SID, Pihak Ketiga/Akademisi |
+| No | Sektor Prioritas | Program / Kegiatan Utama | Target Sasaran | Indikator Keberhasilan (KPI) | Jangka Waktu | Penanggung Jawab |
+|:---:|---|---|---|---|:---:|---|
+| **1** | **Perlindungan Sosial** | **Pemutakhiran Data Mandiri (PDM) & Sinkronisasi DTKS** | 675 KK (Keluarga Desil 1 & Desil 2) | Terwujudnya 100% data bantuan sosial yang akurat, terverifikasi, dan tepat sasaran. | Triwulan I | Kamituwa (Kasi Pelayanan), Puskesos, Para Dukuh |
+| **2** | **Ekonomi Produktif** | **Pelatihan Keterampilan Kerja Terapan & Penguatan BUMKal** | Pemuda & angkatan kerja produktif belum bekerja | Minimal 35% peserta pelatihan terserap kerja atau membuka unit usaha mandiri. | Triwulan II & III | Ulu-Ulu (Kasi Kesejahteraan), BUMKal, Karang Taruna |
+| **3** | **Kesehatan & Lansia** | **Revitalisasi Posyandu Lansia & Pemeriksaan Door-to-Door** | 762 Jiwa Penduduk Lansia (Usia 65+) | Terlaksananya pemeriksaan kesehatan rutin bagi >90% lansia di seluruh 9 padukuhan. | Berkelanjutan (Bulanan) | Kamituwa, Kader Kesehatan, Puskesmas Tempel |
+| **4** | **Infrastruktur & Sanitasi** | **Program Stimulan Jamban Sehat & Penanganan RTLH** | 235 KK sanitasi non-standar & hunian rentan | Tercapainya status 100% Bebas Buang Air Besar Sembarangan (*Open Defecation Free* / ODF). | Triwulan III | Jagabaya (Kasi Pemerintahan), Danarta |
+| **5** | **Digitalisasi Desa** | **Pemanfaatan SIG & Dasbor VEDA dalam Musrenbangkal** | Pamong Kalurahan, BPKal, dan Lembaga Desa | Peta tematik resmi dijadikan rujukan wajib penetapan alokasi anggaran fisik APBKal. | Triwulan IV | Carik (Sekretaris), Operator SID |
 
 ---
 
-### **Catatan Implementasi Strategis:**
+### CATATAN IMPLEMENTASI KEBIJAKAN
 
-1. **Pendanaan:** Kegiatan ini dapat diintegrasikan melalui penyelarasan **Dana Desa (DD)** dan **Alokasi Dana Desa (ADD)** tahun berjalan atau tahun berikutnya.
-2. **Monitoring:** Disarankan diadakan rapat koordinasi bulanan (Rakorbul) untuk memantau progres matriks di atas guna memastikan tidak ada program yang mangkrak.
-3. **Partisipasi Masyarakat:** Melibatkan unsur **Lembaga Pemberdayaan Masyarakat Kalurahan (LPMK)** dalam pengawasan pembangunan fisik (sanitasi) untuk menjamin transparansi.
+1. **Alokasi Anggaran:** Program kerja diintegrasikan ke dalam APBKal melalui penyelarasan Dana Desa (DD) dan Alokasi Dana Desa (ADD) Kalurahan Pondokrejo.
+2. **Koordinasi Berkala:** Evaluasi capaian indikator KPI dilaksanakan melalui Rapat Koordinasi Bulanan Pamong Kalurahan bersama para Dukuh.
+3. **Pengawasan:** Melibatkan Badan Permusyawaratan Kalurahan (BPKal) dan Lembaga Pemberdayaan Masyarakat Kalurahan (LPMK) demi akuntabilitas pembangunan desa.
 
 ---
---- VEDA - Visual Economis Data Analytics ---
+
+Pondokrejo, 6 November 2026  
+
+Mengetahui dan Mengesahkan,  
+**LURAH PONDOKREJO**  
+
+
+
+**R. WIDAYATMA, SE**

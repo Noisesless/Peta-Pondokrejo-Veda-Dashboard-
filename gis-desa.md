@@ -1,52 +1,43 @@
-Membangun **Sistem Informasi Geografis (GIS) Desa** merupakan langkah strategis untuk mengubah data tekstual menjadi alat pengambilan keputusan visual yang akurat.
-
-Berikut adalah tahapan teknis alur kerja pembangunan GIS untuk Kalurahan Pondokrejo:
-
----
-
-### **TAHAPAN TEKNIS PEMBANGUNAN GIS DESA**
-
-#### **1. Persiapan Data (Data Inventory)**
-
-Sebelum masuk ke perangkat lunak, data harus dalam kondisi "bersih".
-
-* **Data Atribut:** Menyiapkan data penduduk hasil ekspor Excel (seperti yang Anda miliki). Pastikan setiap baris memiliki identitas unik (NIK atau Nomor KK) dan kode wilayah (RT/RW).
-* **Data Spasial (Peta Dasar):** Mendapatkan file batas administrasi desa/kalurahan dalam format **Shapefile (.shp)** atau **GeoJSON**. Anda bisa mendapatkannya dari BIG (Badan Informasi Geospasial) atau melakukan *digitasi* mandiri menggunakan citra satelit Google Maps/Bing.
-
-#### **2. Penentuan Koordinat (Geocoding)**
-
-Data penduduk di Excel biasanya belum memiliki koordinat (Latitude/Longitude).
-
-* **Plotting Lapangan:** Menggunakan aplikasi seperti *Ona*, *KoboCollect*, atau *Google Maps* untuk mengambil titik koordinat setiap rumah.
-* **Join Data:** Menghubungkan titik koordinat tersebut dengan data atribut (Excel) menggunakan kunci unik (Nomor Rumah/KK).
-
-#### **3. Pemilihan Platform GIS**
-
-Pilih alat yang sesuai dengan kapasitas SDM di Kalurahan:
-
-* **Opsi Gratis/Open Source (Desktop):** **QGIS**. Sangat kuat untuk membuat peta cetak dan analisis mendalam.
-* **Opsi Web-Based (Interaktif):** **Google My Maps** (mudah namun terbatas) atau **ArcGIS Online** (berbayar namun profesional).
-* **Opsi Mandiri (Web GIS kustom):** Menggunakan *Leaflet.js* atau *Mapbox* untuk membangun dasbor yang terintegrasi dengan Sistem Informasi Desa (SID).
-
-#### **4. Analisis dan Pembuatan Peta Tematik**
-
-Di tahap ini, data angka diubah menjadi visualisasi:
-
-* **Peta Choropleth:** Mewarnai wilayah RT/RW berdasarkan kepadatan penduduk atau tingkat kemiskinan.
-* **Point Map:** Menampilkan sebaran fasilitas umum, sebaran rumah tangga miskin, atau lokasi balita stunting.
-* **Heatmap:** Melihat konsentrasi area tertentu, misalnya area dengan risiko sanitasi buruk tertinggi.
-
-#### **5. Publikasi dan Integrasi Dasbor**
-
-Agar hasil GIS dapat digunakan oleh Lurah dan Perangkat Desa:
-
-* **Dasbor Interaktif:** Membuat tampilan *User Interface* (UI) yang memudahkan orang awam membaca peta. Misalnya, ketika klik sebuah rumah, muncul data profil keluarga tersebut (sesuai hak akses/privasi).
-* **Integrasi SID:** Menghubungkan peta dengan database kependudukan desa agar peta ter-update secara otomatis saat ada perubahan data warga.
+# KERANGKA KERJA SISTEM INFORMASI GEOGRAFIS (SIG) KALURAHAN PONDOKREJO
+## PEMANFAATAN DATA GEOSPASIAL DALAM PERENCANAAN PEMBANGUNAN WILAYAH
+### TAHUN ANGGARAN 2026/2027
 
 ---
 
-### **Rekomendasi Arsitektur Sederhana untuk Pondokrejo:**
+### I. ARSITEKTUR GEOSPASIAL KALURAHAN PONDOKREJO
 
-1. **Input:** Data Excel SDGs Desa yang Anda miliki.
-2. **Proses:** Gunakan **QGIS** untuk menggabungkan data Excel dengan batas wilayah RT/RW.
-3. **Output:** Unggah ke **Mapbox** atau **Google My Maps** agar bisa diakses oleh Lurah melalui *smartphone* saat tinjauan lapangan.
+Sistem Informasi Geografis (SIG) Kalurahan Pondokrejo dibangun di atas batas wilayah yurisdiksi resmi Badan Informasi Geospasial (BIG) dan Pemerintah Kabupaten Sleman (2023) dengan luas dan topologi presisi:
+
+1. **Batas Kalurahan & 9 Padukuhan:**
+   - Menerapkan pemisahan planar (*Clean Planar Tessellation*) dengan 0 m² tumpang tindih (*overlap*) dan 0 m² celah (*gap*) antar-padukuhan.
+   - Sembilan padukuhan resmi: Ngentak, Plotengan, Jlopo, Karanglo, Dukuh, Jlapan, Banjarharjo, Glagahombo, dan Watupecah.
+2. **Lapisan Tematik Wilayah Terpotong Presisi (*Spatially Clipped Layers*):**
+   - Jaringan jalan desa, kolektor, dan lingkungan.
+   - Poligon hamparan pemukiman warga dan lahan persawahan teknis.
+   - Jaringan sungai, drainase, dan saluran irigasi pertanian.
+   - Jalur evakuasi resmi, barak pengungsian, dan titik kumpul mitigasi bencana Gunung Merapi.
+3. **Pemetaan Penduduk By Name By Address:**
+   - Sebanyak 2.021 titik koordinat tempat tinggal keluarga dengan akurasi 5 desimal (~1,1 meter).
+   - Penyelarasan alokasi wilayah ke 47 rukun tetangga (RT) resmi.
+
+---
+
+### II. ARAH KEBIJAKAN PEMANFAATAN SPASIAL
+
+1. **Efisiensi Anggaran Pembangunan Fisik:**
+   - Penentuan perbaikan ruas jalan desa dan gorong-gorong drainase didasarkan pada visualisasi spasial kepadatan penduduk dan aksesibilitas warga.
+2. **Mitigasi Bencana Erupsi Merapi:**
+   - Memastikan seluruh warga di padukuhan sisi utara dan timur memahami rute jalur evakuasi menuju barak pengungsian yang telah terpetakan di dalam sistem.
+3. **Ketahanan Pangan & Irigasi:**
+   - Memonitor alih fungsi lahan persawahan dan ketersediaan air irigasi melalui integrasi layer sawah dan jaringan sungai.
+
+---
+
+Pondokrejo, 6 November 2026  
+
+Mengetahui dan Mengesahkan,  
+**LURAH PONDOKREJO**  
+
+
+
+**R. WIDAYATMA, SE**

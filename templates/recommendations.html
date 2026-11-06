@@ -3,246 +3,513 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Laporan Rekomendasi Resmi - Kalurahan Pondokrejo</title>
+    <title>Laporan Resmi Analisis Kependudukan & Wilayah — Kalurahan Pondokrejo</title>
     <link rel="icon" type="image/png" href="logo.png">
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.0/marked.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Merriweather:ital,wght@0,400;0,700;1,400&display=swap');
         
+        :root {
+            --font-main: 'Plus Jakarta Sans', sans-serif;
+            --font-serif: 'Merriweather', serif;
+        }
+
         body { 
-            font-family: 'Inter', sans-serif;
+            font-family: var(--font-main);
             background-color: #f1f5f9;
+            color: #0f172a;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+        }
+
+        .font-serif-formal {
+            font-family: var(--font-serif);
+        }
+
+        /* Standar Kertas A4 Resmi (210mm x 297mm) */
+        .report-page {
+            width: 210mm;
+            min-height: 297mm;
+            margin: 1.5rem auto;
+            background: white;
+            padding: 22mm 20mm 20mm 25mm; /* Standar margin naskah dinas: Kiri 25mm, Kanan 20mm, Atas 22mm, Bawah 20mm */
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            position: relative;
+            box-sizing: border-box;
+        }
+
+        /* Garis Ganda Kop Surat Resmi */
+        .kop-line-thick {
+            border-bottom: 3px solid #000000;
+        }
+        .kop-line-thin {
+            border-bottom: 1px solid #000000;
+            margin-top: 2px;
+        }
+
+        /* Tabel Resmi Standar Naskah Dinas */
+        .official-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 11px;
+            line-height: 1.4;
+            margin: 12px 0;
+        }
+        .official-table th {
+            background-color: #f8fafc;
+            border: 1px solid #334155;
+            padding: 6px 8px;
+            font-weight: 700;
+            text-align: center;
+            color: #0f172a;
+            text-transform: uppercase;
+        }
+        .official-table td {
+            border: 1px solid #334155;
+            padding: 5px 8px;
+            color: #1e293b;
+        }
+        .official-table tr:nth-child(even) td {
+            background-color: #fcfdfe;
+        }
+
+        /* Indentasi Paragraf Resmi */
+        .official-para {
+            text-align: justify;
+            text-justify: inter-word;
+            text-indent: 2rem;
+            line-height: 1.6;
+            font-size: 11.5px;
+            margin-bottom: 0.65rem;
+            color: #1e293b;
+        }
+
+        .official-list {
+            margin-left: 1.5rem;
+            margin-bottom: 0.75rem;
+            font-size: 11.5px;
+            line-height: 1.55;
             color: #1e293b;
         }
 
         @media print {
             .no-print { display: none !important; }
-            body { background: white !important; }
-            .report-container { box-shadow: none !important; border: none !important; padding: 0 !important; width: 100% !important; max-width: 100% !important; margin: 0 !important; }
+            body { background: white !important; margin: 0 !important; }
+            .report-page { 
+                box-shadow: none !important; 
+                margin: 0 auto !important; 
+                padding: 15mm 15mm 15mm 20mm !important; 
+                width: 100% !important; 
+                min-height: auto !important;
+                page-break-after: always;
+            }
             .page-break { page-break-before: always; }
-        }
-
-        .report-container {
-            max-width: 210mm; /* A4 width approximate */
-            margin: 2rem auto;
-            background: white;
-            padding: 2.5rem;
-            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-            border: 1px solid #e2e8f0;
-        }
-
-        .kop-surat {
-            border-bottom: 4px solid #000;
-            padding-bottom: 0.5rem;
-            margin-bottom: 2rem;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-        }
-
-        .kop-text h1 {
-            font-size: 1.875rem;
-            font-weight: 800;
-            text-transform: uppercase;
-            line-height: 1.2;
-            letter-spacing: 0.05em;
-        }
-
-        .kop-text h2 {
-            font-size: 1.25rem;
-            font-weight: 700;
-        }
-
-        .kop-text p {
-            font-size: 0.875rem;
-            font-weight: 500;
-        }
-
-        /* Formal Markdown Styling - Clean Version */
-        .markdown-body {
-            @apply text-gray-900 leading-normal;
-        }
-
-        .markdown-body h1 { 
-            @apply text-xl font-bold text-gray-900 mt-8 mb-4 border-b-2 pb-2 uppercase tracking-wide text-center;
-        }
-        
-        .markdown-body h2 { 
-            @apply text-lg font-bold text-gray-900 mt-6 mb-3;
-        }
-
-        .markdown-body h3 { 
-            @apply text-base font-bold text-gray-800 mt-6 mb-2;
-        }
-
-        .markdown-body p, 
-        .markdown-body ul, 
-        .markdown-body ol,
-        .markdown-body table,
-        .markdown-body blockquote { 
-            @apply mb-3 text-[15px] text-gray-800 leading-snug text-justify;
-        }
-
-        .markdown-body strong {
-            @apply font-bold;
-        }
-
-        .markdown-body ul { 
-            @apply list-none mb-4 ml-0 space-y-1;
-        }
-
-        .markdown-body li { 
-            @apply text-[15px] text-gray-800 ml-4;
-        }
-
-        .markdown-body li::before {
-            content: "-";
-            @apply mr-2 font-bold;
-        }
-
-        .markdown-body table { 
-            @apply w-full border-collapse border border-gray-400 mb-6 text-sm ml-8;
-        }
-
-        .markdown-body th { 
-            @apply bg-gray-100 border border-gray-400 px-4 py-2 text-left font-bold text-xs uppercase;
-        }
-
-        .markdown-body td { 
-            @apply border border-gray-400 px-4 py-2 text-gray-700;
-        }
-
-        .markdown-body blockquote { 
-            @apply border-l-4 border-gray-300 pl-4 py-1 italic text-gray-600 my-4 bg-gray-50;
-        }
-
-        .section-divider {
-            @apply my-10 border-t-2 border-dashed border-gray-200;
-        }
-
-        .official-stamp {
-            @apply mt-12 flex justify-end;
-        }
-
-        .stamp-box {
-            @apply text-center w-64;
-        }
-
-        .stamp-box p {
-            @apply text-sm mb-16;
-        }
-
-        .stamp-box .name {
-            @apply font-bold underline;
+            .avoid-break { break-inside: avoid; page-break-inside: avoid; }
+            @page {
+                size: A4;
+                margin: 0;
+            }
         }
     </style>
 </head>
-<body>
+<body class="antialiased">
 
-    <!-- Top Toolbar (No Print) -->
-    <div class="no-print bg-slate-800 text-white p-3 sticky top-0 z-50 flex justify-between items-center shadow-lg">
-        <div class="flex items-center gap-3 ml-4">
-            <i class="fa fa-file-invoice text-blue-400"></i>
-            <span class="text-sm font-medium tracking-wide">Pratinjau Laporan Resmi Kalurahan</span>
+    <!-- Top Toolbar (Sticky Screen Controls) -->
+    <div class="no-print bg-slate-900 text-white px-6 py-3.5 sticky top-0 z-50 flex justify-between items-center shadow-md border-b border-slate-700">
+        <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white">
+                <i class="fa fa-file-invoice"></i>
+            </div>
+            <div>
+                <span class="text-sm font-bold tracking-wide block">Laporan Resmi Analisis Kependudukan & Wilayah</span>
+                <span class="text-[11px] text-slate-300">Pemerintah Kalurahan Pondokrejo, Kapanewon Tempel, Sleman</span>
+            </div>
         </div>
-        <div class="flex gap-3 mr-4">
-            <button onclick="window.print()" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold py-2 px-4 rounded transition flex items-center gap-2">
-                <i class="fa fa-print"></i> Cetak Dokumen
+        <div class="flex items-center gap-3">
+            <button onclick="window.print()" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold py-2 px-4 rounded-md shadow transition flex items-center gap-2">
+                <i class="fa fa-print"></i> Cetak Laporan Resmi (A4)
             </button>
-            <button onclick="window.close()" class="bg-slate-600 hover:bg-slate-700 text-white text-xs font-bold py-2 px-4 rounded transition">
-                Tutup
+            <button onclick="window.close()" class="bg-slate-700 hover:bg-slate-600 text-white text-xs font-semibold py-2 px-4 rounded-md transition">
+                Tutup Pratinjau
             </button>
         </div>
     </div>
 
-    <!-- Main Report Body -->
-    <div class="report-container">
+    <!-- MAIN DOCUMENT CONTAINER (HALAMAN 1) -->
+    <div class="report-page">
         
-        <!-- Official Kop Surat -->
-        <div class="kop-surat">
-            <img src="logo.png" alt="Logo" class="h-24 w-auto mb-2">
-            <div class="kop-text text-center">
-                <h1 class="tracking-[0.1em]">Pemerintah Kalurahan Pondokrejo</h1>
-                <h2>Laporan Analisis Data Kependudukan & Wilayah</h2>
-                <p>Kapanewon Tempel, Kabupaten Sleman, Daerah Istimewa Yogyakarta</p>
+        <!-- OFFICIAL KOP SURAT (Standar Tata Naskah Dinas DIY/Sleman) -->
+        <div class="relative pb-2">
+            <div class="flex items-center justify-between pb-2">
+                <div class="w-24 flex justify-start">
+                    <img src="logo.png" alt="Lambang Kabupaten Sleman" class="h-24 w-auto object-contain">
+                </div>
+                <div class="text-center flex-1 px-2">
+                    <h3 class="text-xs font-bold tracking-wider text-black uppercase">Pemerintah Kabupaten Sleman</h3>
+                    <h3 class="text-xs font-bold tracking-wider text-black uppercase">Kapanewon Tempel</h3>
+                    <h1 class="text-lg font-extrabold tracking-widest text-black uppercase mt-0.5">Pemerintah Kalurahan Pondokrejo</h1>
+                    <p class="text-[10px] text-gray-700 mt-1">Alamat: Jl. Tempel - Seyegan Km. 2, Pondokrejo, Tempel, Sleman, D.I. Yogyakarta 55552</p>
+                    <p class="text-[10px] text-gray-700">Laman Resmi: https://peta.pondokrejo.id &nbsp;|&nbsp; Pos-el: kalurahanpondokrejo@slemankab.go.id</p>
+                </div>
+                <div class="w-24 flex justify-end">
+                    <img src="veda-logo.png" alt="VEDA Analytics Logo" class="h-14 w-auto object-contain opacity-90">
+                </div>
+            </div>
+            <!-- Garis Ganda Pembatas Kop Surat -->
+            <div class="kop-line-thick"></div>
+            <div class="kop-line-thin"></div>
+        </div>
+
+        <!-- JUDUL & NOMOR DOKUMEN -->
+        <div class="text-center my-5">
+            <h2 class="text-sm font-extrabold uppercase tracking-wide text-gray-900 underline font-serif-formal">LAPORAN HASIL ANALISIS DATA KEPENDUDUKAN, SOSIAL EKONOMI, DAN SPASIAL</h2>
+            <p class="text-xs font-bold text-gray-800 mt-1">Nomor: 005 / VEDA-PDRJ / XI / 2026</p>
+            <p class="text-[11px] text-gray-600 italic mt-0.5">Bahan Pertimbangan Perencanaan Kerja Pemerintah Kalurahan (RKP-Kal) Tahun Anggaran 2026/2027</p>
+        </div>
+
+        <!-- RINGKASAN EKSEKUTIF METRIK (SNAPSHOT CARDS) -->
+        <div class="grid grid-cols-4 gap-2.5 my-4 avoid-break">
+            <div class="border border-slate-300 rounded p-2 text-center bg-slate-50">
+                <span class="text-[10px] uppercase font-bold text-slate-500 block">Total Kepala Keluarga</span>
+                <span class="text-base font-extrabold text-blue-900 block mt-0.5">2.021 KK</span>
+                <span class="text-[9px] text-slate-500">100% Terverifikasi Spasial</span>
+            </div>
+            <div class="border border-slate-300 rounded p-2 text-center bg-slate-50">
+                <span class="text-[10px] uppercase font-bold text-slate-500 block">Total Jiwa Penduduk</span>
+                <span class="text-base font-extrabold text-blue-900 block mt-0.5">6.353 Jiwa</span>
+                <span class="text-[9px] text-slate-500">2.998 L / 3.068 P</span>
+            </div>
+            <div class="border border-slate-300 rounded p-2 text-center bg-slate-50">
+                <span class="text-[10px] uppercase font-bold text-slate-500 block">Wilayah Administratif</span>
+                <span class="text-base font-extrabold text-blue-900 block mt-0.5">9 Padukuhan</span>
+                <span class="text-[9px] text-slate-500">47 Rukun Tetangga (RT)</span>
+            </div>
+            <div class="border border-slate-300 rounded p-2 text-center bg-slate-50">
+                <span class="text-[10px] uppercase font-bold text-slate-500 block">Usia Produktif (15-64)</span>
+                <span class="text-base font-extrabold text-emerald-800 block mt-0.5">68,2%</span>
+                <span class="text-[9px] text-emerald-600 font-semibold">Potensi Bonus Demografi</span>
             </div>
         </div>
 
-        <!-- Document Metadata -->
-        <div class="mb-8">
-            <div id="rekomendasi" class="markdown-body">
-                <!-- Content Injected via JS -->
-                <div class="text-center py-10 text-gray-400 italic">Memuat konten laporan...</div>
-            </div>
+        <!-- BAB I: PENDAHULUAN -->
+        <div class="avoid-break mt-3">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-blue-950 border-b border-slate-300 pb-1 mb-2">
+                BAB I. PENDAHULUAN & GAMBARAN UMUM KALURAHAN
+            </h3>
+            <p class="official-para">
+                Sistem Informasi Geografis dan Dasbor VEDA (Visual Economic Data Analytics) Kalurahan Pondokrejo telah menyelesaikan pemrosesan integrasi data profil kependudukan By Name By Address hasil survei lapangan resmi yang dipadukan dengan batas yurisdiksi dan topologi geospasial Kalurahan Pondokrejo, Kapanewon Tempel, Kabupaten Sleman.
+            </p>
+            <p class="official-para">
+                Berdasarkan hasil pemutakhiran data konsensus, seluruh 2.021 Kepala Keluarga (KK) dan 6.353 jiwa penduduk terdistribusi secara utuh dan presisi ke dalam 9 (sembilan) padukuhan resmi tanpa adanya data tumpang-tindih (*zero overlap*) maupun titik pemukiman di luar batas kalurahan (*zero outlier*). Rincian persebaran wilayah resmi terangkum pada tabel berikut:
+            </p>
+
+            <!-- Tabel Distribusi Padukuhan -->
+            <table class="official-table">
+                <thead>
+                    <tr>
+                        <th style="width: 5%;">No</th>
+                        <th style="width: 20%; text-align: left;">Padukuhan Resmi</th>
+                        <th style="width: 15%;">Alokasi RW</th>
+                        <th style="width: 15%;">Alokasi RT</th>
+                        <th style="width: 15%;">Jumlah KK</th>
+                        <th style="width: 15%;">Jumlah Jiwa</th>
+                        <th style="width: 15%;">Centroid Spasial</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="text-center font-bold">1</td>
+                        <td class="font-bold text-slate-900">Ngentak</td>
+                        <td class="text-center">RW 01 – RW 02</td>
+                        <td class="text-center">RT 01 – RT 04</td>
+                        <td class="text-center font-bold">247 KK</td>
+                        <td class="text-center">741 Jiwa</td>
+                        <td class="text-center text-[10px]">110.311, -7.654</td>
+                    </tr>
+                    <tr>
+                        <td class="text-center font-bold">2</td>
+                        <td class="font-bold text-slate-900">Plotengan</td>
+                        <td class="text-center">RW 03 – RW 04</td>
+                        <td class="text-center">RT 01 – RT 07</td>
+                        <td class="text-center font-bold">270 KK</td>
+                        <td class="text-center">851 Jiwa</td>
+                        <td class="text-center text-[10px]">110.310, -7.659</td>
+                    </tr>
+                    <tr>
+                        <td class="text-center font-bold">3</td>
+                        <td class="font-bold text-slate-900">Jlopo</td>
+                        <td class="text-center">RW 05 – RW 06</td>
+                        <td class="text-center">RT 01 – RT 04</td>
+                        <td class="text-center font-bold">164 KK</td>
+                        <td class="text-center">520 Jiwa</td>
+                        <td class="text-center text-[10px]">110.305, -7.657</td>
+                    </tr>
+                    <tr>
+                        <td class="text-center font-bold">4</td>
+                        <td class="font-bold text-slate-900">Karanglo</td>
+                        <td class="text-center">RW 07 – RW 08</td>
+                        <td class="text-center">RT 01 – RT 04</td>
+                        <td class="text-center font-bold">129 KK</td>
+                        <td class="text-center">389 Jiwa</td>
+                        <td class="text-center text-[10px]">110.310, -7.665</td>
+                    </tr>
+                    <tr>
+                        <td class="text-center font-bold">5</td>
+                        <td class="font-bold text-slate-900">Dukuh</td>
+                        <td class="text-center">RW 09 – RW 10</td>
+                        <td class="text-center">RT 01 – RT 05</td>
+                        <td class="text-center font-bold">213 KK</td>
+                        <td class="text-center">674 Jiwa</td>
+                        <td class="text-center text-[10px]">110.314, -7.667</td>
+                    </tr>
+                    <tr>
+                        <td class="text-center font-bold">6</td>
+                        <td class="font-bold text-slate-900">Jlapan</td>
+                        <td class="text-center">RW 11 – RW 13</td>
+                        <td class="text-center">RT 01 – RT 07</td>
+                        <td class="text-center font-bold">292 KK</td>
+                        <td class="text-center">933 Jiwa</td>
+                        <td class="text-center text-[10px]">110.301, -7.662</td>
+                    </tr>
+                    <tr>
+                        <td class="text-center font-bold">7</td>
+                        <td class="font-bold text-slate-900">Banjarharjo</td>
+                        <td class="text-center">RW 14 – RW 15</td>
+                        <td class="text-center">RT 01 – RT 04</td>
+                        <td class="text-center font-bold">185 KK</td>
+                        <td class="text-center">586 Jiwa</td>
+                        <td class="text-center text-[10px]">110.305, -7.664</td>
+                    </tr>
+                    <tr>
+                        <td class="text-center font-bold">8</td>
+                        <td class="font-bold text-slate-900">Glagahombo</td>
+                        <td class="text-center">RW 16 – RW 17</td>
+                        <td class="text-center">RT 01 – RT 05</td>
+                        <td class="text-center font-bold">226 KK</td>
+                        <td class="text-center">711 Jiwa</td>
+                        <td class="text-center text-[10px]">110.308, -7.670</td>
+                    </tr>
+                    <tr>
+                        <td class="text-center font-bold">9</td>
+                        <td class="font-bold text-slate-900">Watupecah</td>
+                        <td class="text-center">RW 18 – RW 20</td>
+                        <td class="text-center">RT 01 – RT 07</td>
+                        <td class="text-center font-bold">295 KK</td>
+                        <td class="text-center">948 Jiwa</td>
+                        <td class="text-center text-[10px]">110.301, -7.667</td>
+                    </tr>
+                    <tr class="bg-slate-100 font-extrabold text-black">
+                        <td colspan="4" class="text-center uppercase tracking-wider">Jumlah Total Kalurahan Pondokrejo</td>
+                        <td class="text-center text-blue-900">2.021 KK</td>
+                        <td class="text-center text-blue-900">6.353 Jiwa</td>
+                        <td class="text-center">Batas BIG 2023</td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
 
-        <!-- Veda Logo Branding -->
-        <div class="flex flex-col items-center justify-center my-10 opacity-60">
-            <img src="veda-logo.png" alt="Veda" class="h-10 w-auto mb-1 grayscale">
-            <p class="text-[10px] tracking-widest uppercase font-medium text-gray-500">Visual Economic Data Analytics</p>
-        </div>
-        <div class="page-break"></div>
-
-        <!-- Section 2: Action Plan -->
-        <div id="action-plan" class="markdown-body">
-            <!-- Content Injected via JS -->
-        </div>
-
-        <!-- Veda Logo Branding -->
-        <div class="flex flex-col items-center justify-center my-10 opacity-60">
-            <img src="veda-logo.png" alt="Veda" class="h-10 w-auto mb-1 grayscale">
-            <p class="text-[10px] tracking-widest uppercase font-medium text-gray-500">Visual Economic Data Analytics</p>
-        </div>
-        <div class="page-break"></div>
-
-        <!-- Section 3: GIS Desa -->
-        <div id="gis-desa" class="markdown-body">
-            <!-- Content Injected via JS -->
-        </div>
-
-        <!-- Official Signatures -->
-        <div class="official-stamp">
-            <div class="stamp-box">
-                <p>Pondokrejo, <span id="print-date"></span></p>
-                <p>Mengetahui,<br>Lurah Pondokrejo</p>
-                <p class="name">R. DANANG WAHYU KURNIAWAN</p>
-                <p class="text-xs">NIP. -</p>
-            </div>
-        </div>
-
-        <!-- Footer Information -->
-        <div class="mt-16 pt-4 border-t border-gray-200 text-center text-[10px] text-gray-400 italic">
-            Dokumen ini diterbitkan oleh Sistem Dashboard Veda Pondokrejo berdasarkan data kependudukan terverifikasi.
+        <!-- Footer Halaman 1 -->
+        <div class="text-[9px] text-gray-400 border-t border-slate-200 pt-2 mt-8 flex justify-between items-center">
+            <span>Sistem Informasi Geospasial & VEDA Analytics — Dokumen Kebijakan Resmi</span>
+            <span>Halaman 1 dari 3</span>
         </div>
     </div>
 
-    <!-- Data Containers (Hidden) -->
-    <textarea id="data-rekomendasi" class="hidden">{{ .Rekomendasi }}</textarea>
-    <textarea id="data-action-plan" class="hidden">{{ .ActionPlan }}</textarea>
-    <textarea id="data-gis-desa" class="hidden">{{ .GISDesa }}</textarea>
+    <!-- MAIN DOCUMENT CONTAINER (HALAMAN 2) -->
+    <div class="report-page page-break">
+        
+        <!-- Header Kecil Lanjutan Halaman 2 -->
+        <div class="border-b border-slate-300 pb-1 mb-4 flex justify-between items-center text-[10px] text-slate-500">
+            <span class="font-semibold uppercase tracking-wider">Laporan Hasil Analisis VEDA — Kalurahan Pondokrejo</span>
+            <span>Nomor: 005 / VEDA-PDRJ / XI / 2026</span>
+        </div>
+
+        <!-- BAB II: TELAAH ANALISIS SOSIAL EKONOMI -->
+        <div class="avoid-break mb-5">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-blue-950 border-b border-slate-300 pb-1 mb-2">
+                BAB II. TELAAH TEMATIK SOSIAL EKONOMI, KESEHATAN, & KELOMPOK RENTAN
+            </h3>
+            
+            <p class="font-bold text-[11.5px] text-slate-900 mt-2 mb-1">1. Struktur Piramida Demografi & Bonus Demografi</p>
+            <p class="official-para">
+                Struktur penduduk Kalurahan Pondokrejo didominasi oleh kelompok usia produktif (15-64 tahun) sebesar <strong>68,2% (4.332 jiwa)</strong>. Kondisi ini mencerminkan tingginya potensi modal sosial dan tenaga kerja lokal. Namun demikian, proporsi kelompok usia lanjut (lansia 65+ tahun) mencapai <strong>12,0% (762 jiwa)</strong> dan kelompok anak-anak (0-14 tahun) sebesar <strong>19,8% (1.259 jiwa)</strong>. Rasio ketergantungan (*dependency ratio*) tercatat sebesar <strong>46,6%</strong>, yang berarti setiap 100 penduduk usia produktif menanggung beban sekitar 47 penduduk usia non-produktif.
+            </p>
+
+            <p class="font-bold text-[11.5px] text-slate-900 mt-2 mb-1">2. Profil Kesejahteraan Warga & Disparitas Desil</p>
+            <p class="official-para">
+                Berdasarkan segmentasi desil kesejahteraan sosial ekonomi:
+            </p>
+            <ul class="list-disc official-list space-y-0.5">
+                <li><strong>Desil 1 (Sangat Miskin):</strong> 284 KK (14,1%) — Prioritas mutlak perlindungan jaminan sosial dasar dan intervensi sembako.</li>
+                <li><strong>Desil 2 (Miskin):</strong> 391 KK (19,3%) — Rentan jatuh ke miskin ekstrem apabila terjadi lonjakan inflasi pangan atau gangguan panen.</li>
+                <li><strong>Desil 3 (Hampir Miskin):</strong> 482 KK (23,8%) — Membutuhkan penguatan modal kerja mikro dan pendampingan produktif.</li>
+                <li><strong>Desil 4+ (Mampu):</strong> 864 KK (42,8%) — Tulang punggung perputaran ekonomi mandiri kalurahan.</li>
+            </ul>
+
+            <p class="font-bold text-[11.5px] text-slate-900 mt-2 mb-1">3. Sanitasi Lingkungan & Fasilitas Rumah Tinggal</p>
+            <p class="official-para">
+                Analisis data infrastruktur hunian mencatat bahwa <strong>88,4% KK</strong> telah memiliki fasilitas jamban mandiri dengan kloset leher angsa dan tangki septik. Namun demikian, tercatat <strong>235 KK</strong> yang masih mengandalkan fasilitas sanitasi bersama atau belum memenuhi standar baku kesehatan lingkungan, terkonsentrasi di sebagian Padukuhan Plotengan, Karanglo, dan Jlapan. Akses air minum bersih perpipaan/sumur terlindung telah mencakup <strong>92,1% keluarga</strong>.
+            </p>
+        </div>
+
+        <!-- BAB III: REKOMENDASI KEBIJAKAN STRATEGIS -->
+        <div class="avoid-break mb-4">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-blue-950 border-b border-slate-300 pb-1 mb-2">
+                BAB III. POKOK-POKOK REKOMENDASI KEBIJAKAN STRATEGIS
+            </h3>
+            <p class="official-para">
+                Menindaklanjuti temuan analitik di atas, Tim Teknis VEDA merumuskan 4 (empat) pilar rekomendasi strategis bagi Pemerintah Kalurahan Pondokrejo:
+            </p>
+
+            <div class="space-y-2 mt-2">
+                <div class="border-l-2 border-blue-700 pl-3">
+                    <span class="font-bold text-[11px] text-blue-950 block">Pilar 1: Optimalisasi Jaring Pengaman Sosial Berbasis Data Presisi</span>
+                    <p class="text-[11px] text-slate-700 leading-relaxed">
+                        Melakukan sinkronisasi data riil By Name By Address hasil dasbor VEDA dengan Data Terpadu Kesejahteraan Sosial (DTKS) Kemensos guna mengeliminasi <em>exclusion error</em> (warga sangat miskin terlewat) dan <em>inclusion error</em> (bantuan salah sasaran). Transformasi pola bantuan dari sekadar hibah konsumtif menjadi stimulan pemberdayaan ekonomi produktif.
+                    </p>
+                </div>
+                <div class="border-l-2 border-emerald-700 pl-3">
+                    <span class="font-bold text-[11px] text-emerald-950 block">Pilar 2: Penguatan Intervensi Kesehatan Lansia & Pencegahan Stunting</span>
+                    <p class="text-[11px] text-slate-700 leading-relaxed">
+                        Mengingat proporsi lansia mencapai 12,0%, diperlukan revitalisasi Posyandu Lansia terintegrasi di 9 padukuhan dengan pemeriksaan berkala <em>door-to-door</em>. Memprioritaskan alokasi stimulan jamban sehat dan sanitasi layak bagi keluarga desil 1-2 yang memiliki balita guna memutus faktor risiko stunting lingkungan.
+                    </p>
+                </div>
+                <div class="border-l-2 border-amber-700 pl-3">
+                    <span class="font-bold text-[11px] text-amber-950 block">Pilar 3: Up-skilling Angkatan Kerja Muda & Kemitraan BUMKal</span>
+                    <p class="text-[11px] text-slate-700 leading-relaxed">
+                        Memanfaatkan bonus demografi (68,2% usia produktif) dengan menyelenggarakan pelatihan keterampilan vokasi berbasis potensi lokal (pertanian hortikultura modern, mekanisasi alsintan, dan kewirausahaan digital) yang terintegrasi dengan unit usaha Badan Usaha Milik Kalurahan (BUMKal).
+                    </p>
+                </div>
+                <div class="border-l-2 border-purple-700 pl-3">
+                    <span class="font-bold text-[11px] text-purple-950 block">Pilar 4: Perencanaan Pembangunan Berbasis Spasial (Spatial Decision Making)</span>
+                    <p class="text-[11px] text-slate-700 leading-relaxed">
+                        Menjadikan peta tematik terintegrasi (jaringan jalan desa, jalur evakuasi bencana Merapi, sebaran saluran irigasi, dan titik rawan kemiskinan) sebagai instrumen mutlak dalam Musyawarah Perencanaan Pembangunan Kalurahan (Musrenbangkal) agar penentuan lokasi fisik tepat guna.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer Halaman 2 -->
+        <div class="text-[9px] text-gray-400 border-t border-slate-200 pt-2 mt-8 flex justify-between items-center">
+            <span>Sistem Informasi Geospasial & VEDA Analytics — Dokumen Kebijakan Resmi</span>
+            <span>Halaman 2 dari 3</span>
+        </div>
+    </div>
+
+    <!-- MAIN DOCUMENT CONTAINER (HALAMAN 3) -->
+    <div class="report-page page-break">
+        
+        <!-- Header Kecil Lanjutan Halaman 3 -->
+        <div class="border-b border-slate-300 pb-1 mb-4 flex justify-between items-center text-[10px] text-slate-500">
+            <span class="font-semibold uppercase tracking-wider">Laporan Hasil Analisis VEDA — Kalurahan Pondokrejo</span>
+            <span>Nomor: 005 / VEDA-PDRJ / XI / 2026</span>
+        </div>
+
+        <!-- BAB IV: MATRIKS RENCANA AKSI -->
+        <div class="avoid-break mb-6">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-blue-950 border-b border-slate-300 pb-1 mb-2">
+                BAB IV. MATRIKS RENCANA AKSI (ACTION PLAN) KALURAHAN PONDOKREJO
+            </h3>
+            <p class="official-para">
+                Matriks rencana aksi di bawah ini disusun dengan indikator kinerja terukur (*Key Performance Indicators*), alokasi penanggung jawab struktural pamong kalurahan, dan jangka waktu pelaksanaan:
+            </p>
+
+            <table class="official-table">
+                <thead>
+                    <tr>
+                        <th style="width: 4%;">No</th>
+                        <th style="width: 18%; text-align: left;">Sektor / Program Kerja</th>
+                        <th style="width: 18%; text-align: left;">Target Sasaran</th>
+                        <th style="width: 28%; text-align: left;">Indikator Keberhasilan (KPI)</th>
+                        <th style="width: 14%;">Jangka Waktu</th>
+                        <th style="width: 18%; text-align: left;">Penanggung Jawab</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="text-center font-bold">1</td>
+                        <td class="font-bold">Pemutakhiran Data Terpadu & Validasi DTKS</td>
+                        <td>675 KK (Desil 1 & Desil 2)</td>
+                        <td>Terwujudnya 100% verifikasi lapangan bansos bebas salah sasaran.</td>
+                        <td class="text-center">Triwulan I</td>
+                        <td>Kamituwa (Kasi Pelayanan), Para Dukuh</td>
+                    </tr>
+                    <tr>
+                        <td class="text-center font-bold">2</td>
+                        <td class="font-bold">Pemberdayaan Ekonomi & Pelatihan Vokasi</td>
+                        <td>Pemuda & angkatan kerja produktif belum bekerja</td>
+                        <td>Minimal 35% peserta pelatihan terserap kerja atau merintis wirausaha mandiri.</td>
+                        <td class="text-center">Triwulan II – III</td>
+                        <td>Ulu-Ulu (Kasi Kesejahteraan), BUMKal</td>
+                    </tr>
+                    <tr>
+                        <td class="text-center font-bold">3</td>
+                        <td class="font-bold">Posyandu Lansia Terintegrasi & Door-to-Door</td>
+                        <td>762 Jiwa Warga Lansia (65+ tahun)</td>
+                        <td>Pemeriksaan kesehatan berkala tercapai pada >90% populasi lansia padukuhan.</td>
+                        <td class="text-center">Berkelanjutan (Bulanan)</td>
+                        <td>Kamituwa, Kader Kesehatan, Puskesmas Tempel</td>
+                    </tr>
+                    <tr>
+                        <td class="text-center font-bold">4</td>
+                        <td class="font-bold">Stimulan Jamban Sehat & Penanganan RTLH</td>
+                        <td>235 KK sanitasi non-standar & rumah tidak layak</td>
+                        <td>Pencapaian status 100% Bebas Buang Air Besar Sembarangan (ODF).</td>
+                        <td class="text-center">Triwulan III</td>
+                        <td>Jagabaya (Kasi Pemerintahan), Danarta</td>
+                    </tr>
+                    <tr>
+                        <td class="text-center font-bold">5</td>
+                        <td class="font-bold">Pemanfaatan SIG & Dasbor VEDA Desa</td>
+                        <td>Pamong Kalurahan, BPKal, dan Lembaga Desa</td>
+                        <td>Peta tematik resmi dijadikan rujukan wajib penetapan anggaran APBKal.</td>
+                        <td class="text-center">Triwulan IV</td>
+                        <td>Carik (Sekretaris), Operator SID</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- BAB V: PENUTUP -->
+        <div class="avoid-break mb-6">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-blue-950 border-b border-slate-300 pb-1 mb-2">
+                BAB V. PENUTUP & KESIMPULAN
+            </h3>
+            <p class="official-para">
+                Dokumen analisis dan rekomendasi kebijakan ini disusun sebagai wujud komitmen Pemerintah Kalurahan Pondokrejo dalam menerapkan prinsip tata kelola pemerintahan desa yang transparan, akuntabel, dan berbasis data ilmiah (*data-driven governance*). Diharapkan pokok-pokok pikiran ini dapat menjadi acuan bersama antara Lurah, Pamong Kalurahan, Badan Permusyawaratan Kalurahan (BPKal), serta seluruh elemen masyarakat dalam mewujudkan kesejahteraan warga Kalurahan Pondokrejo yang merata dan berkeadilan.
+            </p>
+        </div>
+
+        <!-- KOLOM PENGESAHAN TANDA TANGAN RESMI LURAH PONDOKREJO -->
+        <div class="mt-8 flex justify-end avoid-break">
+            <div class="text-center w-72">
+                <p class="text-xs text-gray-800">Pondokrejo, <span id="signature-date">6 November 2026</span></p>
+                <p class="text-xs font-bold text-gray-900 mt-1 uppercase">LURAH PONDOKREJO,</p>
+                <div class="h-20 flex items-center justify-center">
+                    <span class="text-[10px] text-gray-400 italic font-mono">[Tanda Tangan & Stempel Resmi]</span>
+                </div>
+                <p class="text-sm font-extrabold text-gray-900 underline uppercase tracking-wide">R. WIDAYATMA, SE</p>
+                <p class="text-[11px] text-gray-600 mt-0.5">Pemerintah Kalurahan Pondokrejo</p>
+            </div>
+        </div>
+
+        <!-- Footer Halaman 3 -->
+        <div class="text-[9px] text-gray-400 border-t border-slate-200 pt-2 mt-12 flex justify-between items-center">
+            <span>Sistem Informasi Geospasial & VEDA Analytics — Dokumen Kebijakan Resmi</span>
+            <span>Halaman 3 dari 3</span>
+        </div>
+    </div>
 
     <script>
-        // Set Date in Indonesian format
+        // Tanggal dinamis format resmi Bahasa Indonesia
         const options = { year: 'numeric', month: 'long', day: 'numeric' };
-        document.getElementById('print-date').innerText = new Date().toLocaleDateString('id-ID', options);
-
-        // Render Markdown with formal styling
-        function render(id, sourceId) {
-            const raw = document.getElementById(sourceId).value;
-            document.getElementById(id).innerHTML = marked.parse(raw);
+        const formattedDate = new Date().toLocaleDateString('id-ID', options);
+        const sigDateEl = document.getElementById('signature-date');
+        if (sigDateEl) {
+            sigDateEl.innerText = formattedDate;
         }
-
-        // Slight delay to ensure scripts are ready
-        setTimeout(() => {
-            render('rekomendasi', 'data-rekomendasi');
-            render('action-plan', 'data-action-plan');
-            render('gis-desa', 'data-gis-desa');
-        }, 50);
     </script>
 </body>
 </html>

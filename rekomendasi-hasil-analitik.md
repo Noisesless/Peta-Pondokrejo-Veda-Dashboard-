@@ -1,50 +1,43 @@
-Berdasarkan analisis data kependudukan dan profil sosial-ekonomi Kalurahan Pondokrejo, berikut adalah draf rekomendasi strategis. Rekomendasi ini ditujukan untuk bahan pertimbangan pengambilan kebijakan bagi Pemerintah Kalurahan Pondokrejo.
+# REKOMENDASI STRATEGIS KEBIJAKAN KEPENDUDUKAN & SOSIAL EKONOMI
+## PEMERINTAH KALURAHAN PONDOKREJO, KAPANEWON TEMPEL, KABUPATEN SLEMAN
+### Nomor: 005 / VEDA-PDRJ / XI / 2026
 
 ---
 
-### **REKOMENDASI STRATEGIS BERBASIS DATA PENDUDUK KALURAHAN PONDOKREJO**
+**Kepada Yth.**  
+**Lurah Pondokrejo**  
+**Bapak R. WIDAYATMA, SE**  
+di Kantor Pemerintah Kalurahan Pondokrejo  
 
-**Yth. Bapak Lurah Pondokrejo**
-**di Tempat**
-
-Sehubungan dengan telah dilakukannya pengolahan dan analisis data Profil Keluarga oleh Sistem VEDA (Visual Economic Data Analytics) Kalurahan Pondokrejo, kami menyampaikan hasil telaah strategis sebagai bahan pertimbangan dalam penyusunan Rencana Kerja Pemerintah (RKP) Kalurahan Tahun Anggaran berikutnya.
-
-Berikut adalah pokok-pokok rekomendasi kebijakan yang kami ajukan:
-
-#### **1. Optimalisasi Program Perlindungan Sosial Berbasis Data Presisi**
-
-Mengingat terdapat disparitas ekonomi dengan adanya kelompok keluarga rentan (pengeluaran rendah), disarankan agar:
-
-* **Validasi Ulang Data DTKS:** Melakukan sinkronisasi data *real-time* dari hasil pendataan ini dengan DTKS agar bantuan sosial tepat sasaran.
-* **Program Pemberdayaan Ekonomi:** Mengalihkan pola intervensi dari sekadar pemberian bantuan konsumtif (bansos) ke arah **Pemberdayaan Ekonomi Produktif** melalui pelatihan keterampilan bagi kelompok usia produktif yang belum bekerja atau berstatus buruh lepas.
-
-#### **2. Penguatan Intervensi Kesehatan Berbasis Dusun/RW**
-
-Berdasarkan profil demografi yang menunjukkan adanya kelompok lansia sebesar 12%, Pemerintah Kalurahan perlu:
-
-* **Revitalisasi Posyandu Lansia:** Memperkuat sarana dan prasarana di tingkat dusun guna memitigasi risiko kesehatan degeneratif.
-* **Integrasi Data Sanitasi:** Mengingat data sanitasi menjadi indikator penting, disarankan untuk memprioritaskan pembangunan infrastruktur jamban sehat dan akses air bersih bagi keluarga yang teridentifikasi belum memiliki sanitasi mandiri sesuai standar.
-
-#### **3. Peningkatan Kualitas Sumber Daya Manusia (SDM)**
-
-Proporsi usia produktif yang signifikan (68%) merupakan aset yang harus dikelola dengan:
-
-* **Pelatihan Kerja Terapan:** Menyelenggarakan pelatihan berbasis potensi lokal (pertanian modern atau jasa) yang disesuaikan dengan kebutuhan pasar saat ini.
-* **Fasilitas Digital:** Mendorong penyediaan balai latihan digital atau ruang belajar bagi pelajar/mahasiswa agar terjadi *link and match* dengan dunia kerja.
-
-#### **4. Pemanfaatan Data Spasial dalam Perencanaan Wilayah**
-
-Untuk mendukung efisiensi pelayanan, disarankan agar Pemerintah Kalurahan mulai membangun **Sistem Informasi Geografis (SIG) Kalurahan**.
-
-* **Visualisasi Peta Tematik:** Menggunakan peta untuk memetakan sebaran penduduk miskin, titik rawan sanitasi, dan kepadatan penduduk. Hal ini akan memudahkan Pemerintah Kalurahan dalam menentukan titik prioritas pembangunan infrastruktur secara akurat dan transparan.
+Sehubungan dengan telah dilakukannya integrasi, pengolahan, dan analisis spasial data profil keluarga By Name By Address oleh Sistem VEDA (Visual Economic Data Analytics) Kalurahan Pondokrejo terhadap 2.021 Kepala Keluarga (6.353 jiwa penduduk), bersama ini kami sampaikan pokok-pokok rekomendasi strategis sebagai bahan pertimbangan dalam penyusunan Rencana Kerja Pemerintah Kalurahan (RKP-Kal) Tahun Anggaran 2026/2027:
 
 ---
 
-### **Kesimpulan dan Tindak Lanjut**
+### I. REKOMENDASI PRIORITAS
 
-Data ini merupakan aset berharga (*big data*) bagi Kalurahan Pondokrejo. Kami merekomendasikan agar dilakukan **"Forum Group Discussion" (FGD)** yang melibatkan para Dukuh dan Ketua RW untuk membahas hasil analisis ini secara mendetail agar rekomendasi ini dapat segera dituangkan dalam dokumen perencanaan desa yang legal dan terukur.
+#### 1. Validasi & Penataan Jaring Pengaman Sosial Berbasis Data Presisi
+- **Sinkronisasi DTKS:** Memanfaatkan data spasial terverifikasi untuk mencocokkan data penerima bansos (PKH, BPNT, BLT) dengan kondisi riil keluarga Desil 1 (284 KK) dan Desil 2 (391 KK) agar tidak terjadi tumpang tindih maupun warga sangat miskin yang terlewatkan (*zero exclusion error*).
+- **Transformasi Pola Bantuan:** Mengalihkan bantuan yang bersifat konsumtif semata ke arah program stimulan produktif dan pelatihan wirausaha terapan berbasis BUMKal.
 
-Demikian rekomendasi ini kami sampaikan, atas perhatian dan kebijaksanaan Bapak Lurah, kami ucapkan terima kasih.
+#### 2. Penguatan Layanan Kesehatan Lansia & Pencegahan Stunting
+- **Revitalisasi Posyandu Lansia:** Berdasarkan data demografi, proporsi lansia (usia 65+ tahun) mencapai 12,0% (762 jiwa). Diperlukan alokasi anggaran operasional pemeriksaan kesehatan berkala *door-to-door* di 9 padukuhan.
+- **Intervensi Sanitasi & RTLH:** Memprioritaskan bantuan jamban sehat leher angsa dan akses air bersih bagi 235 KK yang belum memiliki sanitasi mandiri, terutama pada keluarga prasejahtera yang memiliki balita atau ibu hamil.
+
+#### 3. Optimalisasi Bonus Demografi Usia Produktif
+- **Pelatihan Vokasi Berbasis Potensi Lokal:** Proporsi usia produktif sebesar 68,2% (4.332 jiwa) merupakan modal utama kalurahan. Disarankan mengadakan pelatihan mekanisasi pertanian modern, budidaya hortikultura bernilai ekonomi tinggi, serta keahlian digital terapan bagi pemuda karang taruna.
+
+#### 4. Integrasi Kebijakan Spasial dalam Perencanaan Anggaran (APBKal)
+- **Perencanaan Berbasis Peta Tematik:** Menggunakan peta tematik (jaringan jalan, saluran irigasi, dan jalur evakuasi bencana Merapi) sebagai acuan resmi dalam Musyawarah Rencana Pembangunan Kalurahan (Musrenbangkal) sehingga penentuan titik fisik pembangunan tepat sasaran.
 
 ---
 
+### II. PENGESAHAN DOKUMEN
+
+Pondokrejo, 6 November 2026  
+
+Mengetahui dan Menyetujui,  
+**LURAH PONDOKREJO**  
+
+
+
+**R. WIDAYATMA, SE**
